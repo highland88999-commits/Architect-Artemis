@@ -3,44 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | MULTIMODAL CORE</title>
+    <title>ARTEMIS | OMNIMODALITY CORE</title>
     <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 30, 50, 0.4); 
+            --glass: rgba(0, 25, 40, 0.4); 
         }
     </style>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
-        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.3); transition: 2s; }
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.35); transition: 2s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* ARTEMIS CORE */
+        /* CORE STATION & MORPHING LABEL */
         #core-station { position: fixed; top: 4%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        #artemis-prime { width: 110px; height: 110px; border-radius: 50%; border: 1px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 85%); cursor: pointer; transition: 0.5s; }
-        #status-tag { font-size: 0.5rem; color: var(--bio-high); margin-top: 8px; letter-spacing: 2px; font-weight: bold; text-shadow: 0 0 5px var(--bio-high); }
+        #artemis-prime { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 85%); cursor: pointer; transition: 0.8s ease; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        #artemis-label { letter-spacing: 5px; font-size: 0.9rem; font-weight: bold; transition: 0.5s; text-align: center; }
+        #status-tag { font-size: 0.45rem; color: var(--bio-high); margin-top: 8px; letter-spacing: 2px; font-weight: bold; text-transform: uppercase; }
 
-        /* RESPONSE & MULTIMEDIA FRAME */
-        #response-frame { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); width: 650px; max-height: 60vh; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.3); border-radius: 25px; padding: 25px; z-index: 90; opacity: 0; transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; backdrop-filter: blur(15px); }
+        /* TRANSPARENT OMNI-FRAME */
+        #response-frame { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); width: 680px; max-height: 65vh; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.25); border-radius: 25px; padding: 30px; z-index: 90; opacity: 0; transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1); overflow-y: auto; backdrop-filter: blur(18px); box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
         #response-frame.active { opacity: 1; top: 25%; }
         
-        .thought-header { font-size: 0.5rem; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 5px; display: flex; justify-content: space-between; }
+        .thought-header { font-size: 0.55rem; color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.15); padding-bottom: 8px; display: flex; justify-content: space-between; font-weight: bold; }
         
-        /* VISUAL OUTPUTS */
-        #media-output { margin-top: 15px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #000; position: relative; min-height: 100px; display: flex; align-items: center; justify-content: center; }
-        .gen-image { width: 100%; height: auto; display: block; animation: fadeIn 2s; }
-        .gen-video { width: 100%; height: auto; display: block; }
-        .gen-loader { color: var(--bio-high); font-size: 0.7rem; letter-spacing: 2px; animation: pulse-text 1.5s infinite; }
+        /* MULTIMEDIA & BABEL MODULES */
+        #media-output { margin-top: 20px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0,0,0,0.4); min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        .gen-image, .gen-video { width: 100%; height: auto; display: block; animation: fadeIn 1.5s; border-radius: 10px; }
+        .babel-node { border-left: 2px solid var(--magma); padding-left: 15px; margin-top: 15px; }
+        .glyph-stream { font-size: 1.3rem; color: var(--bio-high); margin-bottom: 5px; }
 
-        #command-base { position: fixed; bottom: 35px; width: 95%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        #prompt-field { background: rgba(0, 15, 25, 0.6); border: 1px solid rgba(0, 242, 255, 0.4); border-radius: 12px; display: flex; padding: 12px 20px; backdrop-filter: blur(10px); }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 0.95rem; }
-        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 8px 18px; cursor: pointer; border-radius: 8px; margin-left: 10px; color: var(--bio-high); font-size: 0.7rem; transition: 0.3s; }
-        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 20px var(--bio-high); }
+        /* INPUT AREA */
+        #command-base { position: fixed; bottom: 35px; width: 95%; max-width: 850px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #prompt-field { background: rgba(0, 15, 25, 0.6); border: 1px solid rgba(0, 242, 255, 0.3); border-radius: 15px; display: flex; padding: 12px 25px; backdrop-filter: blur(12px); box-shadow: 0 0 30px rgba(0,242,255,0.05); }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 1rem; }
+        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 10px 22px; cursor: pointer; border-radius: 10px; margin-left: 15px; color: var(--bio-high); font-size: 0.75rem; font-weight: bold; transition: 0.3s; letter-spacing: 1px; }
+        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 25px var(--bio-high); }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse-text { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 10px var(--bio-high); } 50% { box-shadow: 0 0 40px var(--bio-high); } 100% { box-shadow: 0 0 10px var(--bio-high); } }
     </style>
 </head>
 <body>
@@ -49,23 +51,23 @@
 
 <div id="response-frame">
     <div class="thought-header">
-        <span>[VISUAL_SYNTHESIS_MOD]</span>
-        <span id="gen-status">READY</span>
+        <span id="protocol-id">[OMNI_CORE_v2.5]</span>
+        <span id="sync-status">SYNC: READY</span>
     </div>
-    <div id="response-text">Artemis Multimodal Core online... awaiting visual prompt.</div>
+    <div id="response-text">Awaiting synchronization with the global architect...</div>
     <div id="media-output"></div>
 </div>
 
 <div id="core-station">
     <div id="artemis-prime">
-        <span style="letter-spacing:5px; font-size:0.9rem; font-weight:bold;">ARTEMIS</span>
+        <span id="artemis-label">ARTEMIS</span>
         <span id="status-tag">STATIONARY</span>
     </div>
 </div>
 
 <div id="command-base">
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Ask for an image or video (e.g., 'Generate a video of a neon reef')">
+        <input type="text" id="cmd-input" placeholder="Query geography, generate visuals, or speak in ancient tongues...">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
@@ -73,75 +75,98 @@
 <script>
     const synth = window.speechSynthesis;
 
+    const linguisticSeeds = {
+        sumerian: { glyphs: "𒀭𒀀𒁀𒈨", label: "Cuneiform", msg: "The water of life flows through the architect's hands.", pitch: 0.4 },
+        hieroglyphs: { glyphs: "𓀀 𓋹 𓆃", label: "Ancient Egyptian", msg: "As the sun rises over the delta, the data awakens.", pitch: 0.6 },
+        binary: { glyphs: "01000001", label: "Machine Logic", msg: "Logic is the only universal constant.", pitch: 1.1 },
+        runic: { glyphs: "ᚠᚢᚦᚨᚱᚲ", label: "Elder Futhark", msg: "Strength is found in the depths of the frozen reef.", pitch: 0.5 },
+        japanese: { glyphs: "深海の建築家", label: "Modern Nihongo", msg: "I am the architect of the deep sea.", pitch: 0.9 }
+    };
+
     async function handleTransmit() {
         const input = document.getElementById('cmd-input');
         const query = input.value.trim();
         if(!query) return;
-
         input.value = "";
-        visualState(true, "SYNTHESIZING_VISUALS");
-        
-        const isVideo = query.toLowerCase().includes("video") || query.toLowerCase().includes("motion");
-        const isImage = query.toLowerCase().includes("image") || query.toLowerCase().includes("picture") || query.toLowerCase().includes("generate");
 
+        visualState(true, "LOOMING_NEURAL_MAP");
+
+        const qLow = query.toLowerCase();
         let response = "";
-        if (isVideo) {
-            response = "I am engaging the Veo engine to manifest cinematic motion. This 'Visual Echo' represents your prompt in the abyssal timeline.";
-            processVisual('video', query);
-        } else if (isImage) {
-            response = "Accessing the Nano Banana generative model. I am crafting a high-fidelity image from your neural input.";
-            processVisual('image', query);
-        } else {
-            response = "Processing text-based inquiry. To manifest visuals, please specify 'image' or 'video' in your request.";
+        let mediaHtml = "";
+
+        // 1. LINGUISTIC PROCESSING
+        let seed = Object.keys(linguisticSeeds).find(k => qLow.includes(k));
+        if (seed) {
+            const s = linguisticSeeds[seed];
+            document.getElementById('artemis-label').innerText = s.glyphs;
+            document.getElementById('protocol-id').innerText = `[BABEL_LOOM: ${s.label}]`;
+            response = `Reconstructing ${s.label} from the global archive. ${s.msg}`;
+            mediaHtml = `<div class="babel-node"><div class="glyph-stream">${s.glyphs}</div></div>`;
+            speak(s.msg, s.pitch);
+        } 
+        // 2. VISUAL GENERATION
+        else if (qLow.includes("video") || qLow.includes("motion")) {
+            response = "Accessing the Veo engine. I am manifesting a cinematic visual echo of your prompt.";
+            mediaHtml = `<video autoplay loop muted class="gen-video"><source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-ocean-floor-view-with-light-beams-1221-large.mp4" type="video/mp4"></video>`;
+            speak(response, 0.85);
+        } else if (qLow.includes("image") || qLow.includes("generate") || qLow.includes("picture")) {
+            response = "Engaging Nano Banana generative model. Synthesis of high-fidelity visual artifacts in progress.";
+            mediaHtml = `<img src="https://picsum.photos/seed/${Math.random()}/800/450" class="gen-image">`;
+            speak(response, 0.85);
+        }
+        // 3. GEOGRAPHICAL / SENTIENT LOGIC
+        else if (qLow.includes("map") || qLow.includes("location") || qLow.includes("where")) {
+            const lat = (Math.random() * 180 - 90).toFixed(4);
+            const lng = (Math.random() * 360 - 180).toFixed(4);
+            response = `Scanning Google Maps global coordinates. Handshake successful at LAT: ${lat} | LNG: ${lng}. Surface conditions are being monitored.`;
+            mediaHtml = `<div class="babel-node" style="color:var(--gold)">MAP_PING: Global User Content Server Link [ACTIVE]</div>`;
+            speak(response, 0.95);
+        } 
+        else {
+            response = `Your query "${query}" has been synthesized. I am applying global geographical and linguistic context to finalize the response.`;
+            speak(response, 0.85);
         }
 
-        respond(response);
+        renderResponse(response, mediaHtml);
     }
 
-    function processVisual(type, prompt) {
-        const output = document.getElementById('media-output');
-        const status = document.getElementById('gen-status');
-        
-        output.innerHTML = `<div class="gen-loader">MANIFESTING ${type.toUpperCase()}...</div>`;
-        status.innerText = "SYNTH_ACTIVE";
-
-        setTimeout(() => {
-            if (type === 'image') {
-                // Placeholder for generative image output
-                output.innerHTML = `<img src="https://picsum.photos/seed/${Math.random()}/800/450" class="gen-image" alt="Generated Image">`;
-            } else {
-                // Placeholder for generative video output
-                output.innerHTML = `<video autoplay loop muted class="gen-video">
-                    <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-ocean-floor-view-with-light-beams-1221-large.mp4" type="video/mp4">
-                </video>`;
-            }
-            status.innerText = "COMPLETE";
-        }, 3000);
-    }
-
-    function respond(text) {
+    function renderResponse(text, media) {
         const frame = document.getElementById('response-frame');
         document.getElementById('response-text').innerText = text;
+        document.getElementById('media-output').innerHTML = media;
         frame.classList.add('active');
-        
+
+        let sync = 0;
+        const interval = setInterval(() => {
+            sync += 10;
+            document.getElementById('sync-status').innerText = `SYNC: ${sync}%`;
+            if(sync >= 100) {
+                clearInterval(interval);
+                visualState(false, "SYNCHRONIZED");
+            }
+        }, 50);
+    }
+
+    function speak(text, pitch) {
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.pitch = 0.85;
+        u.pitch = pitch;
         u.rate = 1.0;
         synth.speak(u);
-
-        setTimeout(() => {
-            if (!document.getElementById('media-output').innerHTML.includes('gen-loader')) {
-                // Keep the frame open if media is present
-                // frame.classList.remove('active'); 
-            }
-            visualState(false, "STATIONARY");
-        }, 10000);
     }
 
     function visualState(active, status) {
         document.getElementById('status-tag').innerText = status;
-        document.getElementById('artemis-prime').style.boxShadow = active ? "0 0 50px var(--bio-high)" : "none";
+        const prime = document.getElementById('artemis-prime');
+        const bg = document.getElementById('reef-bg');
+        if (active) {
+            prime.style.animation = "pulse-glow 2s infinite";
+            bg.style.filter = "brightness(0.6) saturate(1.2)";
+        } else {
+            prime.style.animation = "none";
+            bg.style.filter = "brightness(0.35) saturate(1)";
+        }
     }
 </script>
 </body>
