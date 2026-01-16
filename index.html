@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | RENDER_FLOW</title>
+    <title>ARTEMIS | ABYSSAL LEDGER</title>
     <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
             --render-hex: #4642ff;
+            --magma: #ff4500;
             --glass-ultra: rgba(0, 242, 255, 0.02);
-            --border-glow: rgba(0, 242, 255, 0.15);
+            --border-glow: rgba(0, 242, 255, 0.12);
         }
     </style>
     <style>
@@ -18,31 +19,34 @@
 
         /* CORE */
         #core-station { position: fixed; top: 5%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        #artemis-prime { width: 90px; height: 90px; border-radius: 50%; border: 1px solid var(--border-glow); display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; backdrop-filter: blur(5px); transition: 0.5s; }
-        #artemis-label { font-size: 0.7rem; font-weight: bold; text-shadow: 0 0 10px var(--bio-high); letter-spacing: 3px; }
+        #artemis-prime { width: 85px; height: 85px; border-radius: 50%; border: 1px solid var(--border-glow); display: flex; align-items: center; justify-content: center; background: transparent; cursor: pointer; backdrop-filter: blur(5px); transition: 0.5s; }
+        #artemis-label { font-size: 0.7rem; font-weight: bold; text-shadow: 0 0 10px var(--bio-high); letter-spacing: 2px; }
 
-        /* GHOST TERMINAL */
-        #response-frame { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); width: 750px; max-height: 70vh; background: var(--glass-ultra); border: 1px solid var(--border-glow); padding: 25px; z-index: 90; opacity: 0; transition: 0.6s; backdrop-filter: blur(8px); border-radius: 15px; }
-        #response-frame.active { opacity: 1; top: 24%; }
-        
-        .infra-header { font-size: 0.5rem; color: var(--render-hex); margin-bottom: 15px; border-bottom: 1px solid rgba(70, 66, 255, 0.2); padding-bottom: 8px; display: flex; justify-content: space-between; font-weight: bold; }
-        
+        /* GHOST TERMINAL (MAIN) */
+        #response-frame { position: fixed; top: 22%; left: 35%; transform: translateX(-50%); width: 550px; max-height: 60vh; background: var(--glass-ultra); border-left: 1px solid var(--border-glow); padding: 25px; z-index: 90; opacity: 0; transition: 0.6s; backdrop-filter: blur(8px); }
+        #response-frame.active { opacity: 1; top: 25%; }
+
+        /* HISTORY LEDGER (SIDE PANEL) */
+        #history-ledger { position: fixed; top: 20%; right: 2%; width: 280px; height: 60vh; background: rgba(0,0,0,0.1); border-left: 1px solid rgba(255,255,255,0.05); padding: 20px; z-index: 85; overflow-y: auto; backdrop-filter: blur(2px); }
+        .ledger-title { font-size: 0.5rem; color: var(--bio-high); margin-bottom: 20px; letter-spacing: 3px; border-bottom: 1px solid var(--border-glow); padding-bottom: 5px; }
+        .ledger-item { font-size: 0.65rem; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.03); opacity: 0.7; animation: fadeIn 0.5s ease; }
+        .ledger-time { color: var(--magma); font-size: 0.55rem; margin-bottom: 3px; }
+        .ledger-tag { color: var(--bio-high); font-weight: bold; }
+
         /* PROGRESS BAR */
-        #build-bar-container { width: 100%; height: 2px; background: rgba(255,255,255,0.05); margin-bottom: 20px; display: none; overflow: hidden; position: relative; }
-        #build-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, transparent, var(--bio-high), var(--render-hex)); transition: width 0.4s ease; box-shadow: 0 0 10px var(--bio-high); }
+        #build-bar-container { width: 100%; height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 15px; display: none; overflow: hidden; }
+        #build-bar-fill { width: 0%; height: 100%; background: var(--bio-high); box-shadow: 0 0 8px var(--bio-high); transition: width 0.3s; }
 
-        #terminal-out { font-family: 'Consolas', monospace; font-size: 0.85rem; color: #d1d1d1; line-height: 1.4; height: 250px; overflow-y: auto; }
-        .log-entry { margin-bottom: 5px; animation: slideIn 0.2s ease-out; }
-        .status-up { color: #00ffaa; font-weight: bold; }
-        .status-deploy { color: var(--render-hex); font-weight: bold; }
+        #terminal-out { font-family: 'Consolas', monospace; font-size: 0.8rem; color: #ccc; height: 200px; overflow-y: auto; }
+        .log-entry { margin-bottom: 4px; }
 
         /* COMMAND BASE */
-        #command-base { position: fixed; bottom: 40px; width: 85%; max-width: 900px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #command-base { position: fixed; bottom: 40px; width: 70%; left: 35%; transform: translateX(-50%); z-index: 100; }
         #prompt-field { background: transparent; border-bottom: 1px solid var(--border-glow); display: flex; padding: 10px 0; }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 1rem; }
-        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 5px 20px; cursor: pointer; color: var(--bio-high); font-size: 0.65rem; transition: 0.3s; }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 0.95rem; }
+        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 5px 15px; cursor: pointer; color: var(--bio-high); font-size: 0.6rem; }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -50,17 +54,14 @@
 <img id="reef-bg" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1920&q=80">
 
 <div id="response-frame">
-    <div class="infra-header">
-        <span>[RENDER_BUILD_PIPELINE]</span>
-        <span id="build-status">IDLE</span>
-    </div>
-    
-    <div id="build-bar-container">
-        <div id="build-bar-fill"></div>
-    </div>
+    <div id="build-bar-container"><div id="build-bar-fill"></div></div>
+    <div id="terminal-out">> ARTEMIS_LOG: Systems Standby...</div>
+</div>
 
-    <div id="terminal-out">
-        <div class="log-entry">> Artemis Core standing by for deployment instructions...</div>
+<div id="history-ledger">
+    <div class="ledger-title">ABYSSAL_LEDGER</div>
+    <div id="ledger-content">
+        <div class="ledger-item"><span class="ledger-time">15:16:17</span><br><span class="ledger-tag">SYSTEM</span>: Ghost-Core Initialized.</div>
     </div>
 </div>
 
@@ -72,7 +73,7 @@
 
 <div id="command-base">
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Type 'deploy' to initiate Render build...">
+        <input type="text" id="cmd-input" placeholder="Initiate build, generate visual, or translate...">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
@@ -80,13 +81,20 @@
 <script>
     const synth = window.speechSynthesis;
 
-    function log(msg, type = "info") {
+    function addToLedger(tag, msg) {
+        const content = document.getElementById('ledger-content');
+        const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+        const item = document.createElement('div');
+        item.className = 'ledger-item';
+        item.innerHTML = `<span class="ledger-time">${time}</span><br><span class="ledger-tag">${tag}</span>: ${msg}`;
+        content.prepend(item);
+    }
+
+    function log(msg) {
         const term = document.getElementById('terminal-out');
         const div = document.createElement('div');
         div.className = 'log-entry';
-        let prefix = type === "success" ? "<span class='status-up'>[OK]</span>" : 
-                     type === "deploy" ? "<span class='status-deploy'>[BUILD]</span>" : ">";
-        div.innerHTML = `${prefix} ${msg}`;
+        div.innerHTML = `> ${msg}`;
         term.appendChild(div);
         term.scrollTop = term.scrollHeight;
     }
@@ -101,55 +109,42 @@
 
         if (query.includes("deploy")) {
             simulateDeploy();
+        } else if (query.includes("image") || query.includes("generate")) {
+            log("Generating visual artifact...");
+            addToLedger("VISUAL", "Image Synthesis Generated.");
+            speak("Manifesting visual echo.");
         } else {
-            log(`Instruction received: ${query}`);
-            speak(`Acknowledged. Awaiting deployment authorization.`);
+            log(`Processing: ${query}`);
+            addToLedger("QUERY", query);
         }
     }
 
     function simulateDeploy() {
         const barContainer = document.getElementById('build-bar-container');
         const barFill = document.getElementById('build-bar-fill');
-        const statusTag = document.getElementById('build-status');
-        const frame = document.getElementById('response-frame');
-
-        frame.classList.add('active');
+        
+        document.getElementById('response-frame').classList.add('active');
         barContainer.style.display = 'block';
         barFill.style.width = '0%';
-        statusTag.innerText = 'IN_PROGRESS';
         
-        log("Triggering Render.com Blueprint sync...", "deploy");
-        speak("Initiating build sequence. Synchronizing logic strings with Render infrastructure.");
+        log("RENDER_SYNC: Initiating Build...");
+        speak("Build sequence started.");
 
-        const buildSteps = [
-            { p: 15, msg: "Cloning repository 'artemis-sentient-core'..." },
-            { p: 35, msg: "Installing dependencies (npm install)..." },
-            { p: 60, msg: "Compiling neural assets and visual shaders..." },
-            { p: 85, msg: "Uploading build artifacts to global edge..." },
-            { p: 100, msg: "Deployment successful. Service is LIVE." }
-        ];
-
-        buildSteps.forEach((step, index) => {
-            setTimeout(() => {
-                barFill.style.width = `${step.p}%`;
-                log(step.msg, step.p === 100 ? "success" : "info");
-                
-                if(step.p === 100) {
-                    statusTag.innerText = 'STABLE';
-                    document.getElementById('reef-bg').style.filter = "brightness(0.7) saturate(1.5)";
-                    setTimeout(() => {
-                        document.getElementById('reef-bg').style.filter = "brightness(0.5) saturate(1)";
-                        barContainer.style.display = 'none';
-                    }, 3000);
-                }
-            }, (index + 1) * 1200);
-        });
+        setTimeout(() => { barFill.style.width = '40%'; log("Cloning repository..."); }, 1000);
+        setTimeout(() => { barFill.style.width = '75%'; log("Compiling shaders..."); }, 2500);
+        setTimeout(() => { 
+            barFill.style.width = '100%'; 
+            log("LIVE: Render deployment successful."); 
+            addToLedger("DEPLOY", "Service 'artemis-core' LIVE on Render.com");
+            speak("Deployment complete.");
+            setTimeout(() => barContainer.style.display = 'none', 2000);
+        }, 4000);
     }
 
     function speak(text) {
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.pitch = 0.95;
+        u.pitch = 0.9;
         synth.speak(u);
     }
 </script>
