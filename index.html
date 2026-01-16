@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | REEF STATION</title>
+    <title>ARTEMIS | ABYSSAL REEF</title>
     <style>
         :root {
             --bio-high: #00f2ff;
@@ -14,51 +14,44 @@
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
         
-        #reef-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1; filter: brightness(0.5) contrast(1.2);
-        }
-
-        /* ARTEMIS SYMBIOTE */
-        #artemis-orb {
-            position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
-            width: 130px; height: 130px; border-radius: 50%;
-            background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%);
-            box-shadow: 0 0 60px var(--bio-high);
-            z-index: 5; animation: float 6s ease-in-out infinite;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px);
-            cursor: pointer;
-        }
-
-        @keyframes float { 0%, 100% { transform: translate(-50%, -55%); } 50% { transform: translate(-50%, -45%); } }
-
-        /* API NEXUS (THE SEPARATE WINDOW) */
-        #panel-api {
-            position: fixed; top: 30px; right: 20px; width: 280px;
-            background: var(--glass); border-top: 4px solid var(--magma);
-            padding: 15px; border-radius: 8px; display: none; z-index: 100;
-            backdrop-filter: blur(12px); box-shadow: -10px 10px 30px rgba(0,0,0,0.6);
-        }
-
-        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); text-transform: uppercase; }
-
-        /* ICON DOCK */
-        #icon-dock { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,10,20,0.7); padding: 12px 25px; border-radius: 40px; border: 1px solid var(--bio-high); }
-        .app-icon { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--bio-high); background: rgba(0,26,51,0.9); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .app-icon:hover { box-shadow: 0 0 15px var(--bio-high); }
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.4) saturate(1.2); }
         
-        /* MIDAS SUMMON BUTTON */
-        .midas-summon { border-color: var(--gold) !important; color: var(--gold); font-weight: bold; }
-        .midas-summon:hover { box-shadow: 0 0 20px var(--gold) !important; }
+        canvas#particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-        /* MAIN UI LAYER */
+        /* ARTEMIS SYMBIOTE STYLING */
+        #artemis-container { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; }
+
+        #artemis-orb {
+            width: 130px; height: 130px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 242, 255, 0.4) 0%, transparent 80%);
+            box-shadow: 0 0 60px rgba(0, 242, 255, 0.3), inset 0 0 20px var(--bio-high);
+            animation: breathe 8s ease-in-out infinite;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+            cursor: pointer; transition: 0.5s;
+        }
+
+        #council-summoner {
+            margin-top: 20px; width: 45px; height: 45px; border-radius: 50%;
+            border: 1px solid var(--bio-high); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; background: rgba(0, 26, 51, 0.6); transition: 0.3s;
+            box-shadow: 0 0 15px var(--bio-low); font-size: 1.2rem;
+        }
+        #council-summoner:hover { box-shadow: 0 0 25px var(--bio-high); transform: scale(1.1); }
+
+        @keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
+
+        /* PANELS */
+        .widget-panel {
+            position: fixed; bottom: 220px; width: 90%; max-width: 500px; height: 350px;
+            background: var(--glass); border: 1px solid var(--bio-high);
+            backdrop-filter: blur(15px); padding: 15px; display: none; z-index: 100;
+        }
+
         #ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 20px; }
         
-        #forge-container { width: 95%; max-width: 600px; background: rgba(0,0,0,0.9); border: 1px solid var(--bio-high); padding: 15px; border-radius: 12px; }
-        
-        .trigger-btn { width: 100%; background: transparent; border: 1px solid var(--bio-high); color: var(--bio-high); padding: 8px; font-size: 0.6rem; cursor: pointer; margin-top: 10px; transition: 0.2s; }
-        .trigger-btn:hover { background: var(--bio-high); color: #000; }
+        #icon-dock { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,10,20,0.7); padding: 12px 25px; border-radius: 40px; border: 1px solid var(--bio-high); }
+        .app-icon { width: 50px; height: 50px; border-radius: 12px; border: 1px solid var(--bio-high); background: rgba(0,26,51,0.9); display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -66,108 +59,117 @@
 <video autoplay muted loop playsinline id="reef-bg">
     <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-coral-reef-with-many-fishes-4152-large.mp4" type="video/mp4">
 </video>
+<canvas id="particleCanvas"></canvas>
 
-<div id="artemis-orb" onclick="artemisTrigger()">
-    <div style="font-size: 0.5rem; color: white;">ARTEMIS</div>
-    <div id="status-dot" style="width:6px; height:6px; background:var(--bio-high); border-radius:50%; margin-top:5px; box-shadow:0 0 10px var(--bio-high);"></div>
+<div id="artemis-container">
+    <div id="artemis-orb" onclick="artemisPulse()">
+        <div style="font-size: 0.5rem; letter-spacing: 2px; text-align: center;">ARTEMIS<br><span id="pulse-text" style="opacity:0.5;">AWAITING</span></div>
+    </div>
+    <div id="council-summoner" onclick="togglePanel('panel-council')" title="Summon Council">🏛️</div>
 </div>
 
 <div id="ui-layer">
     <div id="gate-zone" style="text-align:center; margin-bottom: 30vh;">
-        <div style="font-size:0.7rem; color:var(--bio-high); letter-spacing:8px; margin-bottom:15px;">SECURE LINK REQUIRED</div>
-        <input type="text" id="gate-input" style="background:transparent; border:none; border-bottom:2px solid var(--bio-high); color:white; text-align:center; outline:none; font-size:1.5rem;" placeholder="...">
+        <input type="text" id="gate-input" style="background:transparent; border:none; border-bottom:2px solid var(--bio-high); color:white; text-align:center; outline:none; font-size:1.5rem; letter-spacing:10px;" placeholder="[...]">
     </div>
 
-    <div id="panel-api">
-        <div class="widget-label">⚡ API_NEXUS / CORE_SYSTEM</div>
-        <div style="font-size: 0.6rem; line-height: 1.8;">
-            TRANSMIT.JS: <span style="color:var(--bio-high)">ACTIVE</span><br>
-            FORGE.JS: <span style="color:var(--gold)">BYPASS_MODE</span><br>
-            GITHUB_LINK: <span style="color:var(--bio-high)">CONNECTED</span>
+    <div id="panel-council" class="widget-panel">
+        <div style="color:var(--gold); font-size:0.6rem; border-bottom:1px solid var(--bio-high); padding-bottom:5px; margin-bottom:10px;">🏛️ THE COUNCIL OF THREE</div>
+        <div id="council-output" style="font-size:0.7rem; line-height:1.6;">
+            > GEMINI: <span style="color:var(--bio-high)">SCANNING_REEF</span><br>
+            > COPILOT: <span style="color:var(--bio-high)">SYNCING_BLUEPRINTS</span><br>
+            > GROK: <span style="color:var(--bio-high)">ANALYZING_FLUX</span>
         </div>
-        <button class="trigger-btn" onclick="artemisTrigger()">MANUAL SYSTEM PULSE</button>
-        <button class="trigger-btn" style="border-color:var(--magma); color:var(--magma); margin-top:5px;" onclick="togglePanel('panel-api')">CLOSE NEXUS</button>
     </div>
 
     <div id="main-station" style="display:none; width: 100%; align-items: center; flex-direction: column;">
         <div id="icon-dock">
-            <div class="app-icon" onclick="togglePanel('panel-api')">⚡</div>
             <div class="app-icon" onclick="togglePanel('panel-logs')">📂</div>
-            <div class="app-icon midas-summon" onclick="summonMidas()">📀</div>
+            <div class="app-icon" style="border-color:var(--gold); color:var(--gold);" onclick="summonMidas()">📀</div>
+            <div class="app-icon" onclick="togglePanel('panel-api')">⚡</div>
         </div>
-
-        <div id="forge-container">
-            <div style="font-size: 0.5rem; color: var(--gold); margin-bottom: 5px;">STATION_COMMAND_INPUT</div>
-            <textarea id="cmd-input" placeholder="Awaiting architect instructions..." style="width:100%; height:40px; background:transparent; border:none; color:#fff; font-family:inherit; outline:none; resize:none;"></textarea>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <span id="system-status-msg" style="font-size:0.5rem; color:var(--bio-high)">REEF_STABLE: 100%</span>
-                <button onclick="invokeCouncil()" style="background:var(--bio-high); border:none; padding:6px 18px; font-weight:bold; cursor:pointer; font-family:inherit;">TRANSMIT</button>
-            </div>
+        <div id="forge-placeholder" style="width:95%; max-width:600px; background:rgba(0,0,0,0.8); border:1px solid var(--bio-high); padding:15px; border-radius:12px; font-size:0.7rem; color:#666;">
+            [ FORGE ENGINE OFFLINE - STANDBY ]
         </div>
     </div>
 </div>
 
 <script>
-// --- CORE FUNCTIONS ---
+// --- BIOPARTICLE ENGINE ---
+const pCanvas = document.getElementById('particleCanvas');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+
+function resize() { pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight; }
+window.onresize = resize; resize();
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * pCanvas.width;
+        this.y = Math.random() * pCanvas.height;
+        this.size = Math.random() * 2;
+        this.speedY = Math.random() * 0.5 - 0.25;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.alpha = Math.random() * 0.5;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x > pCanvas.width) this.x = 0;
+        if (this.y > pCanvas.height) this.y = 0;
+    }
+    draw() {
+        pCtx.fillStyle = `rgba(0, 242, 255, ${this.alpha})`;
+        pCtx.beginPath();
+        pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        pCtx.fill();
+    }
+}
+
+for(let i=0; i<100; i++) particles.push(new Particle());
+
+function animate() {
+    pCtx.clearRect(0,0,pCanvas.width, pCanvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+}
+animate();
+
+// --- LOGIC ---
+function artemisPulse() {
+    const orb = document.getElementById('artemis-orb');
+    const text = document.getElementById('pulse-text');
+    orb.style.boxShadow = "0 0 100px var(--bio-high)";
+    text.innerText = "ACTIVE";
+    speak("I am watching the currents, Architect.");
+    setTimeout(() => { 
+        orb.style.boxShadow = "0 0 60px rgba(0, 242, 255, 0.3)"; 
+        text.innerText = "OBSERVING";
+    }, 2000);
+}
 
 function togglePanel(id) {
     const p = document.getElementById(id);
-    p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+    const isShowing = p.style.display === 'block';
+    document.querySelectorAll('.widget-panel').forEach(w => w.style.display = 'none');
+    p.style.display = isShowing ? 'none' : 'block';
+    if(!isShowing && id === 'panel-council') speak("The Council is convened.");
 }
 
-// ARTEMIS TRIGGER (SYSTEM PULSE)
-function artemisTrigger() {
-    const dot = document.getElementById('status-dot');
-    const msg = document.getElementById('system-status-msg');
-    
-    // Visual Pulse
-    dot.style.background = '#fff';
-    dot.style.boxShadow = '0 0 30px #fff';
-    msg.innerText = "SYSTEM_PULSE_SENT";
-    
-    speak("System pulse initiated. Synchronizing repository.");
-    
-    setTimeout(() => {
-        dot.style.background = 'var(--bio-high)';
-        dot.style.boxShadow = '0 0 10px var(--bio-high)';
-        msg.innerText = "REEF_STABLE: 100%";
-    }, 1000);
+function speak(t) {
+    const u = new SpeechSynthesisUtterance(t);
+    u.pitch = 0.8; u.rate = 0.9; window.speechSynthesis.speak(u);
 }
 
-// SUMMON MIDAS (GITHUB INTEGRATION)
-function summonMidas() {
-    speak("Summoning Midas from the repository.");
-    const msg = document.getElementById('system-status-msg');
-    msg.innerText = "MIDAS_AWAKENING...";
-    msg.style.color = "var(--gold)";
-    
-    // Simulate GitHub script execution
-    setTimeout(() => {
-        alert("📀 MIDAS SYSTEM: Gold Standard applied to repository logs.");
-        msg.innerText = "MIDAS_ACTIVE";
-    }, 1500);
-}
-
-// --- SECURITY ---
 document.getElementById('gate-input').addEventListener('input', (e) => {
     if (e.target.value.toLowerCase() === 'ant') {
         document.getElementById('gate-zone').style.display = 'none';
         document.getElementById('main-station').style.display = 'flex';
-        speak("Welcome home, Architect.");
+        speak("Access recognized. The reef is synchronized.");
     }
 });
 
-function speak(text) {
-    const u = new SpeechSynthesisUtterance(text);
-    u.pitch = 0.85;
-    u.rate = 1;
-    window.speechSynthesis.speak(u);
-}
-
-function invokeCouncil() {
-    speak("Transmitting instructions to the Council.");
-    artemisTrigger();
-}
+function summonMidas() { speak("Midas has been summoned to the golden pivot."); }
 </script>
 </body>
 </html>
