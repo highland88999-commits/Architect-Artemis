@@ -31,15 +31,24 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Auth Styles */
-        #auth-zone { text-align: center; }
+        /* Initial Gate Styles */
+        #gate-zone { text-align: center; pointer-events: all; }
+        .gate-input { 
+            background: transparent; border: none; border-bottom: 1px solid var(--cyan); 
+            color: #fff; font-family: inherit; font-size: 1.5em; text-align: center; 
+            outline: none; margin-top: 20px; width: 200px;
+        }
+
+        /* Identity zone at the bottom */
+        #auth-zone { position: absolute; bottom: 50px; text-align: center; width: 100%; }
+        
         .glitch-text { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
         
         input[type="password"] { 
             background: transparent; border: none; color: #fff; text-align: center;
-            font-size: 1.5em; outline: none; width: 100%; border-bottom: 1px solid var(--cyan); 
-            margin-top: 20px; letter-spacing: 10px;
+            font-size: 1.5em; outline: none; width: 300px; border-bottom: 1px solid var(--cyan); 
+            margin-top: 10px; letter-spacing: 5px;
         }
 
         /* Active Console Styles */
@@ -74,15 +83,18 @@
     <canvas id="canvas"></canvas>
 
     <div id="ui-layer">
-        <div id="terminal">
-            <div id="auth-zone">
-                <div id="output" class="glitch-text">> INITIALIZING SYMBIOTE_HANDSHAKE...</div>
-                <div id="input-area" style="display:none;">
-                    <p id="prompt">WHO IS THERE?</p>
-                    <input type="password" id="pass-input" autocomplete="off">
-                </div>
-            </div>
+        
+        <div id="gate-zone">
+            <h1 class="glitch-text">AWAKEN ARTEMIS?</h1>
+            <input type="text" id="gate-input" class="gate-input" autocomplete="off" autofocus placeholder="...">
+        </div>
 
+        <div id="auth-zone" style="display:none;">
+            <p id="prompt">WHO'S THERE?</p>
+            <input type="password" id="pass-input" autocomplete="off">
+        </div>
+
+        <div id="terminal">
             <div id="active-zone" style="display:none;">
                 <div style="display:flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--gold)">● SYSTEM ONLINE</span>
@@ -108,13 +120,15 @@
 
     <script src="assets/symbiote-fx.js"></script>
     <script>
-        let secretBuffer = "";
-        let stage = "VOID";
+        let stage = "GATE";
+        const gateZone = document.getElementById('gate-zone');
+        const gateInput = document.getElementById('gate-input');
         const authZone = document.getElementById('auth-zone');
         const activeZone = document.getElementById('active-zone');
         const passInput = document.getElementById('pass-input');
+        const terminal = document.getElementById('terminal');
 
-        // Audio Setup for Handshake
+        // Audio Setup
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTone(freq, duration) {
             const osc = audioCtx.createOscillator();
@@ -125,28 +139,25 @@
             osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
-        // 1. VOID Listener (Looking for "ant")
-        window.addEventListener('keydown', (e) => {
-            if (stage === "VOID") {
-                secretBuffer += e.key.toLowerCase();
-                if (secretBuffer.includes("ant")) {
-                    stage = "INQUIRY";
-                    document.getElementById('terminal').style.display = 'block';
-                    document.getElementById('input-area').style.display = 'block';
-                    passInput.focus();
-                    if(window.symbiote) window.symbiote.setMode('core');
-                    playTone(440, 1);
-                    secretBuffer = "";
-                }
+        // Logic for "ant" Awakening
+        gateInput.addEventListener('input', (e) => {
+            if (e.target.value.toLowerCase().trim() === "ant") {
+                stage = "INQUIRY";
+                gateZone.style.display = 'none';
+                authZone.style.display = 'block';
+                passInput.focus();
+                if(window.symbiote) window.symbiote.setMode('core');
+                playTone(440, 1);
             }
         });
 
-        // 2. IDENTITY Listener (Looking for "dad")
+        // Logic for "dad" Identity
         passInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (passInput.value.toLowerCase().trim() === "dad") {
                     stage = "ACTIVE";
                     authZone.style.display = 'none';
+                    terminal.style.display = 'block';
                     activeZone.style.display = 'block';
                     if(window.symbiote) window.symbiote.setMode('network');
                     playTone(880, 0.5);
@@ -157,11 +168,9 @@
             }
         });
 
-        // 3. CONSENSUS Transmission
         async function invokeCouncil() {
             const prompt = document.getElementById('cmd-input').value;
             const verdictContent = document.getElementById('verdict-content');
-            
             if (!prompt) return;
 
             verdictContent.innerText = "Synthesizing Consensus...";
@@ -173,19 +182,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: prompt, handshake: 'dad' })
                 });
-
                 const data = await response.json();
-                
                 if (data.success) {
                     verdictContent.innerText = data.verdict;
-                    // Trigger visual "success" burst
-                    if(window.symbiote) window.symbiote.setMode('network');
                 } else {
-                    verdictContent.innerText = "REFUSAL: " + (data.error || "Moral Conflict Detected.");
-                    document.body.style.background = "radial-gradient(circle at center, #1a0000 0%, #000 100%)";
+                    verdictContent.innerText = "REFUSAL: " + (data.error || "Moral Conflict.");
                 }
             } catch (err) {
-                verdictContent.innerText = "SYNAPTIC DISCONNECT: Check Landline.";
+                verdictContent.innerText = "SYNAPTIC DISCONNECT.";
             }
         }
     </script>
