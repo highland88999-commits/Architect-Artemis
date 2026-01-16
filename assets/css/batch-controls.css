@@ -1,0 +1,40 @@
+/* assets/css/batch-controls.css */
+
+.batch-start-btn {
+    background: linear-gradient(145deg, #e6e6e6, #ffffff);
+    color: #1a1a1a;
+    border: 1px solid #b3b3b3;
+    padding: 10px 25px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.batch-start-btn:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), inset 0 0 10px #ffffff;
+    transform: scale(1.05);
+    color: #000;
+}
+
+/* The Silver Pulse */
+.batch-start-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+    animation: silver-glow 4s infinite linear;
+    pointer-events: none;
+}
+
+@keyframes silver-glow {
+    0% { transform: translate(-30%, -30%) rotate(0deg); }
+    100% { transform: translate(-30%, -30%) rotate(360deg); }
+}
