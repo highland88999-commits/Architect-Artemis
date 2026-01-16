@@ -9,73 +9,45 @@
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 15, 25, 0.85);
+            --glass: rgba(0, 15, 25, 0.9);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
-        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.4); }
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.35); }
         
-        /* THE CELESTIAL TIER: ARTEMIS & THE COUNCIL */
+        /* HEADER & COUNCIL */
         #station-header { position: fixed; top: 5%; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        #artemis-orb { width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, var(--bio-high) 0%, transparent 80%); box-shadow: 0 0 30px var(--bio-high); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; animation: breathe 8s infinite; cursor: pointer; }
+        #council-frames { display: flex; gap: 15px; margin-top: 15px; }
+        .council-member { width: 80px; height: 50px; background: var(--glass); border: 1px solid var(--bio-high); border-radius: 5px; font-size: 0.45rem; padding: 5px; text-align: center; display: flex; flex-direction: column; justify-content: center; transition: 0.3s; }
+        .active-query { box-shadow: 0 0 15px var(--bio-high); border-color: #fff; transform: scale(1.05); }
+
+        /* REPORT READER PANEL */
+        #report-viewer {
+            position: fixed; right: -450px; top: 10%; width: 400px; height: 70%;
+            background: var(--glass); border: 1px solid var(--bio-high);
+            backdrop-filter: blur(20px); z-index: 300; transition: 0.5s;
+            padding: 20px; border-radius: 15px 0 0 15px; display: flex; flex-direction: column;
+        }
+        #report-viewer.open { right: 0; }
+        #report-content { flex: 1; font-size: 0.85rem; line-height: 1.6; overflow-y: auto; color: #e0e0e0; margin: 15px 0; white-space: pre-wrap; }
         
-        #artemis-orb {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: radial-gradient(circle, var(--bio-high) 0%, transparent 80%);
-            box-shadow: 0 0 40px var(--bio-high); border: 1px solid rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center; font-size: 0.6rem;
-            animation: breathe 8s infinite; cursor: pointer;
-        }
+        .action-bar { display: flex; justify-content: space-between; border-top: 1px solid rgba(0,242,255,0.2); padding-top: 10px; }
+        .reader-btn { background: transparent; border: 1px solid var(--bio-high); color: var(--bio-high); padding: 5px 10px; font-size: 0.7rem; cursor: pointer; }
+        .reader-btn.gold { border-color: var(--gold); color: var(--gold); }
 
-        #council-frames {
-            display: flex; gap: 15px; margin-top: 20px; opacity: 0.9;
-        }
-        .council-member {
-            width: 90px; height: 60px; background: var(--glass); border: 1px solid var(--bio-high);
-            border-radius: 5px; font-size: 0.5rem; padding: 5px; text-align: center;
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        .active-query { box-shadow: 0 0 15px var(--bio-high); border-color: #fff; }
+        /* COMMAND & FILES */
+        #command-center { position: fixed; bottom: 20px; width: 95%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #file-system-preview { background: var(--glass); border: 1px solid var(--bio-high); border-bottom: none; padding: 10px; border-radius: 10px 10px 0 0; font-size: 0.65rem; max-height: 150px; overflow-y: auto; }
+        .file-entry { padding: 8px; border-bottom: 1px solid rgba(0,242,255,0.1); cursor: pointer; transition: 0.2s; }
+        .file-entry:hover { background: rgba(0,242,255,0.1); color: var(--gold); }
+        .new-tag { font-size: 0.5rem; background: var(--gold); color: black; padding: 1px 4px; border-radius: 3px; margin-left: 10px; }
 
-        /* MIDAS CHARACTER & STRING */
-        #midas-avatar { 
-            position: fixed; top: 40%; right: -150px; width: 80px; transition: 0.8s; z-index: 200;
-            filter: drop-shadow(0 0 15px var(--gold)); cursor: pointer;
-        }
-        #midas-avatar.active { right: 50px; }
-        #help-string {
-            position: fixed; width: 2px; background: var(--gold); height: 0;
-            top: 0; left: 50%; transition: 1s; z-index: 150; box-shadow: 0 0 10px var(--gold);
-        }
-
-        /* THE ABYSSAL TIER: COMMAND & FILES */
-        #command-center {
-            position: fixed; bottom: 20px; width: 95%; max-width: 800px; left: 50%; transform: translateX(-50%);
-            z-index: 100;
-        }
-
-        #file-system-preview {
-            background: var(--glass); border: 1px solid var(--bio-high); border-bottom: none;
-            padding: 10px; border-radius: 10px 10px 0 0; font-size: 0.65rem;
-            max-height: 120px; overflow-y: auto; display: none;
-        }
-        .file-entry { color: var(--bio-high); margin-bottom: 5px; cursor: pointer; }
-        .file-entry.new { color: var(--gold); animation: flash 2s infinite; }
-
-        #prompt-wrapper {
-            background: rgba(0,0,0,0.9); border: 2px solid var(--bio-high);
-            display: flex; padding: 10px; border-radius: 0 0 10px 10px;
-        }
-        #cmd-input {
-            flex: 1; background: transparent; border: none; color: white;
-            font-family: inherit; outline: none; padding: 5px;
-        }
-        #send-btn {
-            background: var(--bio-high); border: none; color: black;
-            font-weight: bold; padding: 5px 15px; cursor: pointer; margin-left: 10px;
-        }
+        #prompt-wrapper { background: rgba(0,0,0,0.9); border: 2px solid var(--bio-high); display: flex; padding: 10px; border-radius: 0 0 10px 10px; }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; }
+        #send-btn { background: var(--bio-high); border: none; color: black; font-weight: bold; padding: 5px 15px; cursor: pointer; }
 
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -84,103 +56,113 @@
     <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-coral-reef-with-many-fishes-4152-large.mp4" type="video/mp4">
 </video>
 
-<div id="help-string"></div>
-
 <div id="station-header">
-    <div id="artemis-orb" onclick="toggleFiles()">ARTEMIS</div>
+    <div id="artemis-orb">ARTEMIS</div>
     <div id="council-frames">
-        <div class="council-member" id="frame-gemini">GEMINI<br><span style="color:var(--bio-high)">PRIME</span></div>
-        <div class="council-member" id="frame-copilot">COPILOT<br><span style="color:var(--bio-high)">STOCKED</span></div>
-        <div class="council-member" id="frame-grok">GROK<br><span style="color:var(--bio-high)">FLUX</span></div>
+        <div class="council-member" id="frame-gemini">GEMINI PRIME</div>
+        <div class="council-member" id="frame-copilot">COPILOT</div>
+        <div class="council-member" id="frame-grok">GROK</div>
     </div>
 </div>
 
-<img src="https://img.icons8.com/fluency/96/gold-bars.png" id="midas-avatar" onclick="midasHelp()" alt="Midas">
+<div id="report-viewer">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="report-title" style="color:var(--gold); font-weight:bold; font-size:0.7rem;">REPORT_VIEWER</span>
+        <span onclick="closeViewer()" style="cursor:pointer; color:var(--magma);">[X]</span>
+    </div>
+    <div id="report-content">Select a file to read the record...</div>
+    <div class="action-bar">
+        <button class="reader-btn" onclick="speakContent()">READ ALOUD</button>
+        <button class="reader-btn gold" onclick="downloadReport()">DOWNLOAD (.MD)</button>
+    </div>
+</div>
 
 <div id="command-center">
     <div id="file-system-preview">
-        <div style="border-bottom: 1px solid var(--bio-high); margin-bottom: 8px; color: var(--gold);">RECENT_REPORTS_&_IDEAS</div>
+        <div style="color:var(--bio-high); margin-bottom:10px; font-size:0.5rem; letter-spacing:2px;">STATION_RECORDS</div>
         <div id="file-list">
-            <div class="file-entry">📄 Stewardship_Base_Logic.md</div>
-            <div class="file-entry">📄 Reef_Energy_Flow.json</div>
-        </div>
+            </div>
     </div>
     <div id="prompt-wrapper">
-        <input type="text" id="cmd-input" placeholder="Query Gemini Prime via Artemis...">
+        <input type="text" id="cmd-input" placeholder="Initiate query via Gemini Prime...">
         <button id="send-btn" onclick="runQuery()">SEND</button>
     </div>
 </div>
 
 <script>
-    // --- FILE SYSTEM MANAGEMENT ---
-    const fileList = document.getElementById('file-list');
-    
-    function addGeneratedFile(name) {
-        const entry = document.createElement('div');
-        entry.className = "file-entry new";
-        entry.innerText = "📄 " + name + " (GENERATED)";
-        fileList.prepend(entry);
-        document.getElementById('file-system-preview').style.display = 'block';
+    // Storage for generated report data
+    let currentRecord = { title: "", body: "" };
+    const mockFiles = [
+        { id: 1, name: "Stewardship_Initial_Scan.md", content: "Artemis Report: The reef is currently operating at 94% biological efficiency. Recommended action: Synchronize GitHub bridges to ensure permanent log integrity." }
+    ];
+
+    function renderFileList() {
+        const list = document.getElementById('file-list');
+        list.innerHTML = mockFiles.map(f => `
+            <div class="file-entry" onclick="openReport(${f.id})">
+                📄 ${f.name} ${f.isNew ? '<span class="new-tag">NEW</span>' : ''}
+            </div>
+        `).join('');
     }
 
-    function toggleFiles() {
-        const fs = document.getElementById('file-system-preview');
-        fs.style.display = (fs.style.display === 'none' || fs.style.display === '') ? 'block' : 'none';
+    function openReport(id) {
+        const file = mockFiles.find(f => f.id === id);
+        if(!file) return;
+        currentRecord = { title: file.name, body: file.content };
+        
+        document.getElementById('report-title').innerText = file.name.toUpperCase();
+        document.getElementById('report-content').innerText = file.content;
+        document.getElementById('report-viewer').classList.add('open');
+        file.isNew = false;
+        renderFileList();
     }
 
-    // --- GEMINI PRIME QUERY LOGIC ---
+    function closeViewer() {
+        document.getElementById('report-viewer').classList.remove('open');
+    }
+
+    function downloadReport() {
+        if(!currentRecord.body) return;
+        const blob = new Blob([currentRecord.body], { type: 'text/markdown' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentRecord.title || "Artemis_Report.md";
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
     async function runQuery() {
         const input = document.getElementById('cmd-input');
         const query = input.value;
         if(!query) return;
 
-        // Visual Feedback
         document.getElementById('frame-gemini').classList.add('active-query');
-        speak("Consulting Gemini Prime.");
-        input.value = "Processing query...";
-
-        // Simulate Artemis generating a file based on query
+        input.value = "Consulting Gemini Prime...";
+        
+        // Simulating AI report generation
         setTimeout(() => {
-            const reportName = "Report_" + Math.floor(Math.random()*9000) + ".md";
-            addGeneratedFile(reportName);
+            const newFile = {
+                id: Date.now(),
+                name: `Report_${Math.floor(Math.random()*1000)}.md`,
+                content: `ARTEMIS ANALYSIS FOR: "${query}"\n\nGenerated by Gemini Prime.\n\nSummary: The analysis indicates a high probability of stewardship success if the current logic is maintained. Permanent record updated in GitHub repository.\n\nTimestamp: ${new Date().toLocaleString()}`,
+                isNew: true
+            };
+            mockFiles.unshift(newFile);
+            renderFileList();
             document.getElementById('frame-gemini').classList.remove('active-query');
             input.value = "";
-            speak("Gemini Prime has synthesized the report.");
-        }, 3000);
+            openReport(newFile.id);
+        }, 2000);
     }
 
-    // --- MIDAS HELP SYSTEM ---
-    function summonMidas() {
-        const midas = document.getElementById('midas-avatar');
-        midas.classList.add('active');
-        speak("Midas has entered the station.");
-    }
-
-    function midasHelp() {
-        const string = document.getElementById('help-string');
-        const query = prompt("Midas is listening. What are you looking for?");
-        
-        if(query) {
-            string.style.height = "100vh"; // The guiding string descends
-            speak("Midas is guiding you to " + query);
-            setTimeout(() => {
-                string.style.height = "0";
-                alert("Midas suggests checking System Files / Core for " + query);
-            }, 2000);
-        }
-    }
-
-    function speak(text) {
-        const u = new SpeechSynthesisUtterance(text);
+    function speakContent() {
+        const u = new SpeechSynthesisUtterance(currentRecord.body);
         u.pitch = 0.8;
         window.speechSynthesis.speak(u);
     }
 
-    // Global listener for special keys
-    document.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') runQuery();
-        if(e.altKey && e.key === 'm') summonMidas();
-    });
+    renderFileList();
 </script>
 </body>
 </html>
