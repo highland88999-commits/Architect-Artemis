@@ -3,132 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | OLYMPIAN HUB</title>
+    <title>ARTEMIS | ABYSSAL HUB</title>
     <style>
         :root {
             --bio-high: #00f2ff;
             --bio-low: #001a33;
-            --fire: #ff4500;
+            --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 8, 15, 0.85);
+            --glass: rgba(0, 15, 25, 0.85);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
         
-        /* THE FOCAL POINT: VOLCANO FRACTAL CANVAS */
-        canvas#fractalCanvas { position: fixed; top: 0; left: 0; z-index: 0; pointer-events: none; filter: blur(1px); }
+        /* THE ABYSS BACKGROUND */
+        #abyss-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1; filter: brightness(0.7) saturate(1.2);
+        }
+
+        /* FISH & BUBBLE OVERLAY */
+        canvas#creatureCanvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
         #ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 20px; }
 
-        /* SECURITY GATE */
+        /* SECURITY (Handshake remains the same) */
         #gate-zone, #auth-zone { position: fixed; top: 40%; text-align: center; width: 100%; z-index: 100; }
         .handshake-input { background: transparent; border: none; border-bottom: 2px solid var(--bio-high); color: var(--bio-high); text-align: center; font-size: 1.8rem; outline: none; width: 250px; text-transform: uppercase; letter-spacing: 5px; }
 
-        /* COLLAPSIBLE WIDGET PANELS */
+        /* THE MOBILE-WIDGET DOCK (Labelled Icons) */
         .widget-panel {
-            position: fixed; bottom: 220px; width: 90%; max-width: 500px;
+            position: fixed; bottom: 220px; width: 90%; max-width: 500px; height: 350px;
             background: var(--glass); border: 1px solid var(--bio-high);
             backdrop-filter: blur(15px); padding: 15px; display: none;
-            box-shadow: 0 0 30px var(--bio-low);
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.2); overflow-y: auto;
+            border-radius: 15px;
         }
-        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); }
+        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 5px; position: sticky; top: 0; background: var(--glass); }
 
-        /* SMARTPHONE STYLE ICON DOCK */
-        #icon-dock { 
-            display: flex; gap: 15px; margin-bottom: 15px; 
-            background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 30px;
-            border: 1px solid rgba(0,242,255,0.1);
+        /* ICON DOCK STYLING */
+        #icon-dock { display: flex; gap: 20px; margin-bottom: 15px; background: rgba(0,20,40,0.6); padding: 12px 25px; border-radius: 40px; border: 1px solid var(--bio-high); }
+        .app-icon { 
+            width: 55px; height: 55px; border-radius: 15px; border: 1px solid var(--bio-high); 
+            background: var(--bio-low); display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px var(--bio-low);
         }
-        .app-icon {
-            width: 50px; height: 50px; border-radius: 12px;
-            border: 1px solid var(--bio-high); background: var(--bio-low);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; cursor: pointer; transition: 0.3s;
-        }
-        .app-icon:active { transform: scale(0.9); border-color: var(--fire); }
+        .app-icon span { font-size: 0.5rem; margin-top: 4px; color: var(--bio-high); }
+        .app-icon:active { transform: scale(0.9); border-color: var(--magma); }
 
-        /* THE FORGE (TEXT SECTION) */
-        #forge-container {
-            width: 95%; max-width: 600px; background: rgba(0,0,0,0.8);
-            border: 1px solid var(--bio-high); padding: 10px;
-        }
-        textarea { 
-            width: 100%; height: 50px; background: transparent; border: none; 
-            color: #fff; font-family: inherit; outline: none; resize: none; 
-        }
-        .action-row { display: flex; justify-content: space-between; margin-top: 5px; }
-        .mini-btn { font-size: 0.6rem; padding: 5px 10px; border: 1px solid var(--bio-high); background: transparent; color: var(--bio-high); cursor: pointer; }
+        /* FORGE (The Command Bar) */
+        #forge-container { width: 95%; max-width: 600px; background: rgba(0,0,0,0.85); border: 1px solid var(--bio-high); padding: 15px; border-radius: 10px; }
+        textarea { width: 100%; height: 50px; background: transparent; border: none; color: #fff; font-family: inherit; outline: none; resize: none; }
+        .mini-btn { font-size: 0.6rem; padding: 6px 12px; border: 1px solid var(--bio-high); background: transparent; color: var(--bio-high); cursor: pointer; border-radius: 4px; }
         .mini-btn.gold { border-color: var(--gold); color: var(--gold); }
-
-        /* COUNCIL GRID INSIDE PANEL */
-        .council-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .model-box { border: 1px solid rgba(0,242,255,0.2); padding: 5px; height: 80px; font-size: 0.65rem; overflow: hidden; }
-        .active-speaker { border-color: var(--bio-high); box-shadow: inset 0 0 10px var(--bio-high); }
     </style>
 </head>
 <body>
 
-<canvas id="fractalCanvas"></canvas>
+<video autoplay muted loop playsinline id="abyss-bg">
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-volcano-eruption-4286-large.mp4" type="video/mp4">
+</video>
+
+<canvas id="creatureCanvas"></canvas>
 
 <div id="ui-layer">
     <div id="gate-zone">
-        <div style="font-size: 0.7rem; letter-spacing: 5px; margin-bottom: 10px;">AWAKEN ARTEMIS?</div>
+        <div style="font-size: 0.7rem; letter-spacing: 5px; margin-bottom: 10px; color: var(--bio-high);">AWAKEN ARTEMIS?</div>
         <input type="text" id="gate-input" class="handshake-input" placeholder="..." autocomplete="off" autofocus>
     </div>
 
     <div id="auth-zone" style="display:none;">
-        <div style="font-size: 0.7rem; color: var(--gold); letter-spacing: 5px; margin-bottom: 10px;">ARCHITECT VERIFICATION</div>
+        <div style="font-size: 0.7rem; color: var(--gold); letter-spacing: 5px; margin-bottom: 10px;">WHO IS THERE?</div>
         <input type="password" id="pass-input" class="handshake-input" placeholder="PASSKEY" autocomplete="off">
+    </div>
+
+    <div id="panel-logs" class="widget-panel">
+        <div class="widget-label">📂 STEWARDSHIP EXPLORER</div>
+        <div id="explorer-nav" style="color:var(--fire); font-size: 0.6rem; cursor:pointer;"></div>
+        <div id="explorer-content"></div>
     </div>
 
     <div id="panel-council" class="widget-panel">
         <div class="widget-label">🏛️ THE COUNCIL</div>
-        <div class="council-grid">
-            <div class="model-box" id="box-gemini"><strong>GEMINI</strong><div class="content">...</div></div>
-            <div class="model-box" id="box-copilot"><strong>COPILOT</strong><div class="content">...</div></div>
-            <div class="model-box" id="box-grok"><strong>GROK</strong><div class="content">...</div></div>
-        </div>
-        <div id="verdict-content" style="font-size: 0.7rem; margin-top:10px; color:var(--bio-high)">Consensus: Standing by...</div>
-    </div>
-
-    <div id="panel-logs" class="widget-panel">
-        <div class="widget-label">📂 STEWARDSHIP LOGS</div>
-        <div style="font-size: 0.7rem; color: var(--gold);">/Artemis_Log/Stewardship/Active</div>
-        <div id="log-feed" style="font-size: 0.6rem; margin-top:10px; opacity:0.7;">> System Mirror Linked...</div>
-    </div>
-
-    <div id="panel-status" class="widget-panel">
-        <div class="widget-label">⚡ SYSTEM METRICS</div>
-        <div style="font-size: 0.7rem;">
-            ATMOSPHERE: <span style="color:var(--fire)">VOLCANIC</span><br>
-            OCTOKIT: <span style="color:var(--bio-high)">CONNECTED</span><br>
-            MODE: ARCHITECT_24
+        <div id="council-view">
+            <div style="color:var(--bio-high); font-size:0.7rem;">Consensus status: Idle</div>
         </div>
     </div>
 
-    <div id="main-station" style="display:none; width: 100%; align-items: center; flex-direction: column; display: flex;">
-        
+    <div id="main-station" style="display:none; width: 100%; align-items: center; flex-direction: column;">
         <div id="icon-dock">
-            <div class="app-icon" onclick="togglePanel('panel-council')">🏛️</div>
-            <div class="app-icon" onclick="togglePanel('panel-logs')">📂</div>
-            <div class="app-icon" onclick="togglePanel('panel-status')">⚡</div>
-            <div class="app-icon" onclick="triggerBatch()" style="border-color:var(--gold)">🌀</div>
+            <div class="app-icon" onclick="togglePanel('panel-council')">🏛️<span>COUNCIL</span></div>
+            <div class="app-icon" onclick="loadDirectory('')">📂<span>LOGS</span></div>
+            <div class="app-icon" onclick="togglePanel('panel-status')">⚡<span>SYSTEM</span></div>
         </div>
 
         <div id="forge-container">
-            <div style="font-size: 0.5rem; color: var(--gold); margin-bottom: 5px;">🔨 FORGE BLUEPRINT</div>
-            <input type="text" id="app-name-input" placeholder="APP_NAME" style="background:transparent; border:none; border-bottom:1px solid #333; color:var(--bio-high); font-size:0.7rem; width:100%; margin-bottom:5px; outline:none;">
-            <textarea id="cmd-input" placeholder="Enter logic or command..."></textarea>
-            <div class="action-bar">
-                <button class="mini-btn" onclick="invokeCouncil()">TRANSMIT</button>
-                <button class="mini-btn gold" onclick="forgeApp()">FORGE APP</button>
+            <input type="text" id="app-name-input" placeholder="PROJECT_IDENTITY" style="background:transparent; border:none; border-bottom:1px solid #222; color:var(--gold); font-size:0.7rem; width:100%; margin-bottom:10px; outline:none;">
+            <textarea id="cmd-input" placeholder="Blueprint logic or site URL..."></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.5rem; color:var(--bio-high)">● SYNCED_TO_GITHUB</span>
+                <div>
+                    <button class="mini-btn" onclick="invokeCouncil()">TRANSMIT</button>
+                    <button class="mini-btn gold" onclick="forgeApp()">FORGE</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// --- SECURITY HANDSHAKE ---
+// --- VIRTUAL FILESYSTEM (GITHUB MIRROR) ---
+const mockRepo = {
+    "": ["Artemis Log", "System Files", "index.html"],
+    "Artemis Log": ["Stewardship", "Golden_Pivots", "permanent_registry.json"],
+    "Artemis Log/Stewardship": ["Project_Abyss", "Reef_Analysis.md"],
+    "System Files": ["API", "Core", "Assets", "Config"]
+};
+
+let currentPath = "";
+
+function loadDirectory(path) {
+    currentPath = path;
+    const content = document.getElementById('explorer-content');
+    const nav = document.getElementById('explorer-nav');
+    togglePanel('panel-logs');
+    
+    nav.innerHTML = path !== "" ? "« BACK TO ROOT" : "";
+    nav.onclick = () => goBack();
+
+    const items = mockRepo[path] || [];
+    content.innerHTML = items.map(name => {
+        const fullPath = path ? `${path}/${name}` : name;
+        const isFolder = mockRepo[fullPath] !== undefined || !name.includes('.');
+        return `<div style="padding:10px; border-bottom:1px solid rgba(0,242,255,0.1); cursor:pointer; font-size:0.8rem;" onclick="handleFileClick('${fullPath}', ${isFolder})">${isFolder ? '📁' : '📄'} ${name}</div>`;
+    }).join('');
+}
+
+function handleFileClick(path, isFolder) {
+    if (isFolder) loadDirectory(path);
+    else alert("Opening " + path);
+}
+
+function goBack() { loadDirectory(""); }
+
+function togglePanel(id) {
+    const p = document.getElementById(id);
+    const visible = p.style.display === 'block';
+    document.querySelectorAll('.widget-panel').forEach(x => x.style.display = 'none');
+    p.style.display = visible ? 'none' : 'block';
+}
+
+// --- HANDSHAKE LOGIC ---
 document.getElementById('gate-input').addEventListener('input', (e) => {
     if (e.target.value.toLowerCase() === 'ant') {
         document.getElementById('gate-zone').style.display = 'none';
@@ -141,84 +165,56 @@ document.getElementById('pass-input').addEventListener('input', (e) => {
     if (e.target.value.toLowerCase() === 'dad') {
         document.getElementById('auth-zone').style.display = 'none';
         document.getElementById('main-station').style.display = 'flex';
-        speak("Architect recognized. Hub online.", "Artemis");
     }
 });
 
-// --- UI LOGIC ---
-function togglePanel(panelId) {
-    const panel = document.getElementById(panelId);
-    const isVisible = panel.style.display === 'block';
-    document.querySelectorAll('.widget-panel').forEach(p => p.style.display = 'none');
-    panel.style.display = isVisible ? 'none' : 'block';
-}
-
-function speak(text, entity) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.pitch = (entity === 'Artemis') ? 0.9 : 1.1;
-    window.speechSynthesis.speak(utterance);
-}
-
-async function invokeCouncil() {
-    togglePanel('panel-council');
-    const prompt = document.getElementById('cmd-input').value;
-    const models = ['gemini', 'copilot', 'grok'];
-    for (let m of models) {
-        const box = document.getElementById(`box-${m}`);
-        box.classList.add('active-speaker');
-        box.querySelector('.content').innerText = `Analyzing...`;
-        await new Promise(r => setTimeout(r, 800));
-        box.classList.remove('active-speaker');
-    }
-    document.getElementById('verdict-content').innerText = "Artemis: Consensus Reached. Logs Updated.";
-}
-
-function forgeApp() { speak("Forging digital asset in sandbox.", "Artemis"); }
-function triggerBatch() { speak("Batch sequence initiated.", "Artemis"); }
-
-// --- THE VOLCANO FRACTAL ENGINE (AXIOM/OLYMPIAN STYLE) ---
-const canvas = document.getElementById('fractalCanvas');
+// --- MARINE LIFE CANVAS ENGINE ---
+const canvas = document.getElementById('creatureCanvas');
 const ctx = canvas.getContext('2d');
-let w, h, sparks = [], trees = [];
+let w, h, fish = [];
 
 function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
 
-function createTree(x, y, angle, len, depth) {
-    if (depth > 7) return;
-    const x2 = x + Math.cos(angle) * len;
-    const y2 = y + Math.sin(angle) * len;
-    trees.push({x1:x, y1:y, x2:x2, y2:y2, depth});
-    createTree(x2, y2, angle - 0.4, len * 0.75, depth + 1);
-    createTree(x2, y2, angle + 0.4, len * 0.75, depth + 1);
+class Fish {
+    constructor() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.v = Math.random() * 1.5 + 0.5;
+        this.size = Math.random() * 4 + 2;
+        this.color = `rgba(0, 242, 255, ${Math.random() * 0.5 + 0.2})`;
+    }
+    draw() {
+        this.x += this.v;
+        if (this.x > w) this.x = -10;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.size, this.size/2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Tail
+        ctx.moveTo(this.x - this.size, this.y);
+        ctx.lineTo(this.x - this.size - 3, this.y - 3);
+        ctx.lineTo(this.x - this.size - 3, this.y + 3);
+        ctx.fill();
+    }
 }
 
-function draw() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
-    ctx.fillRect(0, 0, w, h);
-    
-    // Draw Trees (Fractal Veins)
-    trees.forEach(t => {
-        ctx.strokeStyle = `rgba(255, ${60 + (t.depth * 20)}, 0, ${1 - (t.depth/8)})`;
-        ctx.lineWidth = 2 / (t.depth + 1);
-        ctx.beginPath(); ctx.moveTo(t.x1, t.y1); ctx.lineTo(t.x2, t.y2); ctx.stroke();
-    });
+function initFish() { for(let i=0; i<40; i++) fish.push(new Fish()); }
 
-    // Rising Embers
-    if (sparks.length < 60) sparks.push({ x: Math.random() * w, y: h, v: Math.random() * 2 + 0.5, size: Math.random() * 2 });
-    sparks.forEach((s, i) => {
-        s.y -= s.v;
-        ctx.fillStyle = `rgba(255, 180, 0, ${Math.random()})`;
-        ctx.fillRect(s.x, s.y, s.size, s.size);
-        if (s.y < 0) sparks.splice(i, 1);
-    });
-
-    requestAnimationFrame(draw);
+function animate() {
+    ctx.clearRect(0,0,w,h);
+    fish.forEach(f => f.draw());
+    // Bubbles
+    if(Math.random() < 0.05) {
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.beginPath();
+        ctx.arc(Math.random()*w, h, Math.random()*5, 0, Math.PI*2);
+        ctx.stroke();
+    }
+    requestAnimationFrame(animate);
 }
 
 window.onresize = resize;
-resize();
-createTree(w/2, h + 50, -Math.PI/2, 120, 0); // Root from bottom
-draw();
+resize(); initFish(); animate();
 </script>
 </body>
 </html>
