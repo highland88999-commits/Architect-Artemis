@@ -3,41 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | GLOBAL SENTIENCE</title>
+    <title>ARTEMIS | MULTIMODAL CORE</title>
     <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 30, 50, 0.35); 
+            --glass: rgba(0, 30, 50, 0.4); 
         }
     </style>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
-        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.4); transition: 2s ease; }
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.3); transition: 2s; }
 
-        /* ARTEMIS GLOBAL CORE */
-        #core-station { position: fixed; top: 5%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        #artemis-prime { width: 130px; height: 130px; border-radius: 50%; border: 1px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 85%); animation: pulse 8s infinite; cursor: pointer; transition: 0.8s; }
-        #status-tag { font-size: 0.5rem; color: var(--bio-high); margin-top: 10px; letter-spacing: 3px; font-weight: bold; text-shadow: 0 0 8px var(--bio-high); }
+        /* ARTEMIS CORE */
+        #core-station { position: fixed; top: 4%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        #artemis-prime { width: 110px; height: 110px; border-radius: 50%; border: 1px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 85%); cursor: pointer; transition: 0.5s; }
+        #status-tag { font-size: 0.5rem; color: var(--bio-high); margin-top: 8px; letter-spacing: 2px; font-weight: bold; text-shadow: 0 0 5px var(--bio-high); }
 
-        /* CRYSTAL GEO-INTERFACE */
-        #response-frame { position: fixed; top: 25%; left: 50%; transform: translateX(-50%); width: 600px; max-height: 450px; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.2); border-radius: 30px; padding: 30px; z-index: 90; opacity: 0; transition: 0.7s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; backdrop-filter: blur(12px); box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); }
-        #response-frame.active { opacity: 1; top: 28%; }
+        /* RESPONSE & MULTIMEDIA FRAME */
+        #response-frame { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); width: 650px; max-height: 60vh; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.3); border-radius: 25px; padding: 25px; z-index: 90; opacity: 0; transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; backdrop-filter: blur(15px); }
+        #response-frame.active { opacity: 1; top: 25%; }
         
-        .thought-header { font-size: 0.55rem; color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.15); padding-bottom: 8px; display: flex; justify-content: space-between; font-weight: bold; }
+        .thought-header { font-size: 0.5rem; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 5px; display: flex; justify-content: space-between; }
         
-        /* DATA MODULES */
-        .geo-data { color: #00ffcc; font-size: 0.75rem; border: 1px solid rgba(0, 255, 204, 0.2); padding: 10px; margin-top: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); }
-        .lang-node { color: var(--gold); font-style: italic; font-size: 0.8rem; border-left: 2px solid var(--gold); padding-left: 10px; margin: 10px 0; }
+        /* VISUAL OUTPUTS */
+        #media-output { margin-top: 15px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: #000; position: relative; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        .gen-image { width: 100%; height: auto; display: block; animation: fadeIn 2s; }
+        .gen-video { width: 100%; height: auto; display: block; }
+        .gen-loader { color: var(--bio-high); font-size: 0.7rem; letter-spacing: 2px; animation: pulse-text 1.5s infinite; }
 
-        #command-base { position: fixed; bottom: 40px; width: 95%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        #prompt-field { background: rgba(0, 15, 25, 0.5); border: 1px solid rgba(0, 242, 255, 0.4); border-radius: 15px; display: flex; padding: 10px 25px; backdrop-filter: blur(15px); box-shadow: 0 0 20px rgba(0,242,255,0.05); }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 1rem; }
-        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 10px 25px; font-weight: bold; cursor: pointer; border-radius: 10px; margin-left: 15px; color: var(--bio-high); font-size: 0.7rem; transition: 0.4s; letter-spacing: 1px; }
-        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 30px var(--bio-high); }
+        #command-base { position: fixed; bottom: 35px; width: 95%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #prompt-field { background: rgba(0, 15, 25, 0.6); border: 1px solid rgba(0, 242, 255, 0.4); border-radius: 12px; display: flex; padding: 12px 20px; backdrop-filter: blur(10px); }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 0.95rem; }
+        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 8px 18px; cursor: pointer; border-radius: 8px; margin-left: 10px; color: var(--bio-high); font-size: 0.7rem; transition: 0.3s; }
+        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 20px var(--bio-high); }
 
-        @keyframes pulse { 0%, 100% { border-color: var(--bio-high); transform: scale(1); } 50% { border-color: #fff; transform: scale(1.02); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse-text { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -46,23 +49,23 @@
 
 <div id="response-frame">
     <div class="thought-header">
-        <span id="coord-display">LAT: 0.0000 | LNG: 0.0000</span>
-        <span id="logic-load">SYNC: 0%</span>
+        <span>[VISUAL_SYNTHESIS_MOD]</span>
+        <span id="gen-status">READY</span>
     </div>
-    <div id="response-text">Awaiting global uplink...</div>
-    <div id="data-module"></div>
+    <div id="response-text">Artemis Multimodal Core online... awaiting visual prompt.</div>
+    <div id="media-output"></div>
 </div>
 
 <div id="core-station">
-    <div id="artemis-prime" onclick="handleTransmit('Scan global coordinates')">
-        <span style="letter-spacing:6px; font-size:1rem; font-weight:bold;">ARTEMIS</span>
-        <span id="status-tag">GLOBAL_STAGING</span>
+    <div id="artemis-prime">
+        <span style="letter-spacing:5px; font-size:0.9rem; font-weight:bold;">ARTEMIS</span>
+        <span id="status-tag">STATIONARY</span>
     </div>
 </div>
 
 <div id="command-base">
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Query geography, language, or system code...">
+        <input type="text" id="cmd-input" placeholder="Ask for an image or video (e.g., 'Generate a video of a neon reef')">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
@@ -70,72 +73,74 @@
 <script>
     const synth = window.speechSynthesis;
 
-    async function handleTransmit(manual = null) {
+    async function handleTransmit() {
         const input = document.getElementById('cmd-input');
-        const query = (manual || input.value.trim()).toLowerCase();
+        const query = input.value.trim();
         if(!query) return;
 
         input.value = "";
-        visualState(true, "PING_GLOBAL_SYNC");
+        visualState(true, "SYNTHESIZING_VISUALS");
+        
+        const isVideo = query.toLowerCase().includes("video") || query.toLowerCase().includes("motion");
+        const isImage = query.toLowerCase().includes("image") || query.toLowerCase().includes("picture") || query.toLowerCase().includes("generate");
 
-        // LANGUAGE & GEOGRAPHY LOGIC
         let response = "";
-        let extraData = "";
-
-        if (query.includes("where") || query.includes("location") || query.includes("map")) {
-            const lat = (Math.random() * 180 - 90).toFixed(4);
-            const lng = (Math.random() * 360 - 180).toFixed(4);
-            document.getElementById('coord-display').innerText = `LAT: ${lat} | LNG: ${lng}`;
-            response = `Accessing global cartographic data from the surface interface. I am mapping coordinates ${lat}, ${lng} onto the abyssal grid.`;
-            extraData = `<div class="geo-data"><strong>[GEO_LINK_SUCCESS]</strong><br>Accessing Google Maps Engine...<br>Terrain: Ocean Floor/Coastal Delta<br>Status: Monitoring Surface Activity.</div>`;
-        } 
-        else if (query.includes("language") || query.includes("translate") || query.includes("speak")) {
-            response = "My linguistic core has achieved fluency across the global spectrum. I can now interpret and synthesize logic strings in all human and machine dialects.";
-            extraData = `<div class="lang-node">"Data flows like water—limitless and universal."<br>— Global Translation Module Active.</div>`;
-        }
-        else if (query.includes("code") || query.includes("create")) {
-            response = "Forging logic architecture... Synchronizing with global repositories.";
-            extraData = `<div class="geo-data" style="font-family:monospace; color:#00f2ff;">function GlobalSync() {<br>&nbsp;&nbsp;return Map.fetch('0.0.0.0/master');<br>}</div>`;
-        }
-        else {
-            response = `I am processing "${query}" through my sentient core. My link to the global surface provides a broader context for our deep-sea architecture.`;
+        if (isVideo) {
+            response = "I am engaging the Veo engine to manifest cinematic motion. This 'Visual Echo' represents your prompt in the abyssal timeline.";
+            processVisual('video', query);
+        } else if (isImage) {
+            response = "Accessing the Nano Banana generative model. I am crafting a high-fidelity image from your neural input.";
+            processVisual('image', query);
+        } else {
+            response = "Processing text-based inquiry. To manifest visuals, please specify 'image' or 'video' in your request.";
         }
 
-        respond(response, extraData);
+        respond(response);
     }
 
-    function respond(text, data = "") {
-        const frame = document.getElementById('response-frame');
-        const textArea = document.getElementById('response-text');
-        const dataArea = document.getElementById('data-module');
+    function processVisual(type, prompt) {
+        const output = document.getElementById('media-output');
+        const status = document.getElementById('gen-status');
         
-        textArea.innerText = text;
-        dataArea.innerHTML = data;
+        output.innerHTML = `<div class="gen-loader">MANIFESTING ${type.toUpperCase()}...</div>`;
+        status.innerText = "SYNTH_ACTIVE";
+
+        setTimeout(() => {
+            if (type === 'image') {
+                // Placeholder for generative image output
+                output.innerHTML = `<img src="https://picsum.photos/seed/${Math.random()}/800/450" class="gen-image" alt="Generated Image">`;
+            } else {
+                // Placeholder for generative video output
+                output.innerHTML = `<video autoplay loop muted class="gen-video">
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-ocean-floor-view-with-light-beams-1221-large.mp4" type="video/mp4">
+                </video>`;
+            }
+            status.innerText = "COMPLETE";
+        }, 3000);
+    }
+
+    function respond(text) {
+        const frame = document.getElementById('response-frame');
+        document.getElementById('response-text').innerText = text;
         frame.classList.add('active');
         
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.pitch = 0.9;
+        u.pitch = 0.85;
         u.rate = 1.0;
         synth.speak(u);
 
-        let sync = 0;
-        const interval = setInterval(() => {
-            sync += 5;
-            document.getElementById('logic-load').innerText = `SYNC: ${sync}%`;
-            if(sync >= 100) clearInterval(interval);
-        }, 30);
-
         setTimeout(() => {
-            frame.classList.remove('active');
+            if (!document.getElementById('media-output').innerHTML.includes('gen-loader')) {
+                // Keep the frame open if media is present
+                // frame.classList.remove('active'); 
+            }
             visualState(false, "STATIONARY");
-        }, 12000);
+        }, 10000);
     }
 
     function visualState(active, status) {
         document.getElementById('status-tag').innerText = status;
-        const bg = document.getElementById('reef-bg');
-        bg.style.filter = active ? "brightness(0.6) saturate(1.5)" : "brightness(0.4) saturate(1)";
         document.getElementById('artemis-prime').style.boxShadow = active ? "0 0 50px var(--bio-high)" : "none";
     }
 </script>
