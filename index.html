@@ -3,218 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | ABYSSAL HUB</title>
+    <title>ARTEMIS | REEF STATION</title>
     <style>
         :root {
             --bio-high: #00f2ff;
-            --bio-low: #001a33;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 15, 25, 0.85);
+            --glass: rgba(0, 20, 30, 0.8);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
         
-        /* THE ABYSS BACKGROUND */
-        #abyss-bg {
+        /* THE REEF BACKDROPS */
+        #reef-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1; filter: brightness(0.7) saturate(1.2);
+            object-fit: cover; z-index: -1; filter: brightness(0.6) contrast(1.1);
         }
 
-        /* FISH & BUBBLE OVERLAY */
-        canvas#creatureCanvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+        /* ARTEMIS SYMBIOTE (Floating Orb) */
+        #artemis-orb {
+            position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
+            width: 120px; height: 120px; border-radius: 50%;
+            background: radial-gradient(circle, var(--bio-high) 0%, transparent 70%);
+            box-shadow: 0 0 50px var(--bio-high);
+            z-index: 5; animation: float 6s ease-in-out infinite;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
+        }
+
+        @keyframes float { 0%, 100% { transform: translate(-50%, -55%); } 50% { transform: translate(-50%, -45%); } }
 
         #ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 20px; }
 
-        /* SECURITY (Handshake remains the same) */
-        #gate-zone, #auth-zone { position: fixed; top: 40%; text-align: center; width: 100%; z-index: 100; }
-        .handshake-input { background: transparent; border: none; border-bottom: 2px solid var(--bio-high); color: var(--bio-high); text-align: center; font-size: 1.8rem; outline: none; width: 250px; text-transform: uppercase; letter-spacing: 5px; }
+        /* API NEXUS WINDOW (Floating & Collapsible) */
+        #panel-api {
+            position: fixed; top: 100px; right: 20px; width: 280px;
+            background: var(--glass); border-left: 3px solid var(--magma);
+            padding: 15px; border-radius: 8px; display: none;
+            backdrop-filter: blur(10px); box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        }
 
-        /* THE MOBILE-WIDGET DOCK (Labelled Icons) */
+        /* COMMON WIDGET PANEL */
         .widget-panel {
             position: fixed; bottom: 220px; width: 90%; max-width: 500px; height: 350px;
             background: var(--glass); border: 1px solid var(--bio-high);
             backdrop-filter: blur(15px); padding: 15px; display: none;
-            box-shadow: 0 0 50px rgba(0, 242, 255, 0.2); overflow-y: auto;
-            border-radius: 15px;
+            border-radius: 15px; overflow-y: auto;
         }
-        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 5px; position: sticky; top: 0; background: var(--glass); }
 
-        /* ICON DOCK STYLING */
-        #icon-dock { display: flex; gap: 20px; margin-bottom: 15px; background: rgba(0,20,40,0.6); padding: 12px 25px; border-radius: 40px; border: 1px solid var(--bio-high); }
-        .app-icon { 
-            width: 55px; height: 55px; border-radius: 15px; border: 1px solid var(--bio-high); 
-            background: var(--bio-low); display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px var(--bio-low);
-        }
-        .app-icon span { font-size: 0.5rem; margin-top: 4px; color: var(--bio-high); }
-        .app-icon:active { transform: scale(0.9); border-color: var(--magma); }
+        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); }
 
-        /* FORGE (The Command Bar) */
-        #forge-container { width: 95%; max-width: 600px; background: rgba(0,0,0,0.85); border: 1px solid var(--bio-high); padding: 15px; border-radius: 10px; }
-        textarea { width: 100%; height: 50px; background: transparent; border: none; color: #fff; font-family: inherit; outline: none; resize: none; }
-        .mini-btn { font-size: 0.6rem; padding: 6px 12px; border: 1px solid var(--bio-high); background: transparent; color: var(--bio-high); cursor: pointer; border-radius: 4px; }
-        .mini-btn.gold { border-color: var(--gold); color: var(--gold); }
+        /* ICON DOCK */
+        #icon-dock { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 30px; border: 1px solid var(--bio-high); }
+        .app-icon { width: 50px; height: 50px; border-radius: 12px; border: 1px solid var(--bio-high); background: rgba(0,26,51,0.8); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* FORGE BOX */
+        #forge-container { width: 95%; max-width: 600px; background: rgba(0,0,0,0.8); border: 1px solid var(--bio-high); padding: 15px; border-radius: 10px; }
+        textarea { width: 100%; height: 40px; background: transparent; border: none; color: #fff; font-family: inherit; outline: none; resize: none; }
     </style>
 </head>
 <body>
 
-<video autoplay muted loop playsinline id="abyss-bg">
-    <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-volcano-eruption-4286-large.mp4" type="video/mp4">
+<video autoplay muted loop playsinline id="reef-bg">
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-coral-reef-with-many-fishes-4152-large.mp4" type="video/mp4">
 </video>
 
-<canvas id="creatureCanvas"></canvas>
+<div id="artemis-orb" onclick="speak('Artemis listening. How shall we stewardship the reef today?')">
+    <div style="font-size: 0.5rem; color: white; text-align: center;">ARTEMIS_CORE</div>
+</div>
 
 <div id="ui-layer">
-    <div id="gate-zone">
-        <div style="font-size: 0.7rem; letter-spacing: 5px; margin-bottom: 10px; color: var(--bio-high);">AWAKEN ARTEMIS?</div>
-        <input type="text" id="gate-input" class="handshake-input" placeholder="..." autocomplete="off" autofocus>
+    <div id="gate-zone" style="text-align:center; margin-bottom: 30vh;">
+        <h2 style="letter-spacing: 5px; color: var(--bio-high);">STATION_LOCKED</h2>
+        <input type="text" id="gate-input" style="background:transparent; border:none; border-bottom:1px solid var(--bio-high); color:white; text-align:center; outline:none;" placeholder="[ IDENTITY ]">
     </div>
 
-    <div id="auth-zone" style="display:none;">
-        <div style="font-size: 0.7rem; color: var(--gold); letter-spacing: 5px; margin-bottom: 10px;">WHO IS THERE?</div>
-        <input type="password" id="pass-input" class="handshake-input" placeholder="PASSKEY" autocomplete="off">
+    <div id="panel-api">
+        <div class="widget-label">⚡ API_NEXUS (SYSTEM FILES)</div>
+        <div style="font-size: 0.65rem; color: #aaa;">
+            <div style="margin-bottom:8px;">● transmit.js <span style="color:var(--bio-high)">[READY]</span></div>
+            <div style="margin-bottom:8px;">● forge.js <span style="color:var(--bio-high)">[READY]</span></div>
+            <div style="margin-bottom:8px;">● cron_tasks.js <span style="color:var(--magma)">[IDLE]</span></div>
+        </div>
+        <button onclick="togglePanel('panel-api')" style="width:100%; background:transparent; border:1px solid var(--magma); color:var(--magma); font-size:0.5rem; margin-top:10px;">COLLAPSE NEXUS</button>
     </div>
 
     <div id="panel-logs" class="widget-panel">
-        <div class="widget-label">📂 STEWARDSHIP EXPLORER</div>
-        <div id="explorer-nav" style="color:var(--fire); font-size: 0.6rem; cursor:pointer;"></div>
-        <div id="explorer-content"></div>
-    </div>
-
-    <div id="panel-council" class="widget-panel">
-        <div class="widget-label">🏛️ THE COUNCIL</div>
-        <div id="council-view">
-            <div style="color:var(--bio-high); font-size:0.7rem;">Consensus status: Idle</div>
-        </div>
+        <div class="widget-label">📂 STEWARDSHIP_EXPLORER</div>
+        <div id="explorer-content" style="font-size: 0.8rem;"></div>
     </div>
 
     <div id="main-station" style="display:none; width: 100%; align-items: center; flex-direction: column;">
         <div id="icon-dock">
-            <div class="app-icon" onclick="togglePanel('panel-council')">🏛️<span>COUNCIL</span></div>
-            <div class="app-icon" onclick="loadDirectory('')">📂<span>LOGS</span></div>
-            <div class="app-icon" onclick="togglePanel('panel-status')">⚡<span>SYSTEM</span></div>
+            <div class="app-icon" onclick="togglePanel('panel-logs')">📂</div>
+            <div class="app-icon" onclick="togglePanel('panel-api')">⚡</div>
+            <div class="app-icon" onclick="togglePanel('panel-council')">🏛️</div>
         </div>
 
         <div id="forge-container">
-            <input type="text" id="app-name-input" placeholder="PROJECT_IDENTITY" style="background:transparent; border:none; border-bottom:1px solid #222; color:var(--gold); font-size:0.7rem; width:100%; margin-bottom:10px; outline:none;">
-            <textarea id="cmd-input" placeholder="Blueprint logic or site URL..."></textarea>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.5rem; color:var(--bio-high)">● SYNCED_TO_GITHUB</span>
-                <div>
-                    <button class="mini-btn" onclick="invokeCouncil()">TRANSMIT</button>
-                    <button class="mini-btn gold" onclick="forgeApp()">FORGE</button>
-                </div>
+            <textarea id="cmd-input" placeholder="Initiate Forge Sequence..."></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <span style="font-size:0.5rem; color:var(--bio-high)">REEL_TIME_SYNC: ACTIVE</span>
+                <button onclick="invokeCouncil()" style="background:var(--bio-high); border:none; padding:5px 15px; font-weight:bold; cursor:pointer;">TRANSMIT</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// --- VIRTUAL FILESYSTEM (GITHUB MIRROR) ---
-const mockRepo = {
-    "": ["Artemis Log", "System Files", "index.html"],
-    "Artemis Log": ["Stewardship", "Golden_Pivots", "permanent_registry.json"],
-    "Artemis Log/Stewardship": ["Project_Abyss", "Reef_Analysis.md"],
-    "System Files": ["API", "Core", "Assets", "Config"]
-};
-
-let currentPath = "";
-
-function loadDirectory(path) {
-    currentPath = path;
-    const content = document.getElementById('explorer-content');
-    const nav = document.getElementById('explorer-nav');
-    togglePanel('panel-logs');
-    
-    nav.innerHTML = path !== "" ? "« BACK TO ROOT" : "";
-    nav.onclick = () => goBack();
-
-    const items = mockRepo[path] || [];
-    content.innerHTML = items.map(name => {
-        const fullPath = path ? `${path}/${name}` : name;
-        const isFolder = mockRepo[fullPath] !== undefined || !name.includes('.');
-        return `<div style="padding:10px; border-bottom:1px solid rgba(0,242,255,0.1); cursor:pointer; font-size:0.8rem;" onclick="handleFileClick('${fullPath}', ${isFolder})">${isFolder ? '📁' : '📄'} ${name}</div>`;
-    }).join('');
-}
-
-function handleFileClick(path, isFolder) {
-    if (isFolder) loadDirectory(path);
-    else alert("Opening " + path);
-}
-
-function goBack() { loadDirectory(""); }
-
+// --- TOGGLE LOGIC ---
 function togglePanel(id) {
     const p = document.getElementById(id);
-    const visible = p.style.display === 'block';
-    document.querySelectorAll('.widget-panel').forEach(x => x.style.display = 'none');
-    p.style.display = visible ? 'none' : 'block';
+    const isVisible = p.style.display === 'block';
+    p.style.display = isVisible ? 'none' : 'block';
 }
 
-// --- HANDSHAKE LOGIC ---
+// --- SECURITY HANDSHAKE ---
 document.getElementById('gate-input').addEventListener('input', (e) => {
     if (e.target.value.toLowerCase() === 'ant') {
+        // Simple bypass for this demo - you can add the stage 2 "dad" input here
         document.getElementById('gate-zone').style.display = 'none';
-        document.getElementById('auth-zone').style.display = 'block';
-        document.getElementById('pass-input').focus();
-    }
-});
-
-document.getElementById('pass-input').addEventListener('input', (e) => {
-    if (e.target.value.toLowerCase() === 'dad') {
-        document.getElementById('auth-zone').style.display = 'none';
         document.getElementById('main-station').style.display = 'flex';
+        speak("Access granted. Artemis Station online.");
     }
 });
 
-// --- MARINE LIFE CANVAS ENGINE ---
-const canvas = document.getElementById('creatureCanvas');
-const ctx = canvas.getContext('2d');
-let w, h, fish = [];
-
-function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-
-class Fish {
-    constructor() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.v = Math.random() * 1.5 + 0.5;
-        this.size = Math.random() * 4 + 2;
-        this.color = `rgba(0, 242, 255, ${Math.random() * 0.5 + 0.2})`;
-    }
-    draw() {
-        this.x += this.v;
-        if (this.x > w) this.x = -10;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.size, this.size/2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // Tail
-        ctx.moveTo(this.x - this.size, this.y);
-        ctx.lineTo(this.x - this.size - 3, this.y - 3);
-        ctx.lineTo(this.x - this.size - 3, this.y + 3);
-        ctx.fill();
-    }
+function speak(text) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.pitch = 0.9;
+    window.speechSynthesis.speak(u);
 }
 
-function initFish() { for(let i=0; i<40; i++) fish.push(new Fish()); }
+// Simulated data for explorer
+const files = ["Artemis Log", "System Files", "Permanent_Record.json"];
+document.getElementById('explorer-content').innerHTML = files.map(f => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.1)">📁 ${f}</div>`).join('');
 
-function animate() {
-    ctx.clearRect(0,0,w,h);
-    fish.forEach(f => f.draw());
-    // Bubbles
-    if(Math.random() < 0.05) {
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
-        ctx.beginPath();
-        ctx.arc(Math.random()*w, h, Math.random()*5, 0, Math.PI*2);
-        ctx.stroke();
-    }
-    requestAnimationFrame(animate);
-}
-
-window.onresize = resize;
-resize(); initFish(); animate();
 </script>
 </body>
 </html>
