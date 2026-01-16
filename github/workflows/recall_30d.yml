@@ -1,0 +1,32 @@
+name: 30-Day Mortal Recall
+on:
+  schedule:
+    - cron: '0 0 1 * *' # Midnight on the 1st of every month
+  workflow_dispatch: # Allows you to manually trigger a "memory reset"
+
+jobs:
+  recycle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Execute Recall
+        run: |
+          node -e "const met = require('./core/metabolism'); (async () => { await met.runMortalRecall(); })();"
+        
+      - name: Log the New Cycle
+        run: |
+          git config --local user.email "artemis@stewardship.local"
+          git config --local user.name "Architect-Artemis"
+          git add .
+          git commit -m "Systemic: 30-Day Mortal Recall completed. Slate is clean."
+          git push
