@@ -1,0 +1,50 @@
+/* assets/css/symbiote-effects.css */
+
+:root {
+    --gemini-glow: rgba(66, 133, 244, 0.6);
+    --copilot-glow: rgba(255, 62, 0, 0.6);
+    --grok-glow: rgba(255, 255, 255, 0.4);
+    --artemis-glow: rgba(0, 255, 204, 0.7);
+}
+
+/* The Symbiote Membrane Animation */
+@keyframes symbiote-pulse {
+    0% { box-shadow: 0 0 10px var(--aura); transform: scale(1); }
+    50% { box-shadow: 0 0 25px var(--aura); transform: scale(1.02); }
+    100% { box-shadow: 0 0 10px var(--aura); transform: scale(1); }
+}
+
+.agent-bubble {
+    position: relative;
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s ease;
+}
+
+/* Active State: When an agent is "thinking" or "speaking" */
+.agent-bubble.active {
+    animation: symbiote-pulse 3s infinite ease-in-out;
+}
+
+.gemini.active { --aura: var(--gemini-glow); border-color: #4285f4; }
+.copilot.active { --aura: var(--copilot-glow); border-color: #ff3e00; }
+.grok.active { --aura: var(--grok-glow); border-color: #ffffff; }
+
+/* Liquid Particle Container (Hidden until active) */
+.symbiote-particles {
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    z-index: -1;
+    background: conic-gradient(from 0deg, transparent, var(--aura), transparent);
+    border-radius: inherit;
+    animation: rotate 4s linear infinite;
+    opacity: 0;
+}
+
+.active .symbiote-particles { opacity: 1; }
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
