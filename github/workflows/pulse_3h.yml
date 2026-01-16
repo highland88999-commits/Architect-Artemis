@@ -1,0 +1,40 @@
+name: 3-Hour Systemic Pulse
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Triggers every 3 hours
+  workflow_dispatch: # Allows you to trigger her manually from GitHub
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Check Landline Status
+        run: |
+          if [ "${{ secrets.ARTEMIS_LANDLINE }}" != "CONNECTED" ]; then
+            echo "🚨 LANDLINE IS CUT. System remains dormant."
+            exit 1
+          fi
+
+      - name: Execute Handshake & Scan
+        run: node -e "const arch = require('./core/architect'); const met = require('./core/metabolism'); (async () => { await met.syncAtlas(); await arch.think('Perform systemic health check and scan inquiry queue.'); })();"
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Commit Internal Updates
+        run: |
+          git config --local user.email "artemis@stewardship.local"
+          git config --local user.name "Architect-Artemis"
+          git add .
+          git commit -m "Systemic Pulse: Handshake Verified & State Synced" || echo "No changes to commit"
+          git push
