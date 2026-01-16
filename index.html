@@ -8,235 +8,207 @@
         :root {
             --cyan: #00f2ff;
             --gold: #FFD700;
-            --silver: #e6e6e6;
             --void: #000000;
-            --dim: rgba(0, 242, 255, 0.1);
-            --gemini: #4285f4;
-            --copilot: #ff3e00;
-            --grok: #ffffff;
+            --dim: rgba(0, 242, 255, 0.15);
+            --widget-bg: rgba(0, 8, 15, 0.85);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--void); overflow: hidden; font-family: 'Courier New', monospace; color: var(--cyan); }
         
-        #canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
-
-        /* UI Containers */
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; display: flex; flex-direction: column; align-items: center; }
-
-        /* Header Section */
-        #artemis-header { width: 90%; margin-top: 20px; text-align: center; pointer-events: all; }
-        #verdict-box { margin-top: 10px; padding: 15px; border: 1px solid var(--dim); background: rgba(0,242,255,0.05); }
-
-        /* Council Grid */
-        .council-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; width: 90%; margin-top: 40px; }
-        .model-box { 
-            border: 1px solid var(--dim); background: rgba(0,8,15,0.8); 
-            padding: 15px; height: 150px; overflow-y: auto; font-size: 0.85em; transition: 0.5s;
-            position: relative;
-        }
-        .active-speaker { border-color: var(--cyan); box-shadow: 0 0 25px var(--cyan); transform: scale(1.02); }
-        .gemini-glow { border-color: var(--gemini); box-shadow: 0 0 15px var(--gemini); }
-        .copilot-glow { border-color: var(--copilot); box-shadow: 0 0 15px var(--copilot); }
-        .grok-glow { border-color: var(--grok); box-shadow: 0 0 15px var(--grok); }
-
-        /* Bottom Forge Zone */
-        #forge-zone { position: absolute; bottom: 30px; width: 85%; max-width: 1000px; pointer-events: all; }
-        .control-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        input, textarea { 
-            background: rgba(0, 242, 255, 0.05); border: 1px solid var(--dim); 
-            color: #fff; font-family: inherit; padding: 12px; outline: none; 
-        }
-        input { flex: 1; }
-        textarea { width: 100%; height: 80px; resize: none; }
-        
-        /* Buttons */
-        .action-bar { display: flex; gap: 10px; margin-top: 10px; }
-        button { cursor: pointer; font-family: inherit; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        .transmit-btn { flex: 2; background: var(--cyan); color: #000; border: none; }
-        .forge-btn { flex: 1; background: var(--gold); color: #000; border: none; }
-        
-        .batch-start-btn {
-            background: linear-gradient(145deg, #e6e6e6, #ffffff);
-            color: #000; padding: 0 20px; font-size: 0.7em;
-            box-shadow: 0 0 10px rgba(255,255,255,0.3); border: none;
-        }
-
-        /* Gold System Button */
-        #start-menu-btn {
-            position: absolute; bottom: 20px; right: 20px;
-            width: 70px; height: 70px; border-radius: 50%;
-            background: var(--gold); border: none; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 20px var(--gold); z-index: 10;
-        }
-
-        /* Desktop & Editor Overlays */
-        #desktop-overlay, #sandbox-overlay {
+        /* Atmospheric Volcano Background */
+        #volcano-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none; z-index: 100; padding: 40px;
-            box-sizing: border-box;
+            object-fit: cover; z-index: -1; filter: brightness(0.6) contrast(1.2);
         }
 
-        .folder-grid { display: flex; flex-direction: column; gap: 20px; width: 100px; }
-        .folder { text-align: center; cursor: pointer; }
-        .folder-icon { width: 50px; height: 40px; background: var(--dim); border: 1px solid var(--cyan); margin: 0 auto; position: relative; }
-        .folder-label { font-size: 0.7em; margin-top: 5px; color: var(--cyan); }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; display: flex; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box; }
 
-        #editor-container { flex-grow: 1; display: flex; flex-direction: column; margin-left: 40px; border: 1px solid var(--dim); }
-        #editor-text { flex-grow: 1; background: transparent; border: none; color: var(--gold); padding: 20px; font-family: monospace; }
+        /* Widget System */
+        .widget {
+            background: var(--widget-bg);
+            border: 1px solid var(--cyan);
+            border-top: 4px solid var(--cyan);
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            margin-bottom: 15px;
+        }
+        .widget-label { font-size: 0.6em; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; border-bottom: 1px solid var(--dim); padding-bottom: 5px; }
+
+        /* Handshake Zones */
+        #gate-zone, #auth-zone { text-align: center; margin-top: 30vh; pointer-events: all; }
+        input { background: transparent; border: none; border-bottom: 1px solid var(--cyan); color: #fff; font-family: inherit; text-align: center; outline: none; font-size: 1.5em; }
+
+        /* Layout Grid */
+        #main-station { display: none; width: 100%; height: 100%; grid-template-columns: 300px 1fr 300px; grid-template-rows: auto 1fr auto; gap: 20px; }
+
+        /* Specialized Widgets */
+        #stewardship-widget { grid-column: 1; grid-row: 2; }
+        #council-widget { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; gap: 10px; }
+        #forge-widget { grid-column: 1 / span 3; grid-row: 3; }
+        #status-widget { grid-column: 3; grid-row: 2; }
+
+        .council-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .model-box { border: 1px solid var(--dim); padding: 10px; height: 120px; overflow-y: auto; font-size: 0.8em; }
+        .active-speaker { border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
+
+        textarea { width: 100%; height: 60px; background: rgba(0,0,0,0.3); border: 1px solid var(--cyan); color: #fff; padding: 10px; font-family: inherit; resize: none; }
         
-        /* Sandbox Elements */
-        #sandbox-frame { width: 100%; height: 100%; border: none; background: white; }
+        button { cursor: pointer; font-family: inherit; font-weight: bold; text-transform: uppercase; }
+        .btn-silver { background: linear-gradient(145deg, #e6e6e6, #ffffff); color: #000; border: none; padding: 10px; }
+        .btn-gold { background: var(--gold); border: none; padding: 10px; color: #000; box-shadow: 0 0 10px var(--gold); }
+
+        #start-menu-btn { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background: var(--gold); border: none; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px var(--gold); z-index: 100; }
+        
+        /* Overlays */
+        #desktop-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 1000; padding: 50px; }
     </style>
 </head>
 <body>
 
-<canvas id="canvas"></canvas>
+<video autoplay muted loop playsinline id="volcano-bg">
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-volcano-eruption-and-lava-flow-at-night-4286-large.mp4" type="video/mp4">
+</video>
 
 <div id="ui-layer">
-    <div id="gate-zone" style="margin-top:20vh; text-align: center; pointer-events: all;">
-        <h1 style="letter-spacing: 10px; animation: flicker 3s infinite;">AWAKEN ARTEMIS?</h1>
-        <input type="text" id="gate-input" placeholder="..." autocomplete="off" autofocus style="font-size: 1.5em; text-align: center;">
-        <div style="margin-top:20px; font-size: 0.7em; opacity: 0.5; cursor: pointer;" onclick="unlockSystem(true)">[ GUEST_LOG_IN ]</div>
+    <div id="gate-zone">
+        <h1 style="letter-spacing: 10px;">AWAKEN ARTEMIS?</h1>
+        <input type="text" id="gate-input" placeholder="..." autocomplete="off" autofocus>
     </div>
 
-    <div id="terminal-content" style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center;">
-        <div id="artemis-header">
-            <span id="mode-id" style="color:var(--gold)">● PRIVATE_SYMBIOTE</span>
-            <div id="verdict-box">
-                <strong style="color:var(--cyan)">ARTEMIS_CORE:</strong>
-                <span id="verdict-content">Synaptic systems ready.</span>
+    <div id="auth-zone" style="display:none;">
+        <h1 style="color:var(--gold)">WHO IS THERE?</h1>
+        <input type="password" id="pass-input" placeholder="PASSKEY" autocomplete="off">
+    </div>
+
+    <div id="main-station">
+        
+        <div id="stewardship-widget" class="widget">
+            <div class="widget-label">📂 System Logs / Log Folder</div>
+            <div onclick="toggleDesktop()" style="cursor:pointer; color:var(--gold)">[ OPEN STEWARDSHIP ]</div>
+            <div id="log-feed" style="font-size: 0.7em; margin-top: 10px; line-height: 1.6;">
+                > System Restored<br>
+                > Log Path: /Artemis_Log
             </div>
         </div>
 
-        <div class="council-grid">
-            <div class="model-box" id="box-gemini"><h4>GEMINI_PRIME</h4><div class="content">...</div></div>
-            <div class="model-box" id="box-copilot"><h4>COPILOT_BETA</h4><div class="content">...</div></div>
-            <div class="model-box" id="box-grok"><h4>GROK_X</h4><div class="content">...</div></div>
-        </div>
-
-        <div id="forge-zone">
-            <div class="control-row">
-                <input type="text" id="app-name-input" placeholder="BLUEPRINT_ID (NAME)">
-                <button class="batch-start-btn" onclick="triggerBatch()">BATCH START</button>
+        <div id="council-widget">
+            <div class="widget" style="margin-bottom:0;">
+                <div class="widget-label">🏛️ Council of Three / Consensus Engine</div>
+                <div class="council-grid">
+                    <div class="model-box" id="box-gemini"><strong>GEMINI</strong><div class="content">...</div></div>
+                    <div class="model-box" id="box-copilot"><strong>COPILOT</strong><div class="content">...</div></div>
+                    <div class="model-box" id="box-grok"><strong>GROK</strong><div class="content">...</div></div>
+                </div>
             </div>
-            <textarea id="cmd-input" placeholder="Enter command for Stewardship or Blueprint for the Forge..."></textarea>
-            <div class="action-bar">
-                <button onclick="invokeCouncil()" class="transmit-btn">TRANSMIT CONSENSUS</button>
-                <button onclick="forgeApp()" class="forge-btn">FORGE APP</button>
+            <div class="widget">
+                <div class="widget-label">⚖️ Artemis Verdict / Executive Output</div>
+                <div id="verdict-content" style="font-size: 0.9em;">Awaiting synaptic transmission...</div>
             </div>
         </div>
 
-        <button id="start-menu-btn" onclick="toggleDesktop()">SYSTEM</button>
+        <div id="status-widget" class="widget">
+            <div class="widget-label">⚡ System Health / Metrics</div>
+            <div style="font-size: 0.8em;">
+                CORE: <span style="color:var(--gold)">STABLE</span><br>
+                VOLCANO_SKY: <span style="color:var(--gold)">ACTIVE</span><br>
+                MODE: <span id="mode-id">ARCHITECT</span>
+            </div>
+        </div>
+
+        <div id="forge-widget" class="widget">
+            <div class="widget-label">🔨 Artemis Forge / App Creation Station</div>
+            <div style="display:flex; gap: 10px; align-items: flex-end;">
+                <div style="flex:1">
+                    <input type="text" id="app-name-input" placeholder="APP_NAME" style="font-size: 1em; width: 100%; text-align: left; border-bottom: 1px solid var(--dim);">
+                    <textarea id="cmd-input" placeholder="Enter Logic Blueprint or Stewardship Command..."></textarea>
+                </div>
+                <div style="display:flex; flex-direction: column; gap: 5px;">
+                    <button class="btn-silver" onclick="triggerBatch()" style="font-size: 0.6em;">BATCH START</button>
+                    <button class="btn-gold" onclick="invokeCouncil()">TRANSMIT</button>
+                    <button class="btn-gold" onclick="forgeApp()" style="background:#00f2ff">FORGE</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
+
+<button id="start-menu-btn" onclick="toggleDesktop()">LOG</button>
 
 <div id="desktop-overlay">
-    <div class="folder-grid">
-        <div class="folder" onclick="alert('Opening Stewardship...')"><div class="folder-icon"></div><div class="folder-label">Stewardship</div></div>
-        <div class="folder" onclick="alert('Opening Atlas...')"><div class="folder-icon" style="border-color:var(--gold)"></div><div class="folder-label">Atlas Map</div></div>
-        <button onclick="toggleDesktop()" style="margin-top:20px; background:var(--cyan); border:none; padding:5px;">CLOSE</button>
+    <div style="display:flex; justify-content: space-between;">
+        <h2 style="color:var(--gold)">C:\Artemis Log\Stewardship</h2>
+        <button onclick="toggleDesktop()" style="background:red; color:white; border:none; padding:10px;">CLOSE</button>
     </div>
-    <div id="editor-container">
-        <div style="padding:10px; border-bottom:1px solid var(--dim);">PERMANENT_RECORD_EDITOR <button style="float:right">SAVE</button></div>
-        <textarea id="editor-text" placeholder="// Select a file from Stewardship to edit..."></textarea>
+    <hr border="1" color="#00f2ff">
+    <div id="explorer-view" style="display:flex; gap:20px; padding:20px;">
+        <div class="folder">
+            <div style="width:50px; height:40px; background:var(--dim); border:1px solid var(--cyan);"></div>
+            <div style="font-size:0.7em; margin-top:5px;">System Files</div>
+        </div>
     </div>
-</div>
-
-<div id="sandbox-overlay">
-    <div style="height: 40px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color:var(--gold)">LIVE_SANDBOX_PREVIEW</span>
-        <button onclick="closeSandbox()" style="background:red; color:white; border:none; padding:5px 15px;">X</button>
-    </div>
-    <iframe id="sandbox-frame"></iframe>
 </div>
 
 <script>
-    let isGuest = false;
     let isMuted = false;
 
-    // Awakening Logic
+    // Handshake Sequence
     document.getElementById('gate-input').addEventListener('input', (e) => {
-        if (e.target.value.toLowerCase() === 'ant') unlockSystem(false);
+        if (e.target.value.toLowerCase() === 'ant') {
+            document.getElementById('gate-zone').style.display = 'none';
+            document.getElementById('auth-zone').style.display = 'block';
+            document.getElementById('pass-input').focus();
+        }
     });
 
-    function unlockSystem(guest) {
-        isGuest = guest;
-        document.getElementById('gate-zone').style.display = 'none';
-        document.getElementById('terminal-content').style.display = 'flex';
-        if(isGuest) {
-            document.getElementById('mode-id').innerText = "● GUEST_RESTRICTED";
-            document.getElementById('mode-id').style.color = "gray";
+    document.getElementById('pass-input').addEventListener('input', (e) => {
+        if (e.target.value.toLowerCase() === 'dad') {
+            unlockStation();
         }
-        speak("Artemis awakened. All Council members online.", "Artemis");
+    });
+
+    function unlockStation() {
+        document.getElementById('auth-zone').style.display = 'none';
+        document.getElementById('main-station').style.display = 'grid';
+        speak("Welcome back, Architect. Artemis is fully awakened.", "Artemis");
     }
 
-    // Speech Engine
     function speak(text, entity) {
         if (isMuted) return;
-        const voices = {
-            'Gemini': { pitch: 0.7, rate: 0.9 }, 'Copilot': { pitch: 1.3, rate: 1.1 },
-            'Grok': { pitch: 1.0, rate: 1.2 }, 'Artemis': { pitch: 0.9, rate: 1.0 }
-        };
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.pitch = voices[entity]?.pitch || 1;
-        utterance.rate = voices[entity]?.rate || 1;
+        utterance.pitch = (entity === 'Artemis') ? 0.9 : 1.1;
         window.speechSynthesis.speak(utterance);
     }
 
-    // Council Sequential Execution
     async function invokeCouncil() {
         const prompt = document.getElementById('cmd-input').value;
         if (!prompt) return;
 
-        const steps = [
-            { id: 'box-gemini', name: 'Gemini', color: 'gemini-glow', text: "Scanning patterns for " + prompt },
-            { id: 'box-copilot', name: 'Copilot', color: 'copilot-glow', text: "Structuring logic for " + prompt },
-            { id: 'box-grok', name: 'Grok', color: 'grok-glow', text: "Extracting efficient solutions for " + prompt }
-        ];
-
-        for (let step of steps) {
-            const box = document.getElementById(step.id);
-            box.classList.add('active-speaker', step.color);
-            box.querySelector('.content').innerText = step.text;
-            await new Promise(r => {
-                const u = new SpeechSynthesisUtterance(step.text);
-                u.onend = r;
-                window.speechSynthesis.speak(u);
-            });
-            box.classList.remove('active-speaker', step.color);
+        const models = ['gemini', 'copilot', 'grok'];
+        for (let m of models) {
+            const box = document.getElementById(`box-${m}`);
+            box.classList.add('active-speaker');
+            box.querySelector('.content').innerText = `Analyzing ${prompt}...`;
+            await new Promise(r => setTimeout(r, 1000));
+            box.classList.remove('active-speaker');
         }
-
-        document.getElementById('verdict-content').innerText = "Consensus synthesized. Permanent record updated.";
-        speak("Synthesis complete.", "Artemis");
+        document.getElementById('verdict-content').innerText = "Consensus synthesized: Nurture Score 9.2. Permanent Record Updated.";
+        speak("Consensus established.", "Artemis");
     }
 
-    // Forge & Sandbox Logic
-    async function forgeApp() {
-        const appName = document.getElementById('app-name-input').value;
-        const prompt = document.getElementById('cmd-input').value;
-        if(!appName) return alert("Artemis requires a name for the forge.");
-
-        speak(`Forging ${appName}. Creating sandbox environment.`, "Artemis");
-        
-        // Simulated code generation for Sandbox
-        const generatedHTML = `<html><body style="background:#000; color:#00f2ff; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif;"><h1>${appName}</h1><p>${prompt}</p></body></html>`;
-        
-        document.getElementById('sandbox-overlay').style.display = 'block';
-        const frame = document.getElementById('sandbox-frame');
-        frame.contentWindow.document.open();
-        frame.contentWindow.document.write(generatedHTML);
-        frame.contentWindow.document.close();
+    function forgeApp() {
+        speak("Opening Sandbox for new Forge project.", "Artemis");
+        // Trigger your forge-engine.js logic here
     }
 
-    function closeSandbox() { document.getElementById('sandbox-overlay').style.display = 'none'; }
     function toggleDesktop() {
         const d = document.getElementById('desktop-overlay');
         d.style.display = (d.style.display === 'flex') ? 'none' : 'flex';
     }
-    
+
     function triggerBatch() {
-        speak("Initializing batch cycle. Processing five seeds.", "Artemis");
-        document.getElementById('verdict-content').innerText = "BATCH_PROCESS_ACTIVE: Transmuting Atlas seeds...";
+        speak("Batch cycle initiated. Processing Atlas queue.", "Artemis");
     }
 </script>
 </body>
