@@ -3,195 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Architect Artemis | Consensus Engine</title>
+    <title>Artemis | The Architect's Symbiote</title>
     <style>
-        :root {
-            --cyan: #00f2ff;
-            --gold: #b4ff64;
-            --red: #ff4b4b;
-            --void: #000000;
-        }
-
+        :root { --cyan: #00f2ff; --gold: #b4ff64; --void: #000; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--void); overflow: hidden; font-family: 'Courier New', monospace; color: var(--cyan); }
         
         #canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 
-        #ui-layer { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            background: radial-gradient(circle at center, rgba(0, 8, 16, 0.5) 0%, rgba(0, 0, 0, 1) 100%);
-            transition: background 2s ease;
+        /* Left-Side Folders (Windows Style) */
+        #desktop {
+            position: absolute; top: 20px; left: 20px; display: none;
+            flex-direction: column; gap: 25px; pointer-events: all;
         }
+        .folder { display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 60px; }
+        .folder-icon { width: 40px; height: 35px; background: rgba(0, 242, 255, 0.1); border: 1px solid var(--cyan); border-radius: 2px; position: relative; }
+        .folder-icon::after { content: ''; position: absolute; top: -5px; left: 0; width: 15px; height: 5px; background: var(--cyan); }
+        .folder-label { font-size: 0.6em; margin-top: 5px; text-align: center; }
 
-        #terminal { 
-            width: 85%; max-width: 1000px; background: rgba(0, 10, 20, 0.9); 
-            border: 1px solid var(--cyan); padding: 30px; 
-            box-shadow: 0 0 40px rgba(0, 242, 255, 0.15); 
-            display: none; pointer-events: all;
-            backdrop-filter: blur(10px);
-        }
+        /* Terminal & Input */
+        #terminal { width: 85%; max-width: 900px; background: rgba(0, 10, 20, 0.95); border: 1px solid var(--cyan); padding: 25px; display: none; pointer-events: all; backdrop-filter: blur(10px); }
+        textarea { width: 100%; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); color: #fff; padding: 10px; font-family: inherit; resize: none; outline: none; }
+        
+        .council-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .model-box { border: 1px solid rgba(0, 242, 255, 0.2); padding: 10px; height: 150px; overflow-y: auto; font-size: 0.8em; transition: 0.3s; }
+        .active-speaker { border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
 
-        /* Initial Gate Styles */
+        /* Auth Zones */
         #gate-zone { text-align: center; pointer-events: all; }
-        .gate-input { 
-            background: transparent; border: none; border-bottom: 1px solid var(--cyan); 
-            color: #fff; font-family: inherit; font-size: 1.5em; text-align: center; 
-            outline: none; margin-top: 20px; width: 200px;
-        }
-
-        /* Identity zone at the bottom */
-        #auth-zone { position: absolute; bottom: 50px; text-align: center; width: 100%; }
-        
-        .glitch-text { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
-        
-        input[type="password"] { 
-            background: transparent; border: none; color: #fff; text-align: center;
-            font-size: 1.5em; outline: none; width: 300px; border-bottom: 1px solid var(--cyan); 
-            margin-top: 10px; letter-spacing: 5px;
-        }
-
-        /* Active Console Styles */
-        .council-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 25px; }
-        .model-box { 
-            border: 1px solid rgba(0, 242, 255, 0.2); background: rgba(0, 5, 10, 0.8);
-            padding: 15px; height: 250px; overflow-y: auto; font-size: 0.85em; color: #e0e0e0;
-        }
-        .model-box h4 { margin: 0 0 10px 0; color: var(--cyan); border-bottom: 1px solid rgba(0, 242, 255, 0.2); padding-bottom: 5px; }
-
-        textarea { 
-            width: 100%; height: 80px; background: rgba(0, 242, 255, 0.05); 
-            border: 1px solid var(--cyan); color: #fff; padding: 15px; 
-            font-family: inherit; font-size: 1.1em; resize: none; outline: none; box-sizing: border-box;
-        }
-
-        button {
-            margin-top: 15px; width: 100%; background: var(--cyan); border: none; 
-            color: #000; padding: 12px; font-family: inherit; font-weight: bold; 
-            cursor: pointer; transition: 0.3s;
-        }
-        button:hover { background: var(--gold); box-shadow: 0 0 15px var(--gold); }
-
-        .verdict-box { 
-            margin-top: 25px; border-top: 2px solid var(--gold); padding-top: 20px; 
-            color: var(--gold); min-height: 100px;
-        }
+        .guest-link { margin-top: 20px; font-size: 0.7em; opacity: 0.5; cursor: pointer; }
+        #auth-zone { position: absolute; bottom: 40px; text-align: center; width: 100%; display: none; }
     </style>
 </head>
 <body>
 
-    <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
 
-    <div id="ui-layer">
-        
-        <div id="gate-zone">
-            <h1 class="glitch-text">AWAKEN ARTEMIS?</h1>
-            <input type="text" id="gate-input" class="gate-input" autocomplete="off" autofocus placeholder="...">
-        </div>
-
-        <div id="auth-zone" style="display:none;">
-            <p id="prompt">WHO'S THERE?</p>
-            <input type="password" id="pass-input" autocomplete="off">
-        </div>
-
-        <div id="terminal">
-            <div id="active-zone" style="display:none;">
-                <div style="display:flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--gold)">● SYSTEM ONLINE</span>
-                    <span style="font-size: 0.7em;">IDENTITY: ARCHITECT_DAD</span>
-                </div>
-                
-                <textarea id="cmd-input" placeholder="Enter command for Council Consensus..."></textarea>
-                <button onclick="invokeCouncil()">TRANSMIT TO COUNCIL</button>
-
-                <div class="council-grid">
-                    <div class="model-box" id="box-gemini"><h4>[GEMINI_PRIME]</h4><div class="content">Awaiting signal...</div></div>
-                    <div class="model-box" id="box-copilot"><h4>[COPILOT_BETA]</h4><div class="content">Awaiting signal...</div></div>
-                    <div class="model-box" id="box-grok"><h4>[GROK_X]</h4><div class="content">Awaiting signal...</div></div>
-                </div>
-
-                <div class="verdict-box">
-                    <strong style="letter-spacing: 2px;">ARTEMIS FINAL CURE:</strong>
-                    <div id="verdict-content" style="margin-top:10px; line-height: 1.6;">Standby for synthesis...</div>
-                </div>
-            </div>
-        </div>
+<div id="ui-layer">
+    <div id="gate-zone">
+        <h1 style="letter-spacing: 5px;">AWAKEN ARTEMIS?</h1>
+        <input type="text" id="gate-input" style="background:transparent; border:none; border-bottom: 1px solid var(--cyan); color:#fff; text-align:center; font-size:1.5em; outline:none;" autofocus>
+        <div class="guest-link" onclick="startGuestMode()">[ Enter as Stranger ]</div>
     </div>
 
-    <script src="assets/symbiote-fx.js"></script>
-    <script>
-        let stage = "GATE";
-        const gateZone = document.getElementById('gate-zone');
-        const gateInput = document.getElementById('gate-input');
-        const authZone = document.getElementById('auth-zone');
-        const activeZone = document.getElementById('active-zone');
-        const passInput = document.getElementById('pass-input');
-        const terminal = document.getElementById('terminal');
+    <div id="auth-zone">
+        <p>WHO'S THERE?</p>
+        <input type="password" id="pass-input" style="background:transparent; border:none; border-bottom: 1px solid var(--cyan); color:#fff; text-align:center; font-size:1.2em; outline:none;">
+    </div>
 
-        // Audio Setup
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playTone(freq, duration) {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        }
+    <div id="desktop">
+        <div class="folder"><div class="folder-icon"></div><div class="folder-label">Stewardship</div></div>
+        <div class="folder"><div class="folder-icon" style="border-color:var(--gold)"></div><div class="folder-label">Good News</div></div>
+        <div class="folder"><div class="folder-icon"></div><div class="folder-label">Atlas</div></div>
+    </div>
 
-        // Logic for "ant" Awakening
-        gateInput.addEventListener('input', (e) => {
-            if (e.target.value.toLowerCase().trim() === "ant") {
-                stage = "INQUIRY";
-                gateZone.style.display = 'none';
-                authZone.style.display = 'block';
-                passInput.focus();
-                if(window.symbiote) window.symbiote.setMode('core');
-                playTone(440, 1);
-            }
+    <div id="terminal">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+            <span id="mode-indicator">PRIVATE_SYMBIOTE</span>
+            <button onclick="toggleMute()" id="mute-btn" style="background:none; border:1px solid var(--cyan); color:var(--cyan); font-size:0.6em; cursor:pointer;">🔊 MUTE: OFF</button>
+        </div>
+        <textarea id="cmd-input" placeholder="Query the Council..."></textarea>
+        <button onclick="invokeCouncil()" style="width:100%; margin-top:10px; background:var(--cyan); border:none; padding:10px; cursor:pointer; font-weight:bold;">TRANSMIT</button>
+        
+        <div class="council-grid">
+            <div class="model-box" id="box-gemini"><h4>GEMINI</h4><div class="content">...</div></div>
+            <div class="model-box" id="box-copilot"><h4>COPILOT</h4><div class="content">...</div></div>
+            <div class="model-box" id="box-grok"><h4>GROK</h4><div class="content">...</div></div>
+        </div>
+        <div id="verdict-box" style="margin-top:20px; color:var(--gold); border-top:1px solid var(--gold); padding-top:10px;">
+            <strong>ARTEMIS:</strong> <span id="verdict-content">Waiting for query...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isGuest = false;
+    let isMuted = false;
+
+    // Sequential Voice Profiles
+    const voices = {
+        'Gemini': { pitch: 0.8, rate: 0.9 },
+        'Copilot': { pitch: 1.2, rate: 1.0 },
+        'Grok': { pitch: 1.1, rate: 1.2 },
+        'Artemis': { pitch: 1.0, rate: 1.0 }
+    };
+
+    function toggleMute() { 
+        isMuted = !isMuted; 
+        document.getElementById('mute-btn').innerText = isMuted ? "🔇 MUTE: ON" : "🔊 MUTE: OFF";
+        if(isMuted) window.speechSynthesis.cancel();
+    }
+
+    async function speak(text, entity) {
+        if (isMuted) return;
+        return new Promise(resolve => {
+            const ut = new SpeechSynthesisUtterance(text);
+            ut.pitch = voices[entity].pitch;
+            ut.rate = voices[entity].rate;
+            ut.onend = resolve;
+            window.speechSynthesis.speak(ut);
         });
+    }
 
-        // Logic for "dad" Identity
-        passInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (passInput.value.toLowerCase().trim() === "dad") {
-                    stage = "ACTIVE";
-                    authZone.style.display = 'none';
-                    terminal.style.display = 'block';
-                    activeZone.style.display = 'block';
-                    if(window.symbiote) window.symbiote.setMode('network');
-                    playTone(880, 0.5);
-                } else {
-                    playTone(110, 1);
-                    location.reload(); 
-                }
-            }
-        });
-
-        async function invokeCouncil() {
-            const prompt = document.getElementById('cmd-input').value;
-            const verdictContent = document.getElementById('verdict-content');
-            if (!prompt) return;
-
-            verdictContent.innerText = "Synthesizing Consensus...";
-            document.body.style.background = "radial-gradient(circle at center, #001a1a 0%, #000 100%)";
-
-            try {
-                const response = await fetch('/api/transmit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt, handshake: 'dad' })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    verdictContent.innerText = data.verdict;
-                } else {
-                    verdictContent.innerText = "REFUSAL: " + (data.error || "Moral Conflict.");
-                }
-            } catch (err) {
-                verdictContent.innerText = "SYNAPTIC DISCONNECT.";
-            }
+    // Handshake Logic
+    document.getElementById('gate-input').addEventListener('input', (e) => {
+        if(e.target.value.toLowerCase() === 'ant') {
+            document.getElementById('gate-zone').style.display = 'none';
+            document.getElementById('auth-zone').style.display = 'block';
+            document.getElementById('pass-input').focus();
         }
-    </script>
+    });
+
+    document.getElementById('pass-input').addEventListener('keypress', async (e) => {
+        if(e.key === 'Enter' && e.target.value.toLowerCase() === 'dad') {
+            startPrivateMode();
+        }
+    });
+
+    function startPrivateMode() {
+        document.getElementById('auth-zone').style.display = 'none';
+        document.getElementById('terminal').style.display = 'block';
+        document.getElementById('desktop').style.display = 'flex';
+        speak("Welcome home, Architect. I am ready to serve.", "Artemis");
+    }
+
+    function startGuestMode() {
+        isGuest = true;
+        document.getElementById('gate-zone').style.display = 'none';
+        document.getElementById('terminal').style.display = 'block';
+        document.getElementById('mode-indicator').innerText = "GUEST_COMPUTE_MODE";
+        document.getElementById('mode-indicator').style.color = "gray";
+        speak("Welcome Stranger. You may query the Council.", "Artemis");
+    }
+
+    async function invokeCouncil() {
+        const input = document.getElementById('cmd-input').value;
+        const boxes = ['gemini', 'copilot', 'grok'];
+        
+        // Sequential simulation of the API response
+        for(let name of boxes) {
+            const box = document.getElementById(`box-${name}`);
+            box.classList.add('active-speaker');
+            const text = `Analyzing ${input} from ${name.toUpperCase()} perspective...`;
+            box.querySelector('.content').innerText = text;
+            await speak(text, name.charAt(0).toUpperCase() + name.slice(1));
+            box.classList.remove('active-speaker');
+        }
+        
+        document.getElementById('verdict-content').innerText = "Synthesis complete. Logic filed.";
+        await speak("The Council has concluded its computation.", "Artemis");
+    }
+</script>
 </body>
 </html>
