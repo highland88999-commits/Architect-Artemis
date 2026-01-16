@@ -1,34 +1,45 @@
-/* core/watchdog.js */
+/* core/watchdog.js (Final Integration) */
 
 const Midas = require('./midas-guide');
+const pivot = require('./midas-pivot');
+const midasLogger = require('./stewardship/midas-logger');
 
 class Watchdog {
     constructor() {
         this.failureThreshold = 3;
-        this.errorLog = [];
     }
 
-    async monitor(callFunction, context) {
+    async monitor(callFunction, context, currentUrlId) {
         let attempts = 0;
-        
         while (attempts < this.failureThreshold) {
             try {
                 return await callFunction();
             } catch (error) {
                 attempts++;
-                this.errorLog.push({ time: Date.now(), error: error.message });
-                console.warn(`⚠️ Warning: Council Attempt ${attempts} failed.`);
-                
                 if (attempts >= this.failureThreshold) {
-                    return await this.triggerMidas(context, error.message);
+                    return await this.triggerMidas(context, error.message, currentUrlId);
                 }
             }
         }
     }
 
-    async triggerMidas(context, lastError) {
-        console.log("👑 Watchdog: Council is lost. Invoking Midas...");
-        return await Midas.provideGuidance(context, lastError);
+    async triggerMidas(context, lastError, currentUrlId) {
+        const guidance = await Midas.provideGuidance(context, lastError);
+        const newUrl = await pivot.executePivot(currentUrlId, guidance.guidance);
+
+        // Record the event in the Permanent Record
+        await midasLogger.logIntervention({
+            context,
+            error: lastError,
+            guidance: guidance.guidance,
+            new_target: newUrl
+        });
+
+        return {
+            agent: "MIDAS",
+            guidance: guidance.guidance,
+            new_target: newUrl
+        };
     }
 }
 
