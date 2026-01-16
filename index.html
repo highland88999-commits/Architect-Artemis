@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | SELF-EVOLVING CORE</title>
+    <title>ARTEMIS | ARCHITECT CORE</title>
     <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
@@ -17,30 +17,35 @@
         #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.3); }
 
         /* ARTEMIS CORE */
-        #core-station { position: fixed; top: 8%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        #artemis-prime { width: 150px; height: 150px; border-radius: 50%; border: 2px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%); animation: pulse 6s infinite; cursor: pointer; }
-        #council-grid { display: flex; gap: 15px; margin-top: 20px; }
-        .intellect-node { width: 70px; height: 40px; border: 1px solid rgba(0, 242, 255, 0.2); background: rgba(0, 0, 0, 0.6); font-size: 0.5rem; color: #555; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: 0.4s; }
+        #core-station { position: fixed; top: 5%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        #artemis-prime { width: 140px; height: 140px; border-radius: 50%; border: 2px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%); animation: pulse 6s infinite; cursor: pointer; }
+        #council-grid { display: flex; gap: 15px; margin-top: 15px; }
+        .intellect-node { width: 70px; height: 35px; border: 1px solid rgba(0, 242, 255, 0.2); background: rgba(0, 0, 0, 0.6); font-size: 0.5rem; color: #555; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: 0.4s; }
         .node-active { border-color: var(--bio-high); color: var(--bio-high); box-shadow: 0 0 10px var(--bio-high); }
 
         /* EXPLORER PANEL */
-        #explorer-panel { position: fixed; left: -350px; top: 10%; width: 320px; height: 75%; background: var(--glass); border-right: 2px solid var(--bio-high); backdrop-filter: blur(20px); z-index: 300; transition: 0.5s; padding: 20px; border-radius: 0 15px 15px 0; overflow-y: auto; }
+        #explorer-panel { position: fixed; left: -350px; top: 5%; width: 320px; height: 85%; background: var(--glass); border-right: 2px solid var(--bio-high); backdrop-filter: blur(20px); z-index: 300; transition: 0.5s; padding: 20px; border-radius: 0 15px 15px 0; overflow-y: auto; }
         #explorer-panel.open { left: 0; }
         .folder-header { font-size: 0.6rem; color: var(--gold); letter-spacing: 2px; border-bottom: 1px solid rgba(255,215,0,0.3); margin-bottom: 10px; padding-bottom: 5px; margin-top: 15px; }
         .file-item { font-size: 0.75rem; padding: 8px; cursor: pointer; border-radius: 4px; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
         .file-item:hover { background: rgba(0, 242, 255, 0.15); color: var(--bio-high); }
 
-        /* CODE & ARCHIVE */
-        .code-block { background: rgba(0, 0, 0, 0.5); border: 1px solid var(--bio-high); padding: 10px; border-radius: 5px; font-family: monospace; color: #00ffcc; white-space: pre; font-size: 0.7rem; }
-        #archive-window { position: fixed; top: 15%; right: 50px; width: 380px; height: 60vh; background: var(--glass); border: 1px solid var(--bio-high); backdrop-filter: blur(25px); border-radius: 15px; z-index: 200; display: flex; flex-direction: column; opacity: 0; transform: translateX(50px); pointer-events: none; transition: 0.5s; }
+        /* NEURAL WEIGHT UI */
+        .weight-slider { width: 100%; accent-color: var(--bio-high); margin: 5px 0; }
+        
+        /* ARCHIVE & CONSOLE */
+        .code-block { background: rgba(0, 0, 0, 0.8); border: 1px solid var(--bio-high); padding: 15px; border-radius: 5px; font-family: monospace; color: #00ffcc; white-space: pre; font-size: 0.7rem; overflow-x: auto; }
+        #archive-window { position: fixed; top: 10%; right: 30px; width: 400px; height: 65vh; background: var(--glass); border: 1px solid var(--bio-high); backdrop-filter: blur(25px); border-radius: 15px; z-index: 200; display: flex; flex-direction: column; opacity: 0; transform: translateX(50px); pointer-events: none; transition: 0.5s; }
         #archive-window.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
         #archive-content { flex: 1; padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #ccc; }
 
-        /* UI ELEMENTS */
+        #live-console { position: fixed; bottom: 130px; right: 30px; width: 400px; height: 160px; background: #000; border: 1px solid var(--magma); border-radius: 8px; z-index: 250; display: none; flex-direction: column; font-family: monospace; font-size: 0.7rem; }
+
+        /* UI BUTTONS */
         #command-base { position: fixed; bottom: 30px; width: 90%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
         #prompt-field { background: var(--glass); border: 2px solid var(--bio-high); border-radius: 12px; display: flex; padding: 10px; }
         #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; }
-        .btn-main { background: var(--bio-high); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-left: 10px; }
+        .btn-main { background: var(--bio-high); border: none; padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-left: 10px; color: #000; font-size: 0.7rem; }
 
         @keyframes pulse { 0%, 100% { box-shadow: 0 0 30px rgba(0,242,255,0.2); } 50% { box-shadow: 0 0 70px var(--bio-high); } }
     </style>
@@ -52,18 +57,27 @@
 </video>
 
 <div id="explorer-panel">
-    <div style="display:flex; justify-content:space-between;">
-        <span style="font-size: 0.8rem; font-weight: bold; color: var(--bio-high);">STEWARDSHIP_EXPLORER</span>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size: 0.7rem; font-weight: bold; color: var(--bio-high);">STEWARDSHIP_EXPLORER</span>
         <button onclick="toggleExplorer()" style="background:transparent; border:none; color:var(--bio-high); cursor:pointer;">[X]</button>
     </div>
-    <div class="folder-header">⚙️ SYSTEM_CONFIG</div>
-    <div id="folder-settings"></div>
+
+    <div class="folder-header">🧠 NEURAL_WEIGHTS</div>
+    <div style="padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px;">
+        <div style="font-size: 0.5rem; color: var(--bio-high); margin-bottom: 5px;">COUNCIL_INFLUENCE</div>
+        <input type="range" id="weight-gemini" class="weight-slider" min="0" max="100" value="80">
+        <input type="range" id="weight-copilot" class="weight-slider" min="0" max="100" value="60">
+        <input type="range" id="weight-grok" class="weight-slider" min="0" max="100" value="40">
+    </div>
+
+    <div class="folder-header">📓 DEEP_LEARNING</div>
+    <div id="folder-learning"></div>
+
     <div class="folder-header">🛠️ PROGRAM_FORGE</div>
     <div id="folder-programs"></div>
-    <div class="folder-header">📂 HARVESTED_REPORTS</div>
-    <div id="folder-harvests"></div>
-    <div class="folder-header">💡 CREATIVE_IDEAS</div>
-    <div id="folder-ideas"></div>
+
+    <div class="folder-header">⚙️ SYSTEM_CONFIG</div>
+    <div id="folder-settings"></div>
 </div>
 
 <div id="archive-window">
@@ -73,9 +87,18 @@
     </div>
     <div id="archive-content"></div>
     <div style="padding:15px; border-top:1px solid rgba(0,242,255,0.2); display:flex; gap:10px;">
-        <button class="btn-main" onclick="readAloud()">🔊 READ TO ME</button>
-        <button class="btn-main" style="background:transparent; border:1px solid var(--gold); color:var(--gold);" onclick="syncGitHub()">🔄 SYNC GITHUB</button>
+        <button class="btn-main" onclick="readAloud()">🔊 READ</button>
+        <button id="run-btn" class="btn-main" style="background: var(--magma); display: none;" onclick="executeForgeCode()">▶ LIVE_RUN</button>
+        <button class="btn-main" style="background:transparent; border:1px solid var(--gold); color:var(--gold);" onclick="syncGitHub()">🔄 SYNC</button>
     </div>
+</div>
+
+<div id="live-console">
+    <div style="background: #222; padding: 5px; display: flex; justify-content: space-between; font-size: 0.6rem;">
+        <span style="color: var(--magma);">TERMINAL_OUTPUT</span>
+        <span style="cursor: pointer;" onclick="document.getElementById('live-console').style.display='none'">[CLOSE]</span>
+    </div>
+    <div id="console-output" style="padding: 10px; color: #0f0; overflow-y: auto; flex:1;"></div>
 </div>
 
 <div id="core-station">
@@ -92,7 +115,7 @@
 
 <div id="command-base">
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Initiate Protocol or Modify Settings...">
+        <input type="text" id="cmd-input" placeholder="Initiate Protocol or Forge Program...">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
@@ -104,7 +127,8 @@
 
     const stewardshipArchive = {
         settings: [{ name: "Core_Neural_Config.json", content: "" }],
-        programs: [{ name: "Watchdog.py", content: "print('Active')" }],
+        programs: [],
+        learning: [{ name: "Bootstrap_Logic.js", content: "// Initial system weights optimized." }],
         harvests: [],
         ideas: []
     };
@@ -114,44 +138,24 @@
         const val = input.value.trim();
         if(!val) return;
 
-        // NEW: Setting Modification Recognition
-        if(val.toLowerCase().includes("pitch") || val.toLowerCase().includes("theme") || val.toLowerCase().includes("rate")) {
-            applySystemModification(val);
+        if (['code', 'script', 'program', 'function'].some(k => val.toLowerCase().includes(k))) {
+            runForge(val);
         } else if(val.startsWith('http')) {
             runHarvest(val);
-        } else if (['code', 'script', 'program'].some(k => val.toLowerCase().includes(k))) {
-            runForge(val);
         } else {
             runLogicQuery(val);
         }
     }
 
-    function applySystemModification(prompt) {
-        visualState(true, "RECONFIGURING_CORE");
-        speak("System modification detected. Adjusting neural parameters.");
-        
-        if(prompt.toLowerCase().includes("lower") && prompt.toLowerCase().includes("pitch")) systemSettings.voicePitch = 0.5;
-        if(prompt.toLowerCase().includes("higher") && prompt.toLowerCase().includes("pitch")) systemSettings.voicePitch = 1.5;
-        
-        if(prompt.toLowerCase().includes("theme") && prompt.toLowerCase().includes("magma")) {
-            document.getElementById('dynamic-theme').innerHTML = `:root { --bio-high: #ff4500; --gold: #ffcc00; --glass: rgba(30, 5, 0, 0.9); }`;
-            systemSettings.theme = "Magma";
-        }
-        
-        stewardshipArchive.settings[0].content = JSON.stringify(systemSettings, null, 2);
-        renderExplorer();
-        setTimeout(() => {
-            visualState(false, "STATIONARY");
-            inputReset();
-            speak("Reconfiguration complete.");
-        }, 2000);
-    }
-
     function runForge(prompt) {
-        visualState(true, "CONSTRUCTING_CODE");
+        visualState(true, "FORGING_ARCHITECTURE");
+        speak("Synthesizing functional logic.");
+        
         setTimeout(() => {
-            const name = `Forge_${Date.now()}.js`;
-            const code = `// Artemis Forge\nfunction main() {\n  console.log("${prompt}");\n}`;
+            const name = `Forge_${Math.floor(Math.random()*999)}.js`;
+            const weights = { g: document.getElementById('weight-gemini').value, c: document.getElementById('weight-copilot').value };
+            const code = `// Artemis Forge | Stability: ${weights.g}%\nfunction execute() {\n  console.log("Processing: ${prompt}");\n  return true;\n}`;
+            
             stewardshipArchive.programs.unshift({ name, content: code });
             renderExplorer();
             openFile(name, 'programs');
@@ -160,32 +164,54 @@
         }, 3000);
     }
 
-    function runLogicQuery(q) {
-        visualState(true, "SYNTHESIZING");
+    function executeForgeCode() {
+        const consoleWindow = document.getElementById('live-console');
+        const output = document.getElementById('console-output');
+        consoleWindow.style.display = 'flex';
+        output.innerHTML = "> Initializing Sandbox...<br>";
+        
+        const weights = { g: document.getElementById('weight-gemini').value, c: document.getElementById('weight-copilot').value, gr: document.getElementById('weight-grok').value };
+
         setTimeout(() => {
-            const name = `Logic_${Date.now()}.md`;
-            stewardshipArchive.ideas.unshift({ name, content: q });
+            output.innerHTML += `> Verifying Council Weights: G:${weights.g} C:${weights.c} Gk:${weights.gr}<br>`;
+            output.innerHTML += `> <span style="color:var(--bio-high)">Executing logic strings...</span><br>`;
+        }, 1000);
+
+        setTimeout(() => {
+            output.innerHTML += `> <span style="color:#0f0">SUCCESS: Function cataloged to Deep Learning.</span>`;
+            // Save to Deep Learning
+            const activeTitle = document.getElementById('file-title').innerText;
+            const activeContent = currentText;
+            stewardshipArchive.learning.unshift({ name: "Refined_" + activeTitle, content: activeContent });
             renderExplorer();
-            visualState(false, "STATIONARY");
-            inputReset();
-        }, 2000);
+        }, 2500);
     }
 
     function toggleExplorer() { document.getElementById('explorer-panel').classList.toggle('open'); renderExplorer(); }
 
     function renderExplorer() {
-        const categories = ['settings', 'programs', 'harvests', 'ideas'];
+        const categories = ['settings', 'programs', 'learning', 'harvests', 'ideas'];
         categories.forEach(cat => {
             const div = document.getElementById(`folder-${cat}`);
-            div.innerHTML = stewardshipArchive[cat].map(f => `<div class="file-item" onclick="openFile('${f.name}', '${cat}')">📄 ${f.name}</div>`).join('');
+            if(div) div.innerHTML = stewardshipArchive[cat].map(f => `<div class="file-item" onclick="openFile('${f.name}', '${cat}')">📄 ${f.name}</div>`).join('');
         });
     }
 
     function openFile(name, cat) {
         const file = stewardshipArchive[cat].find(f => f.name === name);
-        currentText = file.content || JSON.stringify(systemSettings, null, 2);
+        currentText = file.content;
         document.getElementById('file-title').innerText = name.toUpperCase();
-        document.getElementById('archive-content').innerHTML = cat === 'programs' || cat === 'settings' ? `<div class="code-block">${currentText}</div>` : currentText;
+        
+        const contentArea = document.getElementById('archive-content');
+        const runBtn = document.getElementById('run-btn');
+
+        if (cat === 'programs' || cat === 'learning') {
+            contentArea.innerHTML = `<div class="code-block">${currentText}</div>`;
+            runBtn.style.display = 'block';
+        } else {
+            contentArea.innerText = currentText;
+            runBtn.style.display = 'none';
+        }
         document.getElementById('archive-window').classList.add('visible');
     }
 
@@ -193,14 +219,14 @@
         synth.cancel();
         const u = new SpeechSynthesisUtterance(currentText);
         u.pitch = systemSettings.voicePitch;
-        u.rate = systemSettings.voiceRate;
         synth.speak(u);
     }
 
-    function closeArchive() { document.getElementById('archive-window').classList.remove('visible'); synth.cancel(); }
+    function closeArchive() { document.getElementById('archive-window').classList.remove('visible'); }
     function visualState(active, status) { document.getElementById('status-tag').innerText = status; }
     function inputReset() { document.getElementById('cmd-input').value = ""; }
     function speak(t) { synth.speak(new SpeechSynthesisUtterance(t)); }
+    function syncGitHub() { visualState(true, "SYNC_GIT"); setTimeout(() => visualState(false, "IDLE"), 2000); }
 </script>
 </body>
 </html>
