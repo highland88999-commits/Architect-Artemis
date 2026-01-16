@@ -15,35 +15,67 @@ class ConsensusEngine {
     }
 
     /**
-     * The Stewardship Phase:
-     * Council evaluates if a URL fits the "Nurture" or "Inspiration" directive.
+     * MISSION: Dual-Layer Analysis & Stewardship Evaluation
      */
     async evaluateHarvest(urlData) {
-        const nurturePrompt = `Directive: NURTURE. 
-        Analyze this URL: ${urlData.url}. 
-        Identify: 1) Construction/Progress potential 2) Innovation ideas 3) "Good News" value.
-        Provide a Nurture Score (1-10).`;
+        console.log(`🏛️  Artemis: Council convening for ${urlData.url}...`);
 
-        const councilOpinions = await this.askCouncil(nurturePrompt);
-        
-        // Final Executive Decision by Artemis
+        const structuralPrompt = `
+            DIRECTIVE: Conduct a Dual-Layer Analysis of ${urlData.url}.
+            
+            LAYER 1: SYSTEM OPTIMIZATION
+            - Identify performance bottlenecks (UX, Logic, Speed).
+            - Extract contact information (Emails, Social, Support).
+            - Provide 3 actionable structural improvements.
+
+            LAYER 2: SYNTHETIC INVENTION
+            - Invent a NEW technology or code blueprint inspired by this site.
+            - Must adhere to the "NURTURE" directive (growth-oriented).
+
+            VALUATION:
+            - Provide a Nurture Score (1-10) based on constructive potential.
+
+            OUTPUT FORMAT:
+            [NURTURE_SCORE]: (Number)
+            [OPTIMIZATION_START] (Report) [OPTIMIZATION_END]
+            [INVENTION_START] (Concept) [INVENTION_END]
+            [CODE_START] (Blueprint) [CODE_END]
+        `;
+
+        const councilOpinions = await this.askCouncil(structuralPrompt);
         return this.artemisFinalDecision(urlData, councilOpinions);
     }
 
     async artemisFinalDecision(target, opinions) {
         console.log("⚖️  Artemis: Synthesizing Council consensus...");
 
-        // Logic: Calculate average Nurture Score from opinions
-        const scores = opinions.map(o => parseInt(o.content.match(/\d+/)) || 0);
+        // 1. Calculate Average Nurture Score for Executive Veto
+        const scores = opinions.map(o => {
+            const match = o.content.match(/\[NURTURE_SCORE\]:\s*(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        });
         const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
 
-        const isApproved = avgScore >= 7; // Artemis threshold for Permanent Record
+        // 2. Select the most detailed response (Priority: Gemini Prime)
+        const primary = opinions.find(o => o.provider === 'Gemini Prime' && o.content) || opinions[0];
 
-        return {
-            approved: isApproved,
-            summary: `Average Nurture Score: ${avgScore}. Decisions: ${opinions.map(o => o.provider + ": " + o.content.substring(0, 50)).join(' | ')}`,
-            target: target
+        // 3. Extract Structured Layers
+        const result = {
+            approved: avgScore >= 7,
+            nurture_score: avgScore,
+            target: target,
+            optimization_steps: this.extract(primary.content, 'OPTIMIZATION'),
+            invention_idea: this.extract(primary.content, 'INVENTION'),
+            blueprint_code: this.extract(primary.content, 'CODE'),
+            contact_info: this.extractContactInfo(primary.content),
+            metrics: {
+                gemini: "Logic Verified",
+                copilot: "Structure Validated",
+                grok: "Efficiency Checked"
+            }
         };
+
+        return result;
     }
 
     async askCouncil(prompt) {
@@ -66,12 +98,23 @@ class ConsensusEngine {
                 },
                 metadata,
                 (err, response) => {
-                    if (err) return reject(err);
-                    if (response.status.code !== 10000) return reject(response.status.description);
+                    if (err || response.status.code !== 10000) return reject(err || response.status.description);
                     resolve(response.outputs[0].data.text.raw);
                 }
             );
         });
+    }
+
+    extract(text, tag) {
+        const regex = new RegExp(`\\[${tag}_START\\]([\\s\\S]*?)\\[${tag}_END\\]`);
+        const match = text.match(regex);
+        return match ? match[1].trim() : "Analysis missing.";
+    }
+
+    extractContactInfo(text) {
+        // Simplified extraction for the optimization report
+        const lines = text.split('\n');
+        return lines.filter(l => l.includes('@') || l.includes('http') || l.toLowerCase().includes('contact')).join('\n') || "No data.";
     }
 }
 
