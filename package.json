@@ -1,12 +1,11 @@
 {
   "name": "architect-artemis",
   "version": "1.0.0",
-  "description": "Autonomous Digital Steward & Logic Architect",
-  "main": "core/architect.js",
+  "description": "Autonomous Symbiotic Steward",
+  "main": "index.html",
   "scripts": {
-    "pulse": "node core/compass.js",
-    "metabolize": "node core/metabolism.js",
-    "hunt": "node core/sensor.js"
+    "start": "servor --reload",
+    "build": "mkdir -p public && cp index.html public/ && cp -r assets public/"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.0",
@@ -14,7 +13,9 @@
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.3.1",
     "fs-extra": "^11.1.1",
-    "jsdom": "^22.1.0",
-    "mermaid": "^10.6.1"
+    "jsdom": "^22.1.0"
+  },
+  "devDependencies": {
+    "servor": "^4.0.2"
   }
 }
