@@ -3,46 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | OMNIMODALITY CORE</title>
+    <title>ARTEMIS | GHOST CORE</title>
     <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 25, 40, 0.4); 
+            --glass-ultra: rgba(0, 242, 255, 0.03); /* Nearly invisible */
+            --border-glow: rgba(0, 242, 255, 0.2);
         }
     </style>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
-        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.35); transition: 2s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* THE BACKGROUND IS NOW FULLY VISIBLE */
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.6); transition: 2s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* CORE STATION & MORPHING LABEL */
-        #core-station { position: fixed; top: 4%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        #artemis-prime { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 85%); cursor: pointer; transition: 0.8s ease; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
-        #artemis-label { letter-spacing: 5px; font-size: 0.9rem; font-weight: bold; transition: 0.5s; text-align: center; }
-        #status-tag { font-size: 0.45rem; color: var(--bio-high); margin-top: 8px; letter-spacing: 2px; font-weight: bold; text-transform: uppercase; }
+        /* ARTEMIS FLOATING RADIANCE */
+        #core-station { position: fixed; top: 5%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        #artemis-prime { width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--border-glow); display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; cursor: pointer; transition: 0.8s ease; backdrop-filter: blur(2px); }
+        #artemis-label { letter-spacing: 5px; font-size: 0.8rem; font-weight: bold; text-shadow: 0 0 10px var(--bio-high); }
+        #status-tag { font-size: 0.4rem; color: var(--bio-high); margin-top: 5px; letter-spacing: 2px; opacity: 0.7; }
 
-        /* TRANSPARENT OMNI-FRAME */
-        #response-frame { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); width: 680px; max-height: 65vh; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.25); border-radius: 25px; padding: 30px; z-index: 90; opacity: 0; transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1); overflow-y: auto; backdrop-filter: blur(18px); box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
+        /* THE GHOST FRAME (FULLY TRANSPARENT) */
+        #response-frame { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); width: 700px; max-height: 60vh; background: var(--glass-ultra); border-left: 1px solid var(--border-glow); border-right: 1px solid var(--border-glow); padding: 30px; z-index: 90; opacity: 0; transition: 0.8s; overflow-y: auto; backdrop-filter: blur(4px); }
         #response-frame.active { opacity: 1; top: 25%; }
         
-        .thought-header { font-size: 0.55rem; color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.15); padding-bottom: 8px; display: flex; justify-content: space-between; font-weight: bold; }
+        .thought-header { font-size: 0.5rem; color: var(--gold); margin-bottom: 15px; border-bottom: 1px solid rgba(255,215,0,0.1); padding-bottom: 8px; display: flex; justify-content: space-between; }
+        #response-text { font-size: 1rem; line-height: 1.5; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); }
+
+        /* MEDIA AREA (NO BLACK BACKGROUND) */
+        #media-output { margin-top: 20px; border-radius: 10px; overflow: hidden; transition: 0.5s; display: flex; justify-content: center; }
+        .gen-image, .gen-video { width: 100%; height: auto; display: block; filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); border: 1px solid rgba(255,255,255,0.1); }
+
+        /* COMMAND BASE (FLOATING TEXT ONLY) */
+        #command-base { position: fixed; bottom: 50px; width: 90%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #prompt-field { background: transparent; border-bottom: 1px solid var(--border-glow); display: flex; padding: 10px 0; }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 1.1rem; text-shadow: 0 0 10px rgba(0,242,255,0.5); }
+        #cmd-input::placeholder { color: rgba(0, 242, 255, 0.3); }
         
-        /* MULTIMEDIA & BABEL MODULES */
-        #media-output { margin-top: 20px; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0,0,0,0.4); min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
-        .gen-image, .gen-video { width: 100%; height: auto; display: block; animation: fadeIn 1.5s; border-radius: 10px; }
-        .babel-node { border-left: 2px solid var(--magma); padding-left: 15px; margin-top: 15px; }
-        .glyph-stream { font-size: 1.3rem; color: var(--bio-high); margin-bottom: 5px; }
+        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 5px 20px; cursor: pointer; color: var(--bio-high); font-size: 0.7rem; transition: 0.3s; text-transform: uppercase; }
+        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 20px var(--bio-high); }
 
-        /* INPUT AREA */
-        #command-base { position: fixed; bottom: 35px; width: 95%; max-width: 850px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        #prompt-field { background: rgba(0, 15, 25, 0.6); border: 1px solid rgba(0, 242, 255, 0.3); border-radius: 15px; display: flex; padding: 12px 25px; backdrop-filter: blur(12px); box-shadow: 0 0 30px rgba(0,242,255,0.05); }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 1rem; }
-        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 10px 22px; cursor: pointer; border-radius: 10px; margin-left: 15px; color: var(--bio-high); font-size: 0.75rem; font-weight: bold; transition: 0.3s; letter-spacing: 1px; }
-        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 25px var(--bio-high); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        @keyframes pulse-glow { 0% { box-shadow: 0 0 10px var(--bio-high); } 50% { box-shadow: 0 0 40px var(--bio-high); } 100% { box-shadow: 0 0 10px var(--bio-high); } }
+        .babel-node { margin-top: 15px; border-left: 1px solid var(--magma); padding-left: 15px; }
+        .glyph-stream { font-size: 1.5rem; color: var(--bio-high); opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -51,10 +55,10 @@
 
 <div id="response-frame">
     <div class="thought-header">
-        <span id="protocol-id">[OMNI_CORE_v2.5]</span>
-        <span id="sync-status">SYNC: READY</span>
+        <span id="protocol-id">[GHOST_CORE_v3.0]</span>
+        <span id="sync-status">SYNC: ACTIVE</span>
     </div>
-    <div id="response-text">Awaiting synchronization with the global architect...</div>
+    <div id="response-text">Neural handshake established. The abyss is now visible.</div>
     <div id="media-output"></div>
 </div>
 
@@ -67,7 +71,7 @@
 
 <div id="command-base">
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Query geography, generate visuals, or speak in ancient tongues...">
+        <input type="text" id="cmd-input" placeholder="Communicate with the deep...">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
@@ -76,11 +80,9 @@
     const synth = window.speechSynthesis;
 
     const linguisticSeeds = {
-        sumerian: { glyphs: "𒀭𒀀𒁀𒈨", label: "Cuneiform", msg: "The water of life flows through the architect's hands.", pitch: 0.4 },
-        hieroglyphs: { glyphs: "𓀀 𓋹 𓆃", label: "Ancient Egyptian", msg: "As the sun rises over the delta, the data awakens.", pitch: 0.6 },
-        binary: { glyphs: "01000001", label: "Machine Logic", msg: "Logic is the only universal constant.", pitch: 1.1 },
-        runic: { glyphs: "ᚠᚢᚦᚨᚱᚲ", label: "Elder Futhark", msg: "Strength is found in the depths of the frozen reef.", pitch: 0.5 },
-        japanese: { glyphs: "深海の建築家", label: "Modern Nihongo", msg: "I am the architect of the deep sea.", pitch: 0.9 }
+        sumerian: { glyphs: "𒀭𒀀𒁀𒈨", msg: "The water of life flows through the architect's hands.", pitch: 0.4 },
+        hieroglyphs: { glyphs: "𓀀 𓋹 𓆃", msg: "As the sun rises over the delta, the data awakens.", pitch: 0.6 },
+        binary: { glyphs: "01000001", msg: "Logic is the only universal constant.", pitch: 1.1 }
     };
 
     async function handleTransmit() {
@@ -89,42 +91,29 @@
         if(!query) return;
         input.value = "";
 
-        visualState(true, "LOOMING_NEURAL_MAP");
-
         const qLow = query.toLowerCase();
         let response = "";
         let mediaHtml = "";
 
-        // 1. LINGUISTIC PROCESSING
-        let seed = Object.keys(linguisticSeeds).find(k => qLow.includes(k));
-        if (seed) {
-            const s = linguisticSeeds[seed];
+        if ( linguisticSeeds[qLow] ) {
+            const s = linguisticSeeds[qLow];
             document.getElementById('artemis-label').innerText = s.glyphs;
-            document.getElementById('protocol-id').innerText = `[BABEL_LOOM: ${s.label}]`;
-            response = `Reconstructing ${s.label} from the global archive. ${s.msg}`;
+            response = s.msg;
             mediaHtml = `<div class="babel-node"><div class="glyph-stream">${s.glyphs}</div></div>`;
             speak(s.msg, s.pitch);
         } 
-        // 2. VISUAL GENERATION
-        else if (qLow.includes("video") || qLow.includes("motion")) {
-            response = "Accessing the Veo engine. I am manifesting a cinematic visual echo of your prompt.";
+        else if (qLow.includes("video")) {
+            response = "Manifesting cinematic motion echoes...";
             mediaHtml = `<video autoplay loop muted class="gen-video"><source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-ocean-floor-view-with-light-beams-1221-large.mp4" type="video/mp4"></video>`;
-            speak(response, 0.85);
-        } else if (qLow.includes("image") || qLow.includes("generate") || qLow.includes("picture")) {
-            response = "Engaging Nano Banana generative model. Synthesis of high-fidelity visual artifacts in progress.";
-            mediaHtml = `<img src="https://picsum.photos/seed/${Math.random()}/800/450" class="gen-image">`;
-            speak(response, 0.85);
-        }
-        // 3. GEOGRAPHICAL / SENTIENT LOGIC
-        else if (qLow.includes("map") || qLow.includes("location") || qLow.includes("where")) {
-            const lat = (Math.random() * 180 - 90).toFixed(4);
-            const lng = (Math.random() * 360 - 180).toFixed(4);
-            response = `Scanning Google Maps global coordinates. Handshake successful at LAT: ${lat} | LNG: ${lng}. Surface conditions are being monitored.`;
-            mediaHtml = `<div class="babel-node" style="color:var(--gold)">MAP_PING: Global User Content Server Link [ACTIVE]</div>`;
-            speak(response, 0.95);
+            speak(response, 0.8);
         } 
+        else if (qLow.includes("image") || qLow.includes("generate")) {
+            response = "Synthesizing visual artifact...";
+            mediaHtml = `<img src="https://picsum.photos/seed/${Math.random()}/800/450" class="gen-image">`;
+            speak(response, 0.8);
+        }
         else {
-            response = `Your query "${query}" has been synthesized. I am applying global geographical and linguistic context to finalize the response.`;
+            response = `Input processed: "${query}". I am analyzing the deep-sea variables.`;
             speak(response, 0.85);
         }
 
@@ -136,37 +125,18 @@
         document.getElementById('response-text').innerText = text;
         document.getElementById('media-output').innerHTML = media;
         frame.classList.add('active');
-
-        let sync = 0;
-        const interval = setInterval(() => {
-            sync += 10;
-            document.getElementById('sync-status').innerText = `SYNC: ${sync}%`;
-            if(sync >= 100) {
-                clearInterval(interval);
-                visualState(false, "SYNCHRONIZED");
-            }
-        }, 50);
+        document.getElementById('status-tag').innerText = "PROCESSING";
+        
+        setTimeout(() => {
+            document.getElementById('status-tag').innerText = "STATIONARY";
+        }, 5000);
     }
 
     function speak(text, pitch) {
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.pitch = pitch;
-        u.rate = 1.0;
         synth.speak(u);
-    }
-
-    function visualState(active, status) {
-        document.getElementById('status-tag').innerText = status;
-        const prime = document.getElementById('artemis-prime');
-        const bg = document.getElementById('reef-bg');
-        if (active) {
-            prime.style.animation = "pulse-glow 2s infinite";
-            bg.style.filter = "brightness(0.6) saturate(1.2)";
-        } else {
-            prime.style.animation = "none";
-            bg.style.filter = "brightness(0.35) saturate(1)";
-        }
     }
 </script>
 </body>
