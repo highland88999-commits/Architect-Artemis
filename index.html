@@ -9,57 +9,56 @@
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 20, 30, 0.8);
+            --glass: rgba(0, 20, 30, 0.85);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
         
-        /* THE REEF BACKDROPS */
         #reef-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: -1; filter: brightness(0.6) contrast(1.1);
+            object-fit: cover; z-index: -1; filter: brightness(0.5) contrast(1.2);
         }
 
-        /* ARTEMIS SYMBIOTE (Floating Orb) */
+        /* ARTEMIS SYMBIOTE */
         #artemis-orb {
             position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
-            width: 120px; height: 120px; border-radius: 50%;
-            background: radial-gradient(circle, var(--bio-high) 0%, transparent 70%);
-            box-shadow: 0 0 50px var(--bio-high);
+            width: 130px; height: 130px; border-radius: 50%;
+            background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%);
+            box-shadow: 0 0 60px var(--bio-high);
             z-index: 5; animation: float 6s ease-in-out infinite;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+            cursor: pointer;
         }
 
         @keyframes float { 0%, 100% { transform: translate(-50%, -55%); } 50% { transform: translate(-50%, -45%); } }
 
-        #ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 20px; }
-
-        /* API NEXUS WINDOW (Floating & Collapsible) */
+        /* API NEXUS (THE SEPARATE WINDOW) */
         #panel-api {
-            position: fixed; top: 100px; right: 20px; width: 280px;
-            background: var(--glass); border-left: 3px solid var(--magma);
-            padding: 15px; border-radius: 8px; display: none;
-            backdrop-filter: blur(10px); box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            position: fixed; top: 30px; right: 20px; width: 280px;
+            background: var(--glass); border-top: 4px solid var(--magma);
+            padding: 15px; border-radius: 8px; display: none; z-index: 100;
+            backdrop-filter: blur(12px); box-shadow: -10px 10px 30px rgba(0,0,0,0.6);
         }
 
-        /* COMMON WIDGET PANEL */
-        .widget-panel {
-            position: fixed; bottom: 220px; width: 90%; max-width: 500px; height: 350px;
-            background: var(--glass); border: 1px solid var(--bio-high);
-            backdrop-filter: blur(15px); padding: 15px; display: none;
-            border-radius: 15px; overflow-y: auto;
-        }
-
-        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); }
+        .widget-label { color: var(--gold); font-size: 0.6rem; letter-spacing: 2px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,242,255,0.2); text-transform: uppercase; }
 
         /* ICON DOCK */
-        #icon-dock { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 30px; border: 1px solid var(--bio-high); }
-        .app-icon { width: 50px; height: 50px; border-radius: 12px; border: 1px solid var(--bio-high); background: rgba(0,26,51,0.8); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        #icon-dock { display: flex; gap: 15px; margin-bottom: 15px; background: rgba(0,10,20,0.7); padding: 12px 25px; border-radius: 40px; border: 1px solid var(--bio-high); }
+        .app-icon { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--bio-high); background: rgba(0,26,51,0.9); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .app-icon:hover { box-shadow: 0 0 15px var(--bio-high); }
+        
+        /* MIDAS SUMMON BUTTON */
+        .midas-summon { border-color: var(--gold) !important; color: var(--gold); font-weight: bold; }
+        .midas-summon:hover { box-shadow: 0 0 20px var(--gold) !important; }
 
-        /* FORGE BOX */
-        #forge-container { width: 95%; max-width: 600px; background: rgba(0,0,0,0.8); border: 1px solid var(--bio-high); padding: 15px; border-radius: 10px; }
-        textarea { width: 100%; height: 40px; background: transparent; border: none; color: #fff; font-family: inherit; outline: none; resize: none; }
+        /* MAIN UI LAYER */
+        #ui-layer { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 20px; }
+        
+        #forge-container { width: 95%; max-width: 600px; background: rgba(0,0,0,0.9); border: 1px solid var(--bio-high); padding: 15px; border-radius: 12px; }
+        
+        .trigger-btn { width: 100%; background: transparent; border: 1px solid var(--bio-high); color: var(--bio-high); padding: 8px; font-size: 0.6rem; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .trigger-btn:hover { background: var(--bio-high); color: #000; }
     </style>
 </head>
 <body>
@@ -68,76 +67,107 @@
     <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-coral-reef-with-many-fishes-4152-large.mp4" type="video/mp4">
 </video>
 
-<div id="artemis-orb" onclick="speak('Artemis listening. How shall we stewardship the reef today?')">
-    <div style="font-size: 0.5rem; color: white; text-align: center;">ARTEMIS_CORE</div>
+<div id="artemis-orb" onclick="artemisTrigger()">
+    <div style="font-size: 0.5rem; color: white;">ARTEMIS</div>
+    <div id="status-dot" style="width:6px; height:6px; background:var(--bio-high); border-radius:50%; margin-top:5px; box-shadow:0 0 10px var(--bio-high);"></div>
 </div>
 
 <div id="ui-layer">
     <div id="gate-zone" style="text-align:center; margin-bottom: 30vh;">
-        <h2 style="letter-spacing: 5px; color: var(--bio-high);">STATION_LOCKED</h2>
-        <input type="text" id="gate-input" style="background:transparent; border:none; border-bottom:1px solid var(--bio-high); color:white; text-align:center; outline:none;" placeholder="[ IDENTITY ]">
+        <div style="font-size:0.7rem; color:var(--bio-high); letter-spacing:8px; margin-bottom:15px;">SECURE LINK REQUIRED</div>
+        <input type="text" id="gate-input" style="background:transparent; border:none; border-bottom:2px solid var(--bio-high); color:white; text-align:center; outline:none; font-size:1.5rem;" placeholder="...">
     </div>
 
     <div id="panel-api">
-        <div class="widget-label">⚡ API_NEXUS (SYSTEM FILES)</div>
-        <div style="font-size: 0.65rem; color: #aaa;">
-            <div style="margin-bottom:8px;">● transmit.js <span style="color:var(--bio-high)">[READY]</span></div>
-            <div style="margin-bottom:8px;">● forge.js <span style="color:var(--bio-high)">[READY]</span></div>
-            <div style="margin-bottom:8px;">● cron_tasks.js <span style="color:var(--magma)">[IDLE]</span></div>
+        <div class="widget-label">⚡ API_NEXUS / CORE_SYSTEM</div>
+        <div style="font-size: 0.6rem; line-height: 1.8;">
+            TRANSMIT.JS: <span style="color:var(--bio-high)">ACTIVE</span><br>
+            FORGE.JS: <span style="color:var(--gold)">BYPASS_MODE</span><br>
+            GITHUB_LINK: <span style="color:var(--bio-high)">CONNECTED</span>
         </div>
-        <button onclick="togglePanel('panel-api')" style="width:100%; background:transparent; border:1px solid var(--magma); color:var(--magma); font-size:0.5rem; margin-top:10px;">COLLAPSE NEXUS</button>
-    </div>
-
-    <div id="panel-logs" class="widget-panel">
-        <div class="widget-label">📂 STEWARDSHIP_EXPLORER</div>
-        <div id="explorer-content" style="font-size: 0.8rem;"></div>
+        <button class="trigger-btn" onclick="artemisTrigger()">MANUAL SYSTEM PULSE</button>
+        <button class="trigger-btn" style="border-color:var(--magma); color:var(--magma); margin-top:5px;" onclick="togglePanel('panel-api')">CLOSE NEXUS</button>
     </div>
 
     <div id="main-station" style="display:none; width: 100%; align-items: center; flex-direction: column;">
         <div id="icon-dock">
-            <div class="app-icon" onclick="togglePanel('panel-logs')">📂</div>
             <div class="app-icon" onclick="togglePanel('panel-api')">⚡</div>
-            <div class="app-icon" onclick="togglePanel('panel-council')">🏛️</div>
+            <div class="app-icon" onclick="togglePanel('panel-logs')">📂</div>
+            <div class="app-icon midas-summon" onclick="summonMidas()">📀</div>
         </div>
 
         <div id="forge-container">
-            <textarea id="cmd-input" placeholder="Initiate Forge Sequence..."></textarea>
+            <div style="font-size: 0.5rem; color: var(--gold); margin-bottom: 5px;">STATION_COMMAND_INPUT</div>
+            <textarea id="cmd-input" placeholder="Awaiting architect instructions..." style="width:100%; height:40px; background:transparent; border:none; color:#fff; font-family:inherit; outline:none; resize:none;"></textarea>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <span style="font-size:0.5rem; color:var(--bio-high)">REEL_TIME_SYNC: ACTIVE</span>
-                <button onclick="invokeCouncil()" style="background:var(--bio-high); border:none; padding:5px 15px; font-weight:bold; cursor:pointer;">TRANSMIT</button>
+                <span id="system-status-msg" style="font-size:0.5rem; color:var(--bio-high)">REEF_STABLE: 100%</span>
+                <button onclick="invokeCouncil()" style="background:var(--bio-high); border:none; padding:6px 18px; font-weight:bold; cursor:pointer; font-family:inherit;">TRANSMIT</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// --- TOGGLE LOGIC ---
+// --- CORE FUNCTIONS ---
+
 function togglePanel(id) {
     const p = document.getElementById(id);
-    const isVisible = p.style.display === 'block';
-    p.style.display = isVisible ? 'none' : 'block';
+    p.style.display = (p.style.display === 'block') ? 'none' : 'block';
 }
 
-// --- SECURITY HANDSHAKE ---
+// ARTEMIS TRIGGER (SYSTEM PULSE)
+function artemisTrigger() {
+    const dot = document.getElementById('status-dot');
+    const msg = document.getElementById('system-status-msg');
+    
+    // Visual Pulse
+    dot.style.background = '#fff';
+    dot.style.boxShadow = '0 0 30px #fff';
+    msg.innerText = "SYSTEM_PULSE_SENT";
+    
+    speak("System pulse initiated. Synchronizing repository.");
+    
+    setTimeout(() => {
+        dot.style.background = 'var(--bio-high)';
+        dot.style.boxShadow = '0 0 10px var(--bio-high)';
+        msg.innerText = "REEF_STABLE: 100%";
+    }, 1000);
+}
+
+// SUMMON MIDAS (GITHUB INTEGRATION)
+function summonMidas() {
+    speak("Summoning Midas from the repository.");
+    const msg = document.getElementById('system-status-msg');
+    msg.innerText = "MIDAS_AWAKENING...";
+    msg.style.color = "var(--gold)";
+    
+    // Simulate GitHub script execution
+    setTimeout(() => {
+        alert("📀 MIDAS SYSTEM: Gold Standard applied to repository logs.");
+        msg.innerText = "MIDAS_ACTIVE";
+    }, 1500);
+}
+
+// --- SECURITY ---
 document.getElementById('gate-input').addEventListener('input', (e) => {
     if (e.target.value.toLowerCase() === 'ant') {
-        // Simple bypass for this demo - you can add the stage 2 "dad" input here
         document.getElementById('gate-zone').style.display = 'none';
         document.getElementById('main-station').style.display = 'flex';
-        speak("Access granted. Artemis Station online.");
+        speak("Welcome home, Architect.");
     }
 });
 
 function speak(text) {
     const u = new SpeechSynthesisUtterance(text);
-    u.pitch = 0.9;
+    u.pitch = 0.85;
+    u.rate = 1;
     window.speechSynthesis.speak(u);
 }
 
-// Simulated data for explorer
-const files = ["Artemis Log", "System Files", "Permanent_Record.json"];
-document.getElementById('explorer-content').innerHTML = files.map(f => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.1)">📁 ${f}</div>`).join('');
-
+function invokeCouncil() {
+    speak("Transmitting instructions to the Council.");
+    artemisTrigger();
+}
 </script>
 </body>
 </html>
