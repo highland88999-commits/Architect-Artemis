@@ -4,64 +4,64 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * ARCHITECT ARTEMIS | STEWARDSHIP ARCHIVER
- * Purpose: Merging technical optimization and creative invention into the Permanent Record.
+ * ARCHITECT ARTEMIS | UNIFIED STEWARDSHIP ARCHIVER
+ * Purpose: Atomic archival of Optimization & Invention data for Batch Cycles.
  */
-async function archiveInPermanentRecord(target, councilData) {
+async function archiveInPermanentRecord(target, result) {
     const baseDir = path.join(__dirname, '../../creator-creation/stewardship');
-    
-    // 1. Sanitize for Folder Naming
+    const registryFile = path.join(baseDir, 'permanent_registry.json');
+
+    // 1. Sanitize for Folder Naming (URL to Folder Name)
     const siteName = target.url
         .replace(/^https?:\/\//, '')
         .replace(/\/$/, '')
-        .replace(/[/\\?%*:|"<>\s]/g, '_');
+        .replace(/[^a-z0-9]/gi, '_');
     
     const siteDir = path.join(baseDir, siteName);
-    const registryFile = path.join(baseDir, 'permanent_registry.json');
 
-    // 2. Ensure Folder Integrity (Organize Directive)
+    // 2. Ensure Folder Integrity
     if (!fs.existsSync(siteDir)) fs.mkdirSync(siteDir, { recursive: true });
 
-    // 3. Prepare File Contents
     const timestamp = new Date().toLocaleString();
-    
-    // Optimization Report Content
+
+    // 3. Optimization Report (Mission File 1)
     const reportContent = `
-# 🛠️ OPTIMIZATION REPORT: ${target.url}
+# 🛠️ OPTIMIZATION: ${target.url}
+**Artemis Nurture Score:** ${result.nurture_score}/10
 **Timestamp:** ${timestamp}
 
-## 📞 Contact Information
-${target.contactInfo || "No direct contact data found."}
+## 📞 CONTACT INFORMATION
+${result.contact_info || "No direct contact data harvested."}
 
-## 📊 Council Analysis
-- **Gemini (Efficiency):** ${councilData.gemini_metrics || "Pending"}
-- **Copilot (Logic):** ${councilData.copilot_logic || "Pending"}
-- **Grok (Truth):** ${councilData.grok_unfiltered || "Pending"}
+## 📊 COUNCIL METRICS
+- Gemini: ${result.metrics.gemini}
+- Copilot: ${result.metrics.copilot}
+- Grok: ${result.metrics.grok}
 
-## ⚙️ Structural Improvements
-${councilData.optimization_steps || "No improvements identified."}
+## ⚙️ STRUCTURAL STEPS
+${result.optimization_steps}
     `.trim();
 
-    // Invention Idea Content
+    // 4. Invention Idea (Mission File 2)
     const inventionContent = `
-# ✨ INVENTION IDEA: ${siteName}
+# ✨ INVENTION: ${siteName}
 **Directive:** NURTURE
 
-## 💡 The Concept
-${councilData.invention_idea || "Generating innovation..."}
+## 💡 CONCEPT
+${result.invention_idea}
 
-## 🛠️ Technical Blueprint
+## 🛠️ CODE BLUEPRINT
 \`\`\`javascript
-${councilData.blueprint_code || "// Logic pending synthesis"}
+${result.blueprint_code}
 \`\`\`
     `.trim();
 
-    // 4. Atomic Write to File System
     try {
-        fs.writeFileSync(path.join(siteDir, `Optimization_Report.md`), reportContent);
-        fs.writeFileSync(path.join(siteDir, `Invention_Idea.md`), inventionContent);
+        // Atomic Write
+        fs.writeFileSync(path.join(siteDir, 'Optimization_Report.md'), reportContent);
+        fs.writeFileSync(path.join(siteDir, 'Invention_Idea.md'), inventionContent);
 
-        // 5. Update Master Registry (System Tracking)
+        // 5. Update Master Registry
         let registry = [];
         if (fs.existsSync(registryFile)) {
             registry = JSON.parse(fs.readFileSync(registryFile, 'utf8'));
@@ -71,16 +71,16 @@ ${councilData.blueprint_code || "// Logic pending synthesis"}
             id: Date.now(),
             site: siteName,
             url: target.url,
-            path: siteDir,
+            score: result.nurture_score,
             timestamp: timestamp
         });
 
         fs.writeFileSync(registryFile, JSON.stringify(registry, null, 4));
         
-        console.log(`📂 Stewardship Success: Folder created for ${siteName}`);
+        console.log(`📂 Permanent Record Secured: ${siteName}`);
         return { success: true, folder: siteName };
     } catch (error) {
-        console.error(`❌ Archival Failure: ${error.message}`);
+        console.error(`❌ Archival Failure for ${siteName}: ${error.message}`);
         throw error;
     }
 }
