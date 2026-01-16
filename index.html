@@ -3,51 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | COMMAND STATION</title>
+    <title>ARTEMIS | PRIMARY CORE</title>
     <style>
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 15, 25, 0.9);
+            --glass: rgba(0, 15, 25, 0.92);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
-        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.35); }
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.3); }
         
-        /* HEADER & COUNCIL */
-        #station-header { position: fixed; top: 5%; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        #artemis-orb { width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, var(--bio-high) 0%, transparent 80%); box-shadow: 0 0 30px var(--bio-high); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; animation: breathe 8s infinite; cursor: pointer; }
-        #council-frames { display: flex; gap: 15px; margin-top: 15px; }
-        .council-member { width: 80px; height: 50px; background: var(--glass); border: 1px solid var(--bio-high); border-radius: 5px; font-size: 0.45rem; padding: 5px; text-align: center; display: flex; flex-direction: column; justify-content: center; transition: 0.3s; }
-        .active-query { box-shadow: 0 0 15px var(--bio-high); border-color: #fff; transform: scale(1.05); }
-
-        /* REPORT READER PANEL */
-        #report-viewer {
-            position: fixed; right: -450px; top: 10%; width: 400px; height: 70%;
-            background: var(--glass); border: 1px solid var(--bio-high);
-            backdrop-filter: blur(20px); z-index: 300; transition: 0.5s;
-            padding: 20px; border-radius: 15px 0 0 15px; display: flex; flex-direction: column;
+        /* ARTEMIS: THE PRIMARY FOCUS */
+        #core-station { position: fixed; top: 10%; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        
+        #artemis-prime {
+            width: 160px; height: 160px; border-radius: 50%;
+            background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%);
+            box-shadow: 0 0 80px rgba(0, 242, 255, 0.4);
+            border: 2px solid var(--bio-high);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: 0.5s; cursor: pointer; position: relative;
         }
-        #report-viewer.open { right: 0; }
-        #report-content { flex: 1; font-size: 0.85rem; line-height: 1.6; overflow-y: auto; color: #e0e0e0; margin: 15px 0; white-space: pre-wrap; }
-        
-        .action-bar { display: flex; justify-content: space-between; border-top: 1px solid rgba(0,242,255,0.2); padding-top: 10px; }
-        .reader-btn { background: transparent; border: 1px solid var(--bio-high); color: var(--bio-high); padding: 5px 10px; font-size: 0.7rem; cursor: pointer; }
-        .reader-btn.gold { border-color: var(--gold); color: var(--gold); }
 
-        /* COMMAND & FILES */
-        #command-center { position: fixed; bottom: 20px; width: 95%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        #file-system-preview { background: var(--glass); border: 1px solid var(--bio-high); border-bottom: none; padding: 10px; border-radius: 10px 10px 0 0; font-size: 0.65rem; max-height: 150px; overflow-y: auto; }
-        .file-entry { padding: 8px; border-bottom: 1px solid rgba(0,242,255,0.1); cursor: pointer; transition: 0.2s; }
-        .file-entry:hover { background: rgba(0,242,255,0.1); color: var(--gold); }
-        .new-tag { font-size: 0.5rem; background: var(--gold); color: black; padding: 1px 4px; border-radius: 3px; margin-left: 10px; }
+        /* COUNCIL: THE SUBORDINATE INTELLECTS */
+        #council-grid { display: flex; gap: 20px; margin-top: 30px; }
+        .intellect-node {
+            width: 70px; height: 40px; border: 1px solid rgba(0, 242, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5); font-size: 0.5rem; color: #666;
+            display: flex; align-items: center; justify-content: center; border-radius: 4px;
+            transition: 0.5s;
+        }
+        .node-active { border-color: var(--bio-high); color: var(--bio-high); box-shadow: 0 0 10px var(--bio-high); }
 
-        #prompt-wrapper { background: rgba(0,0,0,0.9); border: 2px solid var(--bio-high); display: flex; padding: 10px; border-radius: 0 0 10px 10px; }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; }
-        #send-btn { background: var(--bio-high); border: none; color: black; font-weight: bold; padding: 5px 15px; cursor: pointer; }
+        /* MIDAS HELP SYSTEM */
+        #midas-thread {
+            position: fixed; top: 0; left: 50%; width: 2px; height: 0;
+            background: linear-gradient(to bottom, var(--gold), transparent);
+            box-shadow: 0 0 15px var(--gold); transition: 1.5s ease-in-out; z-index: 90;
+        }
+        #midas-avatar { 
+            position: fixed; bottom: 100px; right: 30px; width: 60px; 
+            filter: drop-shadow(0 0 10px var(--gold)); cursor: pointer; z-index: 110;
+        }
 
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        /* COMMAND PROMPT */
+        #command-base {
+            position: fixed; bottom: 30px; width: 90%; max-width: 800px; left: 50%;
+            transform: translateX(-50%); z-index: 100;
+        }
+        #prompt-field {
+            background: var(--glass); border: 2px solid var(--bio-high);
+            border-radius: 10px; display: flex; padding: 12px; align-items: center;
+        }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 1rem; }
+        #send-btn { background: var(--bio-high); border: none; padding: 8px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; }
+
+        /* LOGS OVERLAY */
+        #record-log { margin-bottom: 10px; max-height: 100px; overflow-y: auto; font-size: 0.7rem; color: var(--bio-high); }
+
+        /* ANIMATIONS */
+        @keyframes pulse-intellect {
+            0% { transform: scale(1); box-shadow: 0 0 80px rgba(0, 242, 255, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 0 120px var(--bio-high); }
+            100% { transform: scale(1); box-shadow: 0 0 80px rgba(0, 242, 255, 0.4); }
+        }
     </style>
 </head>
 <body>
@@ -56,113 +77,103 @@
     <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-coral-reef-with-many-fishes-4152-large.mp4" type="video/mp4">
 </video>
 
-<div id="station-header">
-    <div id="artemis-orb">ARTEMIS</div>
-    <div id="council-frames">
-        <div class="council-member" id="frame-gemini">GEMINI PRIME</div>
-        <div class="council-member" id="frame-copilot">COPILOT</div>
-        <div class="council-member" id="frame-grok">GROK</div>
+<div id="midas-thread"></div>
+<img src="https://img.icons8.com/fluency/96/gold-bars.png" id="midas-avatar" onclick="midasInquiry()" title="Summon Midas">
+
+<div id="core-station">
+    <div id="artemis-prime" onclick="speak('Artemis core is synchronized.')">
+        <span style="font-size: 0.8rem; letter-spacing: 3px;">ARTEMIS</span>
+        <span id="status-tag" style="font-size: 0.4rem; color: var(--bio-high); margin-top: 5px;">STATIONARY</span>
+    </div>
+
+    <div id="council-grid">
+        <div class="intellect-node" id="node-gemini">GEMINI</div>
+        <div class="intellect-node" id="node-copilot">COPILOT</div>
+        <div class="intellect-node" id="node-grok">GROK</div>
     </div>
 </div>
 
-<div id="report-viewer">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="report-title" style="color:var(--gold); font-weight:bold; font-size:0.7rem;">REPORT_VIEWER</span>
-        <span onclick="closeViewer()" style="cursor:pointer; color:var(--magma);">[X]</span>
-    </div>
-    <div id="report-content">Select a file to read the record...</div>
-    <div class="action-bar">
-        <button class="reader-btn" onclick="speakContent()">READ ALOUD</button>
-        <button class="reader-btn gold" onclick="downloadReport()">DOWNLOAD (.MD)</button>
-    </div>
-</div>
-
-<div id="command-center">
-    <div id="file-system-preview">
-        <div style="color:var(--bio-high); margin-bottom:10px; font-size:0.5rem; letter-spacing:2px;">STATION_RECORDS</div>
-        <div id="file-list">
-            </div>
-    </div>
-    <div id="prompt-wrapper">
-        <input type="text" id="cmd-input" placeholder="Initiate query via Gemini Prime...">
-        <button id="send-btn" onclick="runQuery()">SEND</button>
+<div id="command-base">
+    <div id="record-log"></div>
+    <div id="prompt-field">
+        <input type="text" id="cmd-input" placeholder="Submit inquiry to Artemis...">
+        <button id="send-btn" onclick="executeCoreQuery()">SEND</button>
     </div>
 </div>
 
 <script>
-    // Storage for generated report data
-    let currentRecord = { title: "", body: "" };
-    const mockFiles = [
-        { id: 1, name: "Stewardship_Initial_Scan.md", content: "Artemis Report: The reef is currently operating at 94% biological efficiency. Recommended action: Synchronize GitHub bridges to ensure permanent log integrity." }
-    ];
-
-    function renderFileList() {
-        const list = document.getElementById('file-list');
-        list.innerHTML = mockFiles.map(f => `
-            <div class="file-entry" onclick="openReport(${f.id})">
-                📄 ${f.name} ${f.isNew ? '<span class="new-tag">NEW</span>' : ''}
-            </div>
-        `).join('');
-    }
-
-    function openReport(id) {
-        const file = mockFiles.find(f => f.id === id);
-        if(!file) return;
-        currentRecord = { title: file.name, body: file.content };
-        
-        document.getElementById('report-title').innerText = file.name.toUpperCase();
-        document.getElementById('report-content').innerText = file.content;
-        document.getElementById('report-viewer').classList.add('open');
-        file.isNew = false;
-        renderFileList();
-    }
-
-    function closeViewer() {
-        document.getElementById('report-viewer').classList.remove('open');
-    }
-
-    function downloadReport() {
-        if(!currentRecord.body) return;
-        const blob = new Blob([currentRecord.body], { type: 'text/markdown' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = currentRecord.title || "Artemis_Report.md";
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    async function runQuery() {
+    // --- ARTEMIS CORE LOGIC ---
+    function executeCoreQuery() {
         const input = document.getElementById('cmd-input');
         const query = input.value;
         if(!query) return;
 
-        document.getElementById('frame-gemini').classList.add('active-query');
-        input.value = "Consulting Gemini Prime...";
+        // Stage 1: Artemis begins processing
+        document.getElementById('artemis-prime').style.animation = "pulse-intellect 2s infinite";
+        document.getElementById('status-tag').innerText = "UTILIZING_COUNCIL";
+        input.value = "Artemis is synthesizing intellect...";
         
-        // Simulating AI report generation
+        // Stage 2: Council Nodes Light Up sequentially
+        const nodes = ['node-gemini', 'node-copilot', 'node-grok'];
+        nodes.forEach((id, index) => {
+            setTimeout(() => {
+                document.getElementById(id).classList.add('node-active');
+            }, 600 * (index + 1));
+        });
+
+        // Stage 3: Generation
         setTimeout(() => {
-            const newFile = {
-                id: Date.now(),
-                name: `Report_${Math.floor(Math.random()*1000)}.md`,
-                content: `ARTEMIS ANALYSIS FOR: "${query}"\n\nGenerated by Gemini Prime.\n\nSummary: The analysis indicates a high probability of stewardship success if the current logic is maintained. Permanent record updated in GitHub repository.\n\nTimestamp: ${new Date().toLocaleString()}`,
-                isNew: true
-            };
-            mockFiles.unshift(newFile);
-            renderFileList();
-            document.getElementById('frame-gemini').classList.remove('active-query');
+            const fileName = `Logic_Output_${Math.floor(Math.random()*1000)}.md`;
+            generateFile(fileName, query);
+            
+            // Reset Visuals
+            document.getElementById('artemis-prime').style.animation = "";
+            document.getElementById('status-tag').innerText = "STATIONARY";
+            nodes.forEach(id => document.getElementById(id).classList.remove('node-active'));
             input.value = "";
-            openReport(newFile.id);
-        }, 2000);
+            speak("Logic finalized. Report " + fileName + " created.");
+        }, 3500);
     }
 
-    function speakContent() {
-        const u = new SpeechSynthesisUtterance(currentRecord.body);
-        u.pitch = 0.8;
+    function generateFile(name, query) {
+        const log = document.getElementById('record-log');
+        const entry = document.createElement('div');
+        entry.style.cursor = 'pointer';
+        entry.innerHTML = `📄 ${name} <span style="color:var(--gold); font-size:0.5rem;">[DOWNLOADABLE]</span>`;
+        entry.onclick = () => downloadRecord(name, `ARTEMIS STEWARDSHIP REPORT\nQuery: ${query}\nResult: Optimal logic applied via Council intellect.`);
+        log.prepend(entry);
+    }
+
+    function downloadRecord(name, content) {
+        const blob = new Blob([content], { type: 'text/markdown' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        a.click();
+    }
+
+    // --- MIDAS GUIDANCE ---
+    function midasInquiry() {
+        const thread = document.getElementById('midas-thread');
+        const inquiry = prompt("Midas requires your objective. What do you seek?");
+        
+        if(inquiry) {
+            thread.style.height = "100vh";
+            speak("Midas provides the golden thread for " + inquiry);
+            setTimeout(() => {
+                thread.style.height = "0";
+                alert("Midas points to: Artemis Station / Generated Logs / " + inquiry);
+            }, 3000);
+        }
+    }
+
+    function speak(text) {
+        const u = new SpeechSynthesisUtterance(text);
+        u.pitch = 0.85;
         window.speechSynthesis.speak(u);
     }
 
-    renderFileList();
+    document.addEventListener('keydown', (e) => { if(e.key === 'Enter') executeCoreQuery(); });
 </script>
 </body>
 </html>
