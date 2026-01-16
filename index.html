@@ -12,32 +12,86 @@
             --blur: blur(15px);
         }
 
-        body, html { margin: 0; padding: 0; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            font-family: 'Courier New', monospace; 
+            color: white; 
+            overflow: hidden; 
+        }
         
-        /* THE NEURAL BACKGROUND (1M Particle Virtual Stock) */
-        canvas#primeCanvas { position: fixed; top: 0; left: 0; z-index: -1; }
-
-        /* THE OMNI-CHASSIS (The "Starting Point" for all modules) */
-        #artemis-omni-chassis {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 800px; height: 80vh;
-            background: var(--glass); backdrop-filter: var(--blur);
-            border: 1px solid rgba(0, 242, 255, 0.1); border-radius: 30px;
-            padding: 40px; display: flex; flex-direction: column;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); z-index: 10;
+        /* THE NEURAL BACKGROUND (Particle Field) */
+        canvas#primeCanvas { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: -1; 
         }
 
-        /* TEXT READABILITY OVERHAUL */
-        .glow-text { text-shadow: 0 0 10px rgba(0, 242, 255, 0.5), 2px 2px 5px #000; }
-        .sub-label { font-size: 10px; color: var(--accent); letter-spacing: 5px; text-transform: uppercase; margin-bottom: 10px; }
+        /* THE OMNI-CHASSIS */
+        #artemis-omni-chassis {
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 90%; 
+            max-width: 800px; 
+            height: 80vh;
+            background: rgba(0, 20, 30, 0.18);          /* lighter glass */
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(0, 242, 255, 0.08);
+            border-radius: 30px;
+            padding: 40px; 
+            display: flex; 
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6); 
+            z-index: 10;
+        }
+
+        /* TEXT READABILITY */
+        .glow-text { 
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5), 2px 2px 5px #000; 
+        }
+        .sub-label { 
+            font-size: 10px; 
+            color: var(--accent); 
+            letter-spacing: 5px; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+        }
         
-        #dynamic-interface-root { flex: 1; overflow-y: auto; margin-top: 20px; }
+        #dynamic-interface-root { 
+            flex: 1; 
+            overflow-y: auto; 
+            margin-top: 20px;
+            background: transparent;                    /* fully transparent response area */
+            backdrop-filter: blur(8px);                 /* subtle readability help */
+            border-radius: 16px;
+            padding: 20px;
+            margin: 0 -20px;                            /* edge-to-edge feel */
+        }
         
         /* THE COMMAND CORE */
-        #input-zone { margin-top: auto; border-top: 1px solid rgba(0, 242, 255, 0.2); padding-top: 20px; }
+        #input-zone { 
+            margin-top: auto; 
+            border-top: 1px solid rgba(0, 242, 255, 0.2); 
+            padding-top: 20px; 
+        }
         #master-cmd {
-            width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--bio);
-            color: var(--bio); font-family: inherit; font-size: 1.2rem; outline: none; padding: 10px 0;
+            width: 100%; 
+            background: transparent; 
+            border: none; 
+            border-bottom: 1px solid var(--bio);
+            color: var(--bio); 
+            font-family: inherit; 
+            font-size: 1.2rem; 
+            outline: none; 
+            padding: 10px 0;
+        }
+
+        #master-cmd::placeholder {
+            color: rgba(0, 242, 255, 0.5);
         }
     </style>
 </head>
@@ -65,8 +119,6 @@
 <script>
 /**
  * ARTEMIS PRIME LOGIC
- * This script initializes the 1M Particle background and sets up the
- * injection logic for all future "Versions" (Babel, Render, Maps, etc.)
  */
 const canvas = document.getElementById('primeCanvas');
 const ctx = canvas.getContext('2d');
@@ -89,17 +141,21 @@ class Particle {
     }
     draw() {
         ctx.fillStyle = this.color;
-        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); 
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); 
+        ctx.fill();
     }
     update() {
-        this.x += this.vx; this.y += this.vy;
+        this.x += this.vx; 
+        this.y += this.vy;
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
     }
 }
 
 function initParticles() {
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth; 
+    canvas.height = window.innerHeight;
     particles = [];
     for (let i = 0; i < 800; i++) particles.push(new Particle());
 }
@@ -110,12 +166,14 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// THE EVOLUTION HANDLER
+// COMMAND EVOLUTION HANDLER
 const input = document.getElementById('master-cmd');
 input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        const cmd = input.value;
-        evolve(cmd);
+        const cmd = input.value.trim();
+        if (cmd) {
+            evolve(cmd);
+        }
         input.value = '';
     }
 });
@@ -125,19 +183,27 @@ function evolve(instruction) {
     const newEntry = document.createElement('div');
     newEntry.className = 'glow-text';
     newEntry.style.marginTop = "15px";
-    newEntry.innerHTML = `> Executing Evolution: ${instruction}`;
+    newEntry.innerHTML = `> ${instruction}`;
     root.prepend(newEntry);
     
-    // Logic for background reaction
+    // Visual feedback: particle surge
     particles.forEach(p => {
-        p.vx *= 2; p.vy *= 2; // Temporary surge
-        setTimeout(() => { p.vx /= 2; p.vy /= 2; }, 1000);
+        const origVx = p.vx;
+        const origVy = p.vy;
+        p.vx *= 2.5;
+        p.vy *= 2.5;
+        setTimeout(() => { 
+            p.vx = origVx * 1.2; 
+            p.vy = origVy * 1.2; 
+        }, 900);
     });
+
+    // Optional: auto-scroll to bottom (newest at top, but useful)
+    root.scrollTop = 0;
 }
 
-initParticles(); animate();
+initParticles();
+animate();
 </script>
 </body>
 </html>
-
-
