@@ -1,0 +1,24 @@
+/* assets/css/midas-symbiote.css */
+
+.midas-overlay {
+    border: 2px solid #FFD700;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    padding: 15px;
+    border-radius: 8px;
+    color: #FFD700;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: none; /* Hidden until lost */
+}
+
+.midas-active {
+    display: block;
+    animation: gold-shimmer 2s infinite alternate;
+}
+
+@keyframes gold-shimmer {
+    from { filter: brightness(1) drop-shadow(0 0 5px #FFD700); }
+    to { filter: brightness(1.5) drop-shadow(0 0 20px #FFD700); }
+}
