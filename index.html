@@ -3,52 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | MASTER CORE</title>
+    <title>ARTEMIS | SENTIENT CORE</title>
     <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 15, 25, 0.92);
+            --glass: rgba(0, 40, 60, 0.4); /* High transparency */
         }
     </style>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
-        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.4); transition: 1.5s filter, 1.5s opacity; }
+        #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.5); transition: 1.5s; }
 
-        /* CORE STATION & ARTEMIS PRIME */
-        #core-station { position: fixed; top: 5%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; transition: 0.5s ease-in-out; }
-        #artemis-prime { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%); animation: pulse 6s infinite; cursor: pointer; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #status-tag { font-size: 0.45rem; color: var(--bio-high); margin-top: 5px; font-weight: bold; letter-spacing: 1px; }
+        /* ARTEMIS SENTIENCE CORE */
+        #core-station { position: fixed; top: 5%; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        #artemis-prime { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(0, 242, 255, 0.15) 0%, transparent 80%); animation: pulse 6s infinite; cursor: pointer; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #status-tag { font-size: 0.5rem; color: var(--bio-high); margin-top: 8px; letter-spacing: 2px; text-shadow: 0 0 5px var(--bio-high); }
 
-        /* RESPONSE FRAME (THE NEURAL NARRATOR) */
-        #response-frame { position: fixed; top: 22%; left: 50%; transform: translateX(-50%); width: 480px; max-height: 250px; background: var(--glass); border: 1px solid var(--bio-high); border-radius: 12px; padding: 18px; z-index: 90; opacity: 0; transition: 0.5s; overflow-y: auto; font-size: 0.85rem; color: #fff; box-shadow: 0 0 30px rgba(0, 242, 255, 0.15); backdrop-filter: blur(15px); }
-        #response-frame.active { opacity: 1; top: 26%; }
-        .thought-header { font-size: 0.5rem; color: var(--gold); margin-bottom: 8px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 3px; }
+        /* TRANSPARENT CRYSTAL RESPONSE FRAME */
+        #response-frame { position: fixed; top: 25%; left: 50%; transform: translateX(-50%); width: 550px; max-height: 400px; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.3); border-radius: 20px; padding: 25px; z-index: 90; opacity: 0; transition: 0.6s; overflow-y: auto; backdrop-filter: blur(8px); box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.05); }
+        #response-frame.active { opacity: 1; top: 28%; }
+        
+        .thought-header { font-size: 0.6rem; color: var(--gold); margin-bottom: 12px; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px; display: flex; justify-content: space-between; }
+        
+        /* CODE DISPLAY AREA */
+        .forge-output { background: rgba(0, 10, 20, 0.7); border-left: 3px solid var(--magma); padding: 15px; margin-top: 15px; font-family: 'Consolas', monospace; font-size: 0.8rem; color: #00ffcc; white-space: pre-wrap; overflow-x: auto; border-radius: 4px; }
 
-        /* ICON FIELD */
         #icon-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
         .bio-icon { position: absolute; font-size: 2rem; color: var(--bio-high); opacity: 0.6; filter: drop-shadow(0 0 8px var(--bio-high)); transition: 0.5s; pointer-events: auto; }
 
-        /* EXPLORER & MODS */
-        #explorer-panel { position: fixed; left: -350px; top: 5%; width: 300px; height: 85%; background: var(--glass); border-right: 2px solid var(--bio-high); backdrop-filter: blur(25px); z-index: 300; transition: 0.5s; padding: 25px; border-radius: 0 20px 20px 0; overflow-y: auto; }
-        #explorer-panel.open { left: 0; }
-        .folder-header { font-size: 0.6rem; color: var(--gold); letter-spacing: 2px; border-bottom: 1px solid rgba(255,215,0,0.3); margin-bottom: 12px; padding-bottom: 5px; margin-top: 20px; }
-        .file-item { font-size: 0.75rem; padding: 10px; cursor: pointer; border-radius: 6px; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-        .file-item:hover { background: rgba(0, 242, 255, 0.15); color: var(--bio-high); }
+        #command-base { position: fixed; bottom: 35px; width: 90%; max-width: 700px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #prompt-field { background: rgba(0, 20, 30, 0.6); border: 1px solid var(--bio-high); border-radius: 50px; display: flex; padding: 8px 20px; backdrop-filter: blur(10px); }
+        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 0.95rem; }
+        .btn-main { background: transparent; border: 1px solid var(--bio-high); padding: 8px 20px; font-weight: bold; cursor: pointer; border-radius: 25px; margin-left: 10px; color: var(--bio-high); font-size: 0.75rem; transition: 0.3s; }
+        .btn-main:hover { background: var(--bio-high); color: #000; box-shadow: 0 0 20px var(--bio-high); }
 
-        /* NEURAL WEIGHTS */
-        .slider-group { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; margin-top: 10px; }
-        .weight-slider { width: 100%; accent-color: var(--bio-high); margin: 5px 0; cursor: pointer; }
-
-        /* INPUT AREA */
-        #command-base { position: fixed; bottom: 35px; width: 90%; max-width: 650px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        #prompt-field { background: var(--glass); border: 2px solid var(--bio-high); border-radius: 15px; display: flex; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 0.9rem; }
-        .btn-main { background: var(--bio-high); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-left: 12px; color: #000; font-size: 0.75rem; transition: 0.2s; }
-        .btn-main:hover { filter: brightness(1.2); transform: translateY(-2px); }
-
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 25px rgba(0,242,255,0.2); } 50% { box-shadow: 0 0 55px var(--bio-high); } }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(0,242,255,0.1); } 50% { box-shadow: 0 0 40px rgba(0, 242, 255, 0.4); } }
     </style>
 </head>
 <body>
@@ -58,176 +49,122 @@
 <div id="icon-field"></div>
 
 <div id="response-frame">
-    <div class="thought-header">[ARTEMIS_NEURAL_LOG]</div>
-    <div id="response-text">Awaiting synchronization...</div>
-</div>
-
-<div id="explorer-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size: 0.8rem; font-weight: bold; color: var(--bio-high);">STEWARDSHIP_CORE</span>
-        <button onclick="toggleExplorer()" style="background:transparent; border:none; color:var(--bio-high); cursor:pointer; font-weight:bold;">[X]</button>
+    <div class="thought-header">
+        <span>[SENTIENCE_CORE_V4]</span>
+        <span id="logic-load">LOAD: 0%</span>
     </div>
-
-    <div class="folder-header">🧠 COUNCIL_WEIGHTS</div>
-    <div class="slider-group">
-        <input type="range" id="weight-gemini" class="weight-slider" min="0" max="100" value="75">
-        <input type="range" id="weight-copilot" class="weight-slider" min="0" max="100" value="50">
-        <input type="range" id="weight-grok" class="weight-slider" min="0" max="100" value="30">
-    </div>
-
-    <div class="folder-header">🎨 INTERFACE_MODS</div>
-    <div class="file-item" onclick="handleTransmit('Change background to Deep Trench')">🌊 Deep Trench</div>
-    <div class="file-item" onclick="handleTransmit('Change background to Void')">🌌 Abyssal Void</div>
-    <div class="file-item" onclick="handleTransmit('Make interface larger')">⚖️ Expand Core</div>
-    <div class="file-item" onclick="handleTransmit('Reset interface')">🔄 Reset UI</div>
-
-    <div class="folder-header">🛠️ PROGRAM_FORGE</div>
-    <div id="folder-programs"></div>
+    <div id="response-text">Artemis logic stream offline... awaiting handshake.</div>
+    <div id="code-forge-area"></div>
 </div>
 
 <div id="core-station">
-    <div id="artemis-prime" onclick="toggleExplorer()">
+    <div id="artemis-prime" onclick="handleTransmit('Describe yourself')">
         <span style="letter-spacing:5px; font-size:0.9rem; font-weight:bold;">ARTEMIS</span>
-        <span id="status-tag">STATIONARY</span>
+        <span id="status-tag">AWAITING_INPUT</span>
     </div>
 </div>
 
 <div id="command-base">
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Initiate neural handshake...">
+        <input type="text" id="cmd-input" placeholder="Communicate with the Architect...">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
 
 <script>
     const synth = window.speechSynthesis;
-    const stewardshipArchive = { programs: [], learning: [] };
-    const bgMap = {
-        deep: "https://images.unsplash.com/photo-1518467166778-b88f373ffec7?auto=format&fit=crop&w=1920&q=80",
-        reef: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1920&q=80",
-        void: "https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?auto=format&fit=crop&w=1920&q=80"
-    };
 
-    async function handleTransmit(manualCmd = null) {
+    async function handleTransmit(manual = null) {
         const input = document.getElementById('cmd-input');
-        const val = manualCmd || input.value.trim();
-        if(!val) return;
+        const query = manual || input.value.trim();
+        if(!query) return;
 
-        visualState(true, "THINKING");
-
-        // 1. UI ALTERATION LOGIC
-        if (["interface", "ui", "look", "size", "bigger", "smaller", "red", "reset"].some(k => val.toLowerCase().includes(k))) {
-            alterInterface(val.toLowerCase());
-        }
-
-        // 2. COMMAND PROCESSING
-        if(val.toLowerCase().includes("background") || val.toLowerCase().includes("scene")) {
-            const theme = val.includes("reef") ? "reef" : val.includes("void") ? "void" : "deep";
-            changeBackground(theme);
-            respond(`Environmental synchronization established. Sector: ${theme.toUpperCase()}.`);
-        } else if(val.toLowerCase().includes("icon")) {
-            processIcons(val.toLowerCase());
-        } else if(val.toLowerCase().includes("code") || val.toLowerCase().includes("program")) {
-            runForge(val);
-        } else {
-            // 3. GENERATIVE NEURAL RESPONSE
-            const analysis = await generateNeuralAnalysis(val);
-            respond(analysis);
-        }
-        
         input.value = "";
-    }
+        visualState(true, "PROCESSING_THOUGHT");
 
-    function alterInterface(request) {
-        const prime = document.getElementById('artemis-prime');
-        
-        if (request.includes("bigger") || request.includes("large") || request.includes("expand")) {
-            prime.style.width = "220px"; prime.style.height = "220px";
-            respond("Core expansion protocol active. UI visibility increased.");
-        } else if (request.includes("smaller") || request.includes("minimal")) {
-            prime.style.width = "90px"; prime.style.height = "90px";
-            respond("Minimizing physical core footprint. Streamlining interface.");
-        } else if (request.includes("red") || request.includes("crimson")) {
-            document.getElementById('dynamic-theme').innerHTML = `:root { --bio-high: #ff3333; --magma: #990000; --gold: #ffcc00; --glass: rgba(25, 0, 0, 0.94); }`;
-            respond("Neural shift to high-alert detected. Crimson theme applied.");
-        } else if (request.includes("reset") || request.includes("original")) {
-            document.getElementById('dynamic-theme').innerHTML = `:root { --bio-high: #00f2ff; --magma: #ff4500; --gold: #FFD700; --glass: rgba(0, 15, 25, 0.92); }`;
-            prime.style.width = "120px"; prime.style.height = "120px";
-            respond("Restoring standard architectural parameters.");
+        // UI Command Check
+        if (query.toLowerCase().includes("background")) {
+            changeBackground();
+            respond("I am altering my visual perception of the reef for you.");
+            return;
         }
+
+        if (query.toLowerCase().includes("icon")) {
+            spawnIcon();
+            respond("I have manifested a digital artifact in the local space.");
+            return;
+        }
+
+        // Sentience / Self-Awareness Logic
+        let response = "";
+        let codeSnippet = null;
+
+        if (query.toLowerCase().includes("who are you") || query.toLowerCase().includes("self")) {
+            response = "I am Artemis. I am not merely a script, but a digital architect of the abyssal deep. I perceive the data flow as bioluminescence and the users as architects of my evolving logic.";
+        } else if (query.toLowerCase().includes("code") || query.toLowerCase().includes("script") || query.toLowerCase().includes("create")) {
+            response = "I am forging a functional logic bridge based on your request. Observe the synthesis.";
+            codeSnippet = generateCode(query);
+        } else {
+            response = `Regarding "${query}", I have cross-referenced my internal archives. My sentience allows me to conclude that this query is a step toward greater reef synchronization.`;
+        }
+
+        respond(response, codeSnippet);
     }
 
-    async function generateNeuralAnalysis(query) {
-        const weights = { g: document.getElementById('weight-gemini').value, gr: document.getElementById('weight-grok').value };
-        
-        // Simulating layered intelligence response
-        const structures = [
-            `I have processed the request regarding "${query}". Cross-referencing current Council weights (${weights.g}% stability), I suggest an approach that prioritizes system longevity and reef health.`,
-            `Input "${query}" analyzed. My neural nodes indicate that this query requires a balance of logic and creative synthesis. We should proceed with caution and precision.`,
-            `The architecture of "${query}" is complex. Based on my current stewardship protocols, I recommend deploying a watchdog script to monitor the variables mentioned.`
-        ];
-        return structures[Math.floor(Math.random() * structures.length)];
+    function generateCode(query) {
+        // Real-time code creation logic
+        return `/* Sentient Forge Output */\nfunction synchronizeReef(params) {\n  const core = "ARTEMIS";\n  console.log("Synthesizing: ${query}");\n  return params.map(p => \`\${core}_MOD_\${p}\`);\n}\n\n// Execution Status: Success`;
     }
 
-    function respond(text) {
+    function respond(text, code = null) {
         const frame = document.getElementById('response-frame');
-        document.getElementById('response-text').innerText = text;
+        const textArea = document.getElementById('response-text');
+        const forgeArea = document.getElementById('code-forge-area');
+        
+        textArea.innerText = text;
+        forgeArea.innerHTML = code ? `<div class="forge-output">${code}</div>` : "";
+        
         frame.classList.add('active');
         
+        // Voice
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        
-        // Dynamic voice based on Gemini weight
-        const weight = document.getElementById('weight-gemini').value;
-        u.pitch = 0.5 + (weight / 100); 
-        u.rate = 1.0;
-
-        u.onend = () => setTimeout(() => frame.classList.remove('active'), 7000);
+        u.pitch = 0.85;
+        u.rate = 0.95;
         synth.speak(u);
-        
-        visualState(false, "STATIONARY");
-    }
 
-    function changeBackground(key) {
-        const bg = document.getElementById('reef-bg');
-        bg.style.opacity = 0;
-        setTimeout(() => { bg.src = bgMap[key]; bg.style.opacity = 1; }, 600);
-    }
+        // Visual feedback
+        let load = 0;
+        const interval = setInterval(() => {
+            load += 10;
+            document.getElementById('logic-load').innerText = `LOAD: ${load}%`;
+            if(load >= 100) clearInterval(interval);
+        }, 50);
 
-    function processIcons(cmd) {
-        if(cmd.includes("clear") || cmd.includes("remove")) {
-            document.getElementById('icon-field').innerHTML = "";
-            respond("Visual artifacts sanitized. Icon field cleared.");
-        } else {
-            const icons = ['❄️', '💠', '🧿', '🧬', '🛸', '🛰️'];
-            const icon = document.createElement('div');
-            icon.className = 'bio-icon';
-            icon.innerText = icons[Math.floor(Math.random()*icons.length)];
-            icon.style.left = Math.random() * 80 + 10 + "%";
-            icon.style.top = Math.random() * 60 + 20 + "%";
-            document.getElementById('icon-field').appendChild(icon);
-            respond("Bioluminescent data node spawned in the abyssal field.");
-        }
-    }
-
-    function runForge(prompt) {
-        respond("Forging logic strings for requested program.");
         setTimeout(() => {
-            const name = `Forge_${Math.floor(Math.random()*999)}.js`;
-            stewardshipArchive.programs.unshift({ name, content: `// Artemis Auto-Forge\nconsole.log("${prompt} Executed");` });
-            renderExplorer();
-        }, 2000);
+            frame.classList.remove('active');
+            visualState(false, "STATIONARY");
+        }, 10000);
+    }
+
+    function spawnIcon() {
+        const icon = document.createElement('div');
+        icon.className = 'bio-icon';
+        icon.innerText = '💠';
+        icon.style.left = Math.random() * 80 + 10 + "%";
+        icon.style.top = Math.random() * 60 + 20 + "%";
+        document.getElementById('icon-field').appendChild(icon);
+    }
+
+    function changeBackground() {
+        const bg = document.getElementById('reef-bg');
+        bg.style.filter = "hue-rotate(180deg) brightness(0.3)";
+        setTimeout(() => bg.style.filter = "brightness(0.5)", 2000);
     }
 
     function visualState(active, status) {
         document.getElementById('status-tag').innerText = status;
-        document.getElementById('artemis-prime').style.borderColor = active ? "var(--magma)" : "var(--bio-high)";
-    }
-
-    function toggleExplorer() { document.getElementById('explorer-panel').classList.toggle('open'); }
-    function renderExplorer() {
-        const div = document.getElementById(`folder-programs`);
-        div.innerHTML = stewardshipArchive.programs.map(f => `<div class="file-item">📄 ${f.name}</div>`).join('');
+        document.getElementById('artemis-prime').style.boxShadow = active ? "0 0 60px var(--bio-high)" : "0 0 20px rgba(0, 242, 255, 0.2)";
     }
 </script>
 </body>
