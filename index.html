@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | INTEGRATED CORE</title>
-    <style>
+    <title>ARTEMIS | SELF-EVOLVING CORE</title>
+    <style id="dynamic-theme">
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
             --glass: rgba(0, 15, 25, 0.92);
         }
-
+    </style>
+    <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
         #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.3); }
 
@@ -22,33 +23,24 @@
         .intellect-node { width: 70px; height: 40px; border: 1px solid rgba(0, 242, 255, 0.2); background: rgba(0, 0, 0, 0.6); font-size: 0.5rem; color: #555; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: 0.4s; }
         .node-active { border-color: var(--bio-high); color: var(--bio-high); box-shadow: 0 0 10px var(--bio-high); }
 
-        /* EXPLORER PANEL (Left) */
-        #explorer-panel {
-            position: fixed; left: -350px; top: 10%; width: 320px; height: 75%;
-            background: var(--glass); border-right: 2px solid var(--bio-high);
-            backdrop-filter: blur(20px); z-index: 300; transition: 0.5s ease-in-out;
-            padding: 20px; border-radius: 0 15px 15px 0; display: flex; flex-direction: column;
-        }
+        /* EXPLORER PANEL */
+        #explorer-panel { position: fixed; left: -350px; top: 10%; width: 320px; height: 75%; background: var(--glass); border-right: 2px solid var(--bio-high); backdrop-filter: blur(20px); z-index: 300; transition: 0.5s; padding: 20px; border-radius: 0 15px 15px 0; overflow-y: auto; }
         #explorer-panel.open { left: 0; }
         .folder-header { font-size: 0.6rem; color: var(--gold); letter-spacing: 2px; border-bottom: 1px solid rgba(255,215,0,0.3); margin-bottom: 10px; padding-bottom: 5px; margin-top: 15px; }
         .file-item { font-size: 0.75rem; padding: 8px; cursor: pointer; border-radius: 4px; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
         .file-item:hover { background: rgba(0, 242, 255, 0.15); color: var(--bio-high); }
 
-        /* FLOATING ARCHIVE WINDOW (Right) */
-        #archive-window {
-            position: fixed; top: 15%; right: 50px; width: 380px; height: 60vh;
-            background: var(--glass); border: 1px solid var(--bio-high);
-            backdrop-filter: blur(25px); border-radius: 15px; z-index: 200;
-            display: flex; flex-direction: column; opacity: 0; transform: translateX(50px); pointer-events: none; transition: 0.5s;
-        }
+        /* CODE & ARCHIVE */
+        .code-block { background: rgba(0, 0, 0, 0.5); border: 1px solid var(--bio-high); padding: 10px; border-radius: 5px; font-family: monospace; color: #00ffcc; white-space: pre; font-size: 0.7rem; }
+        #archive-window { position: fixed; top: 15%; right: 50px; width: 380px; height: 60vh; background: var(--glass); border: 1px solid var(--bio-high); backdrop-filter: blur(25px); border-radius: 15px; z-index: 200; display: flex; flex-direction: column; opacity: 0; transform: translateX(50px); pointer-events: none; transition: 0.5s; }
         #archive-window.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-        #archive-content { flex: 1; padding: 20px; overflow-y: auto; font-size: 0.85rem; line-height: 1.6; color: #ccc; }
+        #archive-content { flex: 1; padding: 20px; overflow-y: auto; font-size: 0.85rem; color: #ccc; }
 
-        /* COMMAND PROMPT */
+        /* UI ELEMENTS */
         #command-base { position: fixed; bottom: 30px; width: 90%; max-width: 800px; left: 50%; transform: translateX(-50%); z-index: 100; }
-        #prompt-field { background: var(--glass); border: 2px solid var(--bio-high); border-radius: 12px; display: flex; padding: 10px; align-items: center; }
+        #prompt-field { background: var(--glass); border: 2px solid var(--bio-high); border-radius: 12px; display: flex; padding: 10px; }
         #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; }
-        .btn-main { background: var(--bio-high); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-left: 10px; font-family: inherit; }
+        .btn-main { background: var(--bio-high); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-left: 10px; }
 
         @keyframes pulse { 0%, 100% { box-shadow: 0 0 30px rgba(0,242,255,0.2); } 50% { box-shadow: 0 0 70px var(--bio-high); } }
     </style>
@@ -60,10 +52,14 @@
 </video>
 
 <div id="explorer-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; justify-content:space-between;">
         <span style="font-size: 0.8rem; font-weight: bold; color: var(--bio-high);">STEWARDSHIP_EXPLORER</span>
-        <button onclick="toggleExplorer()" style="background:transparent; border:none; color:var(--bio-high); cursor:pointer;">[CLOSE]</button>
+        <button onclick="toggleExplorer()" style="background:transparent; border:none; color:var(--bio-high); cursor:pointer;">[X]</button>
     </div>
+    <div class="folder-header">⚙️ SYSTEM_CONFIG</div>
+    <div id="folder-settings"></div>
+    <div class="folder-header">🛠️ PROGRAM_FORGE</div>
+    <div id="folder-programs"></div>
     <div class="folder-header">📂 HARVESTED_REPORTS</div>
     <div id="folder-harvests"></div>
     <div class="folder-header">💡 CREATIVE_IDEAS</div>
@@ -75,10 +71,10 @@
         <span id="file-title" style="color:var(--gold); font-size:0.7rem;">READY</span>
         <button onclick="closeArchive()" style="background:transparent; border:none; color:var(--magma); cursor:pointer;">[X]</button>
     </div>
-    <div id="archive-content">Select a record to read...</div>
+    <div id="archive-content"></div>
     <div style="padding:15px; border-top:1px solid rgba(0,242,255,0.2); display:flex; gap:10px;">
-        <button class="btn-main" style="font-size:0.6rem; padding:5px 10px;" onclick="readAloud()">🔊 READ TO ME</button>
-        <button class="btn-main" style="background:transparent; border:1px solid var(--gold); color:var(--gold); font-size:0.6rem; padding:5px 10px;" onclick="syncGitHub()">🔄 SYNC GITHUB</button>
+        <button class="btn-main" onclick="readAloud()">🔊 READ TO ME</button>
+        <button class="btn-main" style="background:transparent; border:1px solid var(--gold); color:var(--gold);" onclick="syncGitHub()">🔄 SYNC GITHUB</button>
     </div>
 </div>
 
@@ -95,12 +91,8 @@
 </div>
 
 <div id="command-base">
-    <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
-        <input type="checkbox" id="recursive-toggle" style="accent-color: var(--gold);">
-        <label for="recursive-toggle" style="font-size: 0.6rem; color: var(--gold);">RECURSIVE_DIVE</label>
-    </div>
     <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Query or URL...">
+        <input type="text" id="cmd-input" placeholder="Initiate Protocol or Modify Settings...">
         <button class="btn-main" onclick="handleTransmit()">TRANSMIT</button>
     </div>
 </div>
@@ -108,105 +100,107 @@
 <script>
     const synth = window.speechSynthesis;
     let currentText = "";
+    let systemSettings = { voicePitch: 0.8, voiceRate: 0.9, theme: "Biolume" };
 
     const stewardshipArchive = {
-        harvests: [{ name: "Initial_Scan.json", content: "Initial reef stability cataloged at 94%." }],
-        ideas: [{ name: "Symbiote_Prime.md", content: "Concept for an autonomous protection layer." }]
+        settings: [{ name: "Core_Neural_Config.json", content: "" }],
+        programs: [{ name: "Watchdog.py", content: "print('Active')" }],
+        harvests: [],
+        ideas: []
     };
-
-    // --- INTEGRATED LOGIC ---
 
     function handleTransmit() {
         const input = document.getElementById('cmd-input');
         const val = input.value.trim();
         if(!val) return;
 
-        if(val.startsWith('http')) {
-            runHarvest(val, document.getElementById('recursive-toggle').checked);
+        // NEW: Setting Modification Recognition
+        if(val.toLowerCase().includes("pitch") || val.toLowerCase().includes("theme") || val.toLowerCase().includes("rate")) {
+            applySystemModification(val);
+        } else if(val.startsWith('http')) {
+            runHarvest(val);
+        } else if (['code', 'script', 'program'].some(k => val.toLowerCase().includes(k))) {
+            runForge(val);
         } else {
             runLogicQuery(val);
         }
     }
 
-    function runHarvest(url, recursive) {
-        visualState(true, recursive ? "MAPPING_NETWORK" : "CRAWLING");
-        speak("Artemis is harvesting from the surface.");
-
-        setTimeout(() => {
-            const name = recursive ? `Map_${Date.now()}.json` : `Crawl_${Date.now()}.json`;
-            const content = `Target: ${url}\nType: ${recursive ? 'Recursive Map' : 'Standard Catalog'}\nStatus: Secured in GitHub.`;
-            stewardshipArchive.harvests.unshift({ name, content });
-            renderExplorer();
-            visualState(false, "STATIONARY");
-            inputReset();
-        }, 3000);
-    }
-
-    function runLogicQuery(query) {
-        visualState(true, "UTILIZING_COUNCIL");
-        speak("Synthesizing intellect.");
-
-        setTimeout(() => {
-            const name = `Idea_${Math.floor(Math.random()*999)}.md`;
-            const content = `Query: ${query}\nAnalysis: Artemis + Council have optimized this logic for deep-sea application.`;
-            stewardshipArchive.ideas.unshift({ name, content });
-            renderExplorer();
-            visualState(false, "STATIONARY");
-            inputReset();
-        }, 3000);
-    }
-
-    // --- UI FUNCTIONS ---
-
-    function toggleExplorer() {
-        document.getElementById('explorer-panel').classList.toggle('open');
-        if(document.getElementById('explorer-panel').classList.contains('open')) {
-            renderExplorer();
-            speak("Accessing the permanent record.");
+    function applySystemModification(prompt) {
+        visualState(true, "RECONFIGURING_CORE");
+        speak("System modification detected. Adjusting neural parameters.");
+        
+        if(prompt.toLowerCase().includes("lower") && prompt.toLowerCase().includes("pitch")) systemSettings.voicePitch = 0.5;
+        if(prompt.toLowerCase().includes("higher") && prompt.toLowerCase().includes("pitch")) systemSettings.voicePitch = 1.5;
+        
+        if(prompt.toLowerCase().includes("theme") && prompt.toLowerCase().includes("magma")) {
+            document.getElementById('dynamic-theme').innerHTML = `:root { --bio-high: #ff4500; --gold: #ffcc00; --glass: rgba(30, 5, 0, 0.9); }`;
+            systemSettings.theme = "Magma";
         }
+        
+        stewardshipArchive.settings[0].content = JSON.stringify(systemSettings, null, 2);
+        renderExplorer();
+        setTimeout(() => {
+            visualState(false, "STATIONARY");
+            inputReset();
+            speak("Reconfiguration complete.");
+        }, 2000);
     }
+
+    function runForge(prompt) {
+        visualState(true, "CONSTRUCTING_CODE");
+        setTimeout(() => {
+            const name = `Forge_${Date.now()}.js`;
+            const code = `// Artemis Forge\nfunction main() {\n  console.log("${prompt}");\n}`;
+            stewardshipArchive.programs.unshift({ name, content: code });
+            renderExplorer();
+            openFile(name, 'programs');
+            visualState(false, "STATIONARY");
+            inputReset();
+        }, 3000);
+    }
+
+    function runLogicQuery(q) {
+        visualState(true, "SYNTHESIZING");
+        setTimeout(() => {
+            const name = `Logic_${Date.now()}.md`;
+            stewardshipArchive.ideas.unshift({ name, content: q });
+            renderExplorer();
+            visualState(false, "STATIONARY");
+            inputReset();
+        }, 2000);
+    }
+
+    function toggleExplorer() { document.getElementById('explorer-panel').classList.toggle('open'); renderExplorer(); }
 
     function renderExplorer() {
-        const hDiv = document.getElementById('folder-harvests');
-        const iDiv = document.getElementById('folder-ideas');
-        hDiv.innerHTML = stewardshipArchive.harvests.map(f => `<div class="file-item" onclick="openFile('${f.name}', 'harvests')">📄 ${f.name}</div>`).join('');
-        iDiv.innerHTML = stewardshipArchive.ideas.map(f => `<div class="file-item" onclick="openFile('${f.name}', 'ideas')">💡 ${f.name}</div>`).join('');
+        const categories = ['settings', 'programs', 'harvests', 'ideas'];
+        categories.forEach(cat => {
+            const div = document.getElementById(`folder-${cat}`);
+            div.innerHTML = stewardshipArchive[cat].map(f => `<div class="file-item" onclick="openFile('${f.name}', '${cat}')">📄 ${f.name}</div>`).join('');
+        });
     }
 
     function openFile(name, cat) {
         const file = stewardshipArchive[cat].find(f => f.name === name);
-        currentText = file.content;
+        currentText = file.content || JSON.stringify(systemSettings, null, 2);
         document.getElementById('file-title').innerText = name.toUpperCase();
-        document.getElementById('archive-content').innerText = file.content;
+        document.getElementById('archive-content').innerHTML = cat === 'programs' || cat === 'settings' ? `<div class="code-block">${currentText}</div>` : currentText;
         document.getElementById('archive-window').classList.add('visible');
     }
 
-    function closeArchive() {
-        document.getElementById('archive-window').classList.remove('visible');
-        synth.cancel();
-    }
-
     function readAloud() {
-        if(synth.speaking) { synth.cancel(); return; }
+        synth.cancel();
         const u = new SpeechSynthesisUtterance(currentText);
-        u.pitch = 0.8;
+        u.pitch = systemSettings.voicePitch;
+        u.rate = systemSettings.voiceRate;
         synth.speak(u);
     }
 
-    function visualState(active, status) {
-        document.getElementById('artemis-prime').style.animation = active ? "pulse 1.5s infinite" : "pulse 6s infinite";
-        document.getElementById('status-tag').innerText = status;
-    }
-
+    function closeArchive() { document.getElementById('archive-window').classList.remove('visible'); synth.cancel(); }
+    function visualState(active, status) { document.getElementById('status-tag').innerText = status; }
     function inputReset() { document.getElementById('cmd-input').value = ""; }
-
     function speak(t) { synth.speak(new SpeechSynthesisUtterance(t)); }
-    
-    function syncGitHub() {
-        speak("Synchronizing with GitHub repository.");
-        visualState(true, "SYNCING_GIT");
-        setTimeout(() => visualState(false, "STATIONARY"), 2000);
-    }
 </script>
 </body>
 </html>
