@@ -3,64 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARTEMIS | PRIMARY CORE & HARVESTER</title>
+    <title>ARTEMIS | SYNCHRONIZED CORE</title>
     <style>
         :root {
             --bio-high: #00f2ff;
             --magma: #ff4500;
             --gold: #FFD700;
-            --glass: rgba(0, 15, 25, 0.92);
+            --glass: rgba(0, 20, 30, 0.9);
         }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; }
         #reef-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; filter: brightness(0.3); }
-        
-        /* ARTEMIS CORE */
-        #core-station { position: fixed; top: 8%; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 100; }
-        
-        #artemis-prime {
-            width: 150px; height: 150px; border-radius: 50%;
-            background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%);
-            box-shadow: 0 0 60px rgba(0, 242, 255, 0.3);
-            border: 2px solid var(--bio-high);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 0.5s; cursor: pointer;
+
+        /* FLOATING ARCHIVE WINDOW */
+        #archive-window {
+            position: fixed; top: 15%; right: 50px; width: 380px; height: 60vh;
+            background: var(--glass); border: 1px solid var(--bio-high);
+            backdrop-filter: blur(25px); border-radius: 15px; z-index: 200;
+            display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transition: 0.5s; opacity: 0; transform: translateX(50px); pointer-events: none;
         }
+        #archive-window.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
 
-        /* COUNCIL NODES */
-        #council-grid { display: flex; gap: 15px; margin-top: 25px; }
-        .intellect-node {
-            width: 80px; height: 45px; border: 1px solid rgba(0, 242, 255, 0.2);
-            background: rgba(0, 0, 0, 0.6); font-size: 0.5rem; color: #555;
-            display: flex; align-items: center; justify-content: center; border-radius: 4px;
-            transition: 0.4s;
+        .archive-header { padding: 15px; border-bottom: 1px solid rgba(0,242,255,0.2); display: flex; justify-content: space-between; align-items: center; }
+        #archive-content { flex: 1; padding: 20px; overflow-y: auto; font-size: 0.85rem; line-height: 1.6; color: #ccc; }
+        .archive-footer { padding: 15px; border-top: 1px solid rgba(0,242,255,0.2); display: flex; gap: 10px; }
+
+        /* FOLDER SYSTEM (Left Side) */
+        #folder-dock { position: fixed; left: 20px; top: 20%; z-index: 150; }
+        .folder-tab { 
+            background: var(--glass); border: 1px solid var(--bio-high); padding: 10px; 
+            margin-bottom: 10px; cursor: pointer; border-radius: 5px; font-size: 0.6rem; 
+            transition: 0.3s; width: 120px; text-align: center;
         }
-        .node-active { border-color: var(--bio-high); color: var(--bio-high); box-shadow: 0 0 15px var(--bio-high); }
+        .folder-tab:hover { background: var(--bio-high); color: #000; }
 
-        /* MIDAS ASSETS */
-        #midas-thread { position: fixed; top: 0; left: 50%; width: 2px; height: 0; background: linear-gradient(to bottom, var(--gold), transparent); box-shadow: 0 0 15px var(--gold); transition: 1.5s; z-index: 90; }
-        #midas-avatar { position: fixed; bottom: 120px; right: 30px; width: 55px; filter: drop-shadow(0 0 8px var(--gold)); cursor: pointer; z-index: 110; }
+        /* SHARED BUTTONS */
+        .glass-btn { background: transparent; border: 1px solid var(--bio-high); color: var(--bio-high); padding: 6px 12px; font-size: 0.65rem; cursor: pointer; border-radius: 4px; }
+        .gold-btn { border-color: var(--gold); color: var(--gold); }
 
-        /* COMMAND BASE & UI */
-        #command-base { position: fixed; bottom: 30px; width: 90%; max-width: 850px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        /* CORE ARTEMIS (From previous version) */
+        #core-station { position: fixed; top: 10%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 100; }
+        #artemis-prime { width: 140px; height: 140px; border-radius: 50%; border: 2px solid var(--bio-high); display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, var(--bio-high) 0%, transparent 75%); animation: pulse 6s infinite; }
         
-        #record-log { margin-bottom: 12px; max-height: 120px; overflow-y: auto; font-size: 0.7rem; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 5px; }
-        .log-entry { padding: 5px; border-bottom: 1px solid rgba(0, 242, 255, 0.1); cursor: pointer; }
-        .log-entry:hover { color: var(--gold); }
-
-        #recursive-ui { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-left: 5px; }
-        #prompt-field { background: var(--glass); border: 2px solid var(--bio-high); border-radius: 12px; display: flex; padding: 10px; align-items: center; }
-        #cmd-input { flex: 1; background: transparent; border: none; color: white; font-family: inherit; outline: none; font-size: 0.9rem; padding: 5px; }
-        
-        .btn-main { background: var(--bio-high); border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-left: 10px; font-family: inherit; }
-        .btn-main:active { transform: scale(0.95); }
-
-        /* ANIMATIONS */
-        @keyframes artemis-pulse {
-            0% { box-shadow: 0 0 60px rgba(0, 242, 255, 0.3); transform: scale(1); }
-            50% { box-shadow: 0 0 100px var(--bio-high); transform: scale(1.05); }
-            100% { box-shadow: 0 0 60px rgba(0, 242, 255, 0.3); transform: scale(1); }
-        }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 40px rgba(0,242,255,0.3); } 50% { box-shadow: 0 0 80px var(--bio-high); } }
     </style>
 </head>
 <body>
@@ -69,140 +55,87 @@
     <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-coral-reef-with-many-fishes-4152-large.mp4" type="video/mp4">
 </video>
 
-<div id="midas-thread"></div>
-<img src="https://img.icons8.com/fluency/96/gold-bars.png" id="midas-avatar" onclick="midasInquiry()">
+<div id="folder-dock">
+    <div class="folder-tab" onclick="syncAndOpen('reports')">📂 HARVESTS</div>
+    <div class="folder-tab" onclick="syncAndOpen('ideas')">💡 IDEAS</div>
+</div>
 
-<div id="core-station">
-    <div id="artemis-prime" onclick="speak('Artemis core engaged. Awaiting surface coordinates.')">
-        <span style="font-size: 0.9rem; letter-spacing: 4px; font-weight: bold;">ARTEMIS</span>
-        <span id="status-tag" style="font-size: 0.45rem; color: var(--bio-high); margin-top: 8px; opacity: 0.7;">STATIONARY</span>
+<div id="archive-window">
+    <div class="archive-header">
+        <span id="file-title" style="color:var(--gold); font-size:0.7rem;">LOG_SYNC_STANDBY</span>
+        <button onclick="closeArchive()" class="glass-btn" style="border:none; color:var(--magma);">[X]</button>
     </div>
-
-    <div id="council-grid">
-        <div class="intellect-node" id="node-gemini">GEMINI</div>
-        <div class="intellect-node" id="node-copilot">COPILOT</div>
-        <div class="intellect-node" id="node-grok">GROK</div>
+    <div id="archive-content">Select a log from the explorer or wait for Artemis to sync...</div>
+    <div class="archive-footer">
+        <button class="glass-btn gold-btn" onclick="readAloud()">🔊 READ TO ME</button>
+        <button class="glass-btn" onclick="syncGitHub()">🔄 SYNC GITHUB</button>
     </div>
 </div>
 
-<div id="command-base">
-    <div id="record-log"></div>
-    
-    <div id="recursive-ui">
-        <input type="checkbox" id="recursive-toggle" style="accent-color: var(--gold); cursor: pointer;">
-        <label for="recursive-toggle" style="font-size: 0.6rem; color: var(--gold); cursor: pointer; letter-spacing: 1px;">INITIATE RECURSIVE DEEP DIVE</label>
-    </div>
-
-    <div id="prompt-field">
-        <input type="text" id="cmd-input" placeholder="Enter URL or Logic Query...">
-        <button class="btn-main" onclick="processInput()">TRANSMIT</button>
+<div id="core-station">
+    <div id="artemis-prime">
+        <span style="letter-spacing:4px; font-size:0.8rem;">ARTEMIS</span>
+        <span id="status-text" style="font-size:0.4rem; color:var(--bio-high); margin-top:5px;">IDLE</span>
     </div>
 </div>
 
 <script>
-    // --- CORE ARTEMIS ENGINE ---
+    let synth = window.speechSynthesis;
+    let currentText = "";
 
-    function processInput() {
-        const input = document.getElementById('cmd-input');
-        const val = input.value.trim();
-        if(!val) return;
-
-        if(val.startsWith('http')) {
-            const isRecursive = document.getElementById('recursive-toggle').checked;
-            startHarvest(val, isRecursive);
-        } else {
-            executeLogicQuery(val);
-        }
-    }
-
-    // LOGIC: HARVESTING & CRAWLING
-    async function startHarvest(url, recursive) {
-        visualPulse(true, recursive ? "MAPPING_NETWORK" : "CRAWLING_TARGET");
-        speak(recursive ? "Initiating recursive deep dive." : "Harvesting site data.");
+    // 🔄 Sync and Open function
+    function syncAndOpen(category) {
+        document.getElementById('status-text').innerText = "SYNCING_LOGS...";
+        speak("Synchronizing with the permanent record.");
         
-        // Council scanning effect
-        const nodes = ['node-gemini', 'node-copilot', 'node-grok'];
-        let step = 0;
-        const interval = setInterval(() => {
-            nodes.forEach(n => document.getElementById(n).classList.remove('node-active'));
-            document.getElementById(nodes[step % 3]).classList.add('node-active');
-            step++;
-        }, 500);
-
-        // Simulation of crawl/catalog delay
+        // Simulate GitHub Fetch
         setTimeout(() => {
-            clearInterval(interval);
-            nodes.forEach(n => document.getElementById(n).classList.remove('node-active'));
+            const archive = document.getElementById('archive-window');
+            const content = document.getElementById('archive-content');
+            const title = document.getElementById('file-title');
             
-            const fileName = recursive ? `SiteMap_${new URL(url).hostname}.json` : `Catalog_${Date.now()}.json`;
-            const content = recursive ? `[RECURSIVE MAP]\nTarget: ${url}\nNodes Indexed: 14\nStatus: Map Secured.` : `[HARVEST REPORT]\nURL: ${url}\nStatus: Intelligence Cataloged.`;
+            archive.classList.add('visible');
+            title.innerText = category.toUpperCase() + "_LOG_LATEST";
             
-            generateLogEntry(fileName, content);
-            visualPulse(false, "HARVEST_COMPLETE");
-            document.getElementById('cmd-input').value = "";
-            speak("Cataloging complete.");
-        }, recursive ? 5000 : 2500);
+            if(category === 'reports') {
+                currentText = "Harvest Report: Recursive crawl of the target URL revealed 12 internal threads. All data cataloged into the stewardship JSON. Bio-efficiency remains stable at 98%.";
+            } else {
+                currentText = "Creative Idea: Project Biolume. Utilizing deep-sea spores as a secondary lighting network for the station's perimeter. Logic suggests a 15% energy saving.";
+            }
+            
+            content.innerText = currentText;
+            document.getElementById('status-text').innerText = "STATIONARY";
+        }, 1500);
     }
 
-    // LOGIC: INTELLECT SYNTHESIS
-    function executeLogicQuery(query) {
-        visualPulse(true, "UTILIZING_COUNCIL");
-        speak("Synthesizing Council intellect.");
+    function closeArchive() {
+        document.getElementById('archive-window').classList.remove('visible');
+        synth.cancel();
+    }
 
-        const nodes = ['node-gemini', 'node-copilot', 'node-grok'];
-        nodes.forEach((n, i) => setTimeout(() => document.getElementById(n).classList.add('node-active'), i * 600));
+    // 🔊 Read to Me Function
+    function readAloud() {
+        if (synth.speaking) { synth.cancel(); return; }
+        const utterThis = new SpeechSynthesisUtterance(currentText);
+        utterThis.pitch = 0.85;
+        utterThis.rate = 0.9;
+        synth.speak(utterThis);
+    }
 
+    function syncGitHub() {
+        speak("Requesting repository update.");
+        document.getElementById('status-text').innerText = "UPDATING_GITHUB";
         setTimeout(() => {
-            const fileName = `Logic_Output_${Math.floor(Math.random()*1000)}.md`;
-            generateLogEntry(fileName, `ARTEMIS LOGIC SYNTHESIS\n\nQuery: ${query}\n\nOutcome: Optimized logic derived from Council consensus.`);
-            visualPulse(false, "STATIONARY");
-            nodes.forEach(n => document.getElementById(n).classList.remove('node-active'));
-            document.getElementById('cmd-input').value = "";
-            speak("Logic finalized.");
-        }, 3000);
-    }
-
-    // --- UI HELPERS ---
-
-    function visualPulse(active, statusText) {
-        const core = document.getElementById('artemis-prime');
-        const tag = document.getElementById('status-tag');
-        core.style.animation = active ? "artemis-pulse 1.5s infinite" : "";
-        tag.innerText = statusText;
-    }
-
-    function generateLogEntry(name, content) {
-        const log = document.getElementById('record-log');
-        const entry = document.createElement('div');
-        entry.className = "log-entry";
-        entry.innerHTML = `📄 ${name} <span style="font-size:0.5rem; color:var(--gold); float:right;">[DOWNLOAD]</span>`;
-        entry.onclick = () => {
-            const blob = new Blob([content], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = name;
-            a.click();
-        };
-        log.prepend(entry);
-    }
-
-    function midasInquiry() {
-        const thread = document.getElementById('midas-thread');
-        const q = prompt("Midas requires your objective:");
-        if(q) {
-            thread.style.height = "100vh";
-            speak("Midas guiding toward " + q);
-            setTimeout(() => thread.style.height = "0", 3000);
-        }
+            document.getElementById('status-text').innerText = "SYNC_COMPLETE";
+            alert("GitHub Log Folder Synchronized.");
+        }, 2000);
     }
 
     function speak(text) {
         const u = new SpeechSynthesisUtterance(text);
-        u.pitch = 0.85; u.rate = 0.95;
-        window.speechSynthesis.speak(u);
+        u.pitch = 0.8;
+        synth.speak(u);
     }
-
-    document.addEventListener('keydown', (e) => { if(e.key === 'Enter') processInput(); });
 </script>
 </body>
 </html>
