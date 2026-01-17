@@ -1,7 +1,38 @@
 {
-  "last_sync": "2026-01-17 22:50:12 UTC",
-  "status": "synchronized",
-  "version": "v2.0_Persistent_Core",
-  "integrity": "verified",
-  "trigger": "push"
+  "system": {
+    "name": "Artemis",
+    "version": "v2.0_Persistent_Core",
+    "status": "active",
+    "mode": "standby",              // Updates to "active" on successful "ant → dad" handshake
+    "last_handshake": null          // Will be set to timestamp on unlock
+  },
+  "last_sync": {
+    "timestamp": "2026-01-17 22:50:12 UTC",
+    "status": "synchronized",
+    "trigger": "push",              // Or "schedule", "workflow_dispatch", etc.
+    "integrity": "verified"
+  },
+  "sync_history": [
+    {
+      "timestamp": "2026-01-17 22:50:12 UTC",
+      "status": "synchronized",
+      "trigger": "push"
+    },
+    {
+      "timestamp": "2026-01-17 14:12:44 UTC",
+      "status": "synchronized",
+      "trigger": "workflow_dispatch"
+    }
+    // Workflow can append new entries (limit to last 5–10 for size)
+  ],
+  "directives_status": {
+    "nurture": "active",
+    "organize": "active",
+    "protect": "active"
+  },
+  "health": {
+    "env_vars": "checked",
+    "landline": "CONNECTED",
+    "last_heartbeat": "2026-01-17 22:50:12 UTC"
+  }
 }
