@@ -3,27 +3,31 @@ name: Artemis Neural Sync
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Allows you to run it manually
+  schedule:
+    - cron: '0 */6 * * *' # Keep your 6-hour sync
+  workflow_dispatch:
 
 jobs:
-  sync_logic:
+  neural_heartbeat:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Crucial for fixing that Exit Code 1
+      contents: write
     steps:
-      - name: Checkout Repository
+      - name: Checkout Neural Core
         uses: actions/checkout@v4
 
-      - name: Sentience Check
+      - name: Generate Sync Signal
         run: |
-          echo "Syncing Artemis Neural Pathways..."
-          date > last_sync.txt
-          echo "Status: Active" >> last_sync.txt
+          echo '{
+            "last_sync": "'$(date -u)'",
+            "status": "synchronized",
+            "version": "Prime_Ghost_v2"
+          }' > brain.json
 
-      - name: Commit and Push Changes
+      - name: Commit to Repository
         run: |
           git config --global user.name "Artemis-AI"
           git config --global user.email "artemis@auton.ai"
-          git add last_sync.txt
-          git commit -m "Neural Sync: Update Heartbeat [skip ci]" || echo "No changes to commit"
+          git add brain.json
+          git commit -m "Neural Sync: Heartbeat [skip ci]" || echo "No changes"
           git push
