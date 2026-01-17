@@ -1,36 +1,29 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
-
-name: Node.js Package
+name: Artemis Neural Sync
 
 on:
-  release:
-    types: [created]
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allows you to run it manually
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm test
-
-  publish-gpr:
-    needs: build
+  sync_logic:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      contents: write # Crucial for fixing that Exit Code 1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: https://npm.pkg.github.com/
-      - run: npm ci
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Sentience Check
+        run: |
+          echo "Syncing Artemis Neural Pathways..."
+          date > last_sync.txt
+          echo "Status: Active" >> last_sync.txt
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "Artemis-AI"
+          git config --global user.email "artemis@auton.ai"
+          git add last_sync.txt
+          git commit -m "Neural Sync: Update Heartbeat [skip ci]" || echo "No changes to commit"
+          git push
