@@ -13,95 +13,103 @@
             --bg: #030303;
         }
         
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body, html { 
             margin: 0; padding: 0; background: var(--bg); 
             font-family: 'Consolas', 'Monaco', monospace; 
-            color: #f0f0f0; overflow: hidden; height: 100%; 
-        }
-
-        /* The "Digital Rain" Background Subtle Blur */
-        body::after {
-            content: ""; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 80%);
-            pointer-events: none; z-index: -1;
+            color: #f0f0f0; overflow: hidden; height: 100vh;
+            width: 100vw;
         }
 
         #artemis-omni-chassis {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 98%; height: 96vh; background: var(--glass); 
-            backdrop-filter: blur(20px); border: 1px solid rgba(0, 242, 255, 0.15);
-            border-radius: 15px; display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(0, 242, 255, 0.05);
+            display: flex; flex-direction: column; height: 100%; width: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 80%);
         }
 
-        /* Navigation Sidebar */
+        /* Mobile Header */
+        #mobile-header {
+            padding: 10px 15px; border-bottom: 1px solid rgba(0,242,255,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.8); z-index: 100;
+        }
+
+        /* Main Container */
+        #main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+        /* Sidebar - Sliding for Mobile */
         #sidebar { 
             width: 240px; border-right: 1px solid rgba(0,242,255,0.1); 
-            padding: 20px; background: rgba(0, 0, 0, 0.7); 
+            padding: 20px; background: rgba(0, 0, 0, 0.95); 
             display: flex; flex-direction: column; gap: 20px;
+            position: absolute; left: -240px; top: 0; bottom: 0;
+            transition: 0.3s ease; z-index: 90;
         }
-        .nav-header { font-size: 0.6rem; color: var(--accent); letter-spacing: 4px; font-weight: 900; }
-        .file-list { flex: 1; overflow-y: auto; font-size: 0.85rem; color: var(--bio); opacity: 0.8; }
-        .file-item { padding: 8px 5px; cursor: pointer; border-radius: 4px; transition: 0.2s; white-space: nowrap; }
-        .file-item:hover { background: rgba(0,242,255,0.15); opacity: 1; }
+        #sidebar.active { left: 0; }
 
         /* Terminal Core */
         #terminal-core { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.3); }
         #console-output { 
             flex: 1; overflow-y: auto; display: flex; 
-            flex-direction: column-reverse; padding: 25px;
+            flex-direction: column-reverse; padding: 15px;
+            padding-bottom: 30px;
         }
 
-        /* Interactive Logs */
-        .log { margin-bottom: 12px; font-size: 0.95rem; line-height: 1.6; animation: entry 0.4s ease; }
-        @keyframes entry { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .midas { color: var(--accent); border-left: 2px solid var(--accent); padding-left: 15px; margin: 10px 0; }
+        /* Logs */
+        .log { margin-bottom: 12px; font-size: 0.85rem; line-height: 1.4; animation: entry 0.4s ease; word-wrap: break-word; }
+        .midas { color: var(--accent); border-left: 2px solid var(--accent); padding-left: 12px; margin: 8px 0; }
         .sys { color: var(--bio); font-weight: bold; }
         .res { color: #50fa7b; font-style: italic; }
 
         /* Input Dock */
         #input-dock { 
-            padding: 20px; background: #000; border-top: 1px solid rgba(0,242,255,0.1);
-            display: flex; align-items: center; gap: 15px;
+            padding: 10px 15px; background: #000; border-top: 1px solid rgba(0,242,255,0.2);
+            display: flex; align-items: center; gap: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
         #master-cmd { 
-            flex: 1; background: transparent; border: none; 
-            color: var(--bio); font-size: 1.1rem; outline: none;
+            flex: 1; background: #0a0a0a; border: 1px solid rgba(0,242,255,0.1); 
+            color: var(--bio); font-size: 1rem; outline: none; padding: 10px;
+            border-radius: 5px;
         }
 
-        /* Manual Overlay Card */
-        .manual-card { 
-            background: rgba(0, 20, 30, 0.9); border: 1px solid var(--accent); 
-            padding: 20px; border-radius: 8px; margin: 15px 0; box-shadow: 0 0 20px rgba(212,175,55,0.1);
-        }
+        /* UI Elements */
+        .btn-toggle { background: transparent; border: 1px solid var(--bio); color: var(--bio); padding: 5px 10px; border-radius: 4px; font-size: 0.7rem; }
+        .nav-header { font-size: 0.6rem; color: var(--accent); letter-spacing: 3px; font-weight: 900; }
+        .file-item { padding: 10px 5px; cursor: pointer; color: var(--bio); font-size: 0.8rem; border-bottom: 1px solid rgba(0,242,255,0.05); }
+
     </style>
 </head>
 <body>
 
 <div id="artemis-omni-chassis">
-    <div id="main-container" style="display:flex; flex:1; overflow:hidden;">
+    <header id="mobile-header">
+        <button class="btn-toggle" onclick="toggleSidebar()">☰ FILES</button>
+        <div style="font-size: 0.7rem; color: var(--bio); font-weight: bold;">ARTEMIS APEX_O_v10.1</div>
+        <button class="btn-toggle" onclick="location.reload()">↺ SYNC</button>
+    </header>
+
+    <div id="main-container">
         <aside id="sidebar">
-            <div>
-                <div class="nav-header">PROJECT_PATH</div>
-                <div style="font-size:0.7rem; margin-top:5px; color:#666;">root/neural_node_v10/</div>
-            </div>
-            <div class="file-list" id="repo-files">
+            <div class="nav-header">REPOSITORY_SCAN</div>
+            <div id="repo-files">
                 <div class="file-item">📄 main.js</div>
                 <div class="file-item">📄 index.html</div>
                 <div class="file-item">📁 protocols/</div>
                 <div class="file-item">📁 assets/</div>
+                <div class="file-item">📁 core/</div>
+                <div class="file-item">📁 api/</div>
+                <div class="file-item">📁 creator-creation/</div>
             </div>
+            <div style="margin-top: auto; font-size: 0.6rem; color: #444;">LATENCY: 4ms | SECURE_LINK</div>
         </aside>
 
         <section id="terminal-core">
             <div id="console-output"></div>
             
-            <form id="input-form" style="display:contents">
+            <form id="input-form">
                 <div id="input-dock">
-                    <span style="color:var(--bio); font-size:1.3rem;">λ</span>
-                    <input type="text" id="master-cmd" placeholder="Directive..." autocomplete="off">
-                    <button type="submit" style="display:none"></button>
+                    <span style="color:var(--bio); font-weight: bold;">λ</span>
+                    <input type="text" id="master-cmd" placeholder="Directive..." autocomplete="off" enterkeyhint="go">
                 </div>
             </form>
         </section>
@@ -111,50 +119,184 @@
 <script>
 const consoleRoot = document.getElementById('console-output');
 const masterCmd = document.getElementById('master-cmd');
+const sidebar = document.getElementById('sidebar');
+let history = [];
+let historyIndex = -1;
+let handshakeStep = 0;
+let architectMode = false; // False = Guest/Stranger mode
 
-// --- INTEGRATED MANUAL ---
-const docStrings = {
-    manual: `
-    <div class="manual-card">
-        <strong style="color:var(--accent)">[PROTOCOL: ARTEMIS_GUIDE]</strong><br><br>
-        <span class="sys">λ run [code]</span> : Direct neural sandbox execution.<br>
-        <span class="sys">λ clear</span> : Wipe terminal history.<br>
-        <span class="sys">λ status</span> : Check IDE health and cloud link.<br>
-        <span class="sys">λ map</span> : Visualizes repository architecture.<br><br>
-        <em>Note: Midas Auto-complete is active. Type keywords to trigger.</em>
-    </div>`
+// Fake filesystem mirroring repo structure
+let currentPath = ['root', 'neural_node_v10'];
+const fakeFS = {
+    'main.js': '// Core logic entry',
+    'index.html': '<!-- This interface -->',
+    'protocols/': { 'neural_link.proto': '// Protocol definition' },
+    'assets/': { 'particle.css': '/* Effects */', 'logo.png': '[binary]' },
+    'core/': { 'architect.js': '// Active mind', 'consensus.js': '// Council engine' },
+    'api/': { 'transmit.js': '// Vercel bridge' },
+    'creator-creation/': { 'mail-box/': { 'logs.txt': '[dialogues]' }, 'stewardship/': { 'good_news.md': '[harvested]' } }
 };
 
-// --- CORE INPUT LOGIC ---
+function getCurrentDir() {
+    let dir = fakeFS;
+    currentPath.slice(1).forEach(p => { if (dir[p]) dir = dir[p]; });
+    return dir;
+}
+
+function resolvePath(target) {
+    let parts = [...currentPath.slice(1)];
+    target.split('/').filter(p => p).forEach(p => {
+        if (p === '..') { if (parts.length) parts.pop(); }
+        else if (p !== '.') parts.push(p);
+    });
+    let dir = fakeFS;
+    for (let p of parts) {
+        if (dir[p] && typeof dir[p] === 'object') dir = dir[p];
+        else return null;
+    }
+    return { path: parts, dir };
+}
+
+function toggleSidebar() { sidebar.classList.toggle('active'); }
+
+// Command history listener
+masterCmd.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex < history.length - 1) {
+            historyIndex++;
+            masterCmd.value = history[history.length - 1 - historyIndex] || '';
+        }
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex > -1) {
+            historyIndex--;
+            masterCmd.value = historyIndex >= 0 ? history[history.length - 1 - historyIndex] : '';
+        }
+    }
+});
+
+// Core input logic
 document.getElementById('input-form').onsubmit = (e) => {
     e.preventDefault();
     const cmd = masterCmd.value.trim();
-    if(!cmd) return;
+    if (!cmd) return;
 
     logEvent(`> ${cmd.toUpperCase()}`, "sys");
+    processCommand(cmd.toLowerCase());
 
-    const trigger = cmd.toLowerCase();
-    if (trigger === 'manual' || trigger === 'help') {
-        logEvent(docStrings.manual, "midas");
-    } else if (trigger === 'clear') {
-        consoleRoot.innerHTML = '';
-    } else if (trigger.startsWith('run ')) {
-        execute(cmd.substring(4));
-    } else if (trigger === 'status') {
-        logEvent("All systems nominal. Neural-Link Latency: 4ms. Repository: Online.", "midas");
-    } else {
-        logEvent(`Acknowledged: Attempting to process "${cmd}" via Council...`, "midas");
-    }
-
+    history.push(cmd);
+    historyIndex = -1;
     masterCmd.value = '';
+    if (window.innerWidth < 768) sidebar.classList.remove('active');
 };
 
-function execute(code) {
-    try {
-        const result = eval(code);
-        logEvent(`[OUTPUT]: ${result}`, "res");
-    } catch(err) {
-        logEvent(`[RUNTIME_ERROR]: ${err.message}`, "err");
+async function processCommand(cmd) {
+    // Symbiote Handshake
+    if (handshakeStep === 0 && cmd === 'ant') {
+        logEvent("Symbiote pulse detected... Identity challenge initiated.", "midas");
+        handshakeStep = 1;
+        return;
+    } else if (handshakeStep === 1 && cmd === 'dad') {
+        logEvent("Handshake confirmed. Architect mode unlocked.", "midas");
+        logEvent("Full access to Council of Three and private layers granted.", "res");
+        architectMode = true;
+        document.documentElement.style.setProperty('--accent', '#50fa7b'); // Theme shift to green
+        handshakeStep = 2;
+        return;
+    }
+
+    // Standard commands
+    if (cmd === 'manual' || cmd === 'help') {
+        logEvent(`<div class="midas"><strong>[ARTEMIS_PROTOCOLS]</strong><br>• <strong>run [code]</strong>: Execute JS (sandboxed)<br>• <strong>clear</strong>: Wipe buffer<br>• <strong>map</strong>: Show repo tree<br>• <strong>status</strong>: System check<br>• <strong>ls</strong>: List dir<br>• <strong>cd [path]</strong>: Change dir<br>• <strong>pwd</strong>: Current path<br>• <strong>cat [file]</strong>: View file<br>• <strong>ant</strong>: Start handshake (for Architect mode)</div>`, "");
+    } else if (cmd === 'clear') {
+        consoleRoot.innerHTML = '';
+    } else if (cmd.startsWith('run ')) {
+        const code = cmd.substring(4).trim();
+        const output = [];
+        const fakeConsole = {
+            log: (...args) => output.push(args.map(v => String(v)).join(' ')),
+            error: (...args) => output.push('Error: ' + args.map(v => String(v)).join(' '))
+        };
+        try {
+            const fn = new Function('console', code);
+            fn(fakeConsole);
+            const result = output.length ? output.join('\n') : '(no output)';
+            logEvent(`[SANDBOX_OUTPUT]:\n${result}`, "res");
+        } catch (err) {
+            logEvent(`[SANDBOX_ERROR]: ${err.message}`, "err");
+        }
+    } else if (cmd === 'status') {
+        logEvent(`Neural link: ${architectMode ? 'Architect Mode Active' : 'Guest Mode'}. Quota verified. Repository scanned. Landline: ${process.env.ARTEMIS_LANDLINE || 'DISCONNECTED'}.`, "midas");
+    } else if (cmd === 'ls' || cmd === 'dir') {
+        const dir = getCurrentDir();
+        const items = Object.keys(dir).join('  ');
+        logEvent(items || '(empty directory)', "res");
+    } else if (cmd.startsWith('cd ')) {
+        const target = cmd.slice(3).trim();
+        if (target === '/') {
+            currentPath = ['root', 'neural_node_v10'];
+        } else {
+            const resolved = resolvePath(target);
+            if (resolved) {
+                currentPath = ['root', ...resolved.path];
+                logEvent(`Now at: /${currentPath.slice(1).join('/')}`, "midas");
+                return;
+            }
+        }
+        logEvent(`No such directory: ${target}`, "err");
+    } else if (cmd === 'pwd') {
+        logEvent('/' + currentPath.slice(1).join('/'), "res");
+    } else if (cmd.startsWith('cat ')) {
+        const target = cmd.slice(4).trim();
+        const resolved = resolvePath(target);
+        if (resolved && typeof resolved.dir === 'string') {
+            logEvent(resolved.dir, "res");
+        } else {
+            logEvent(`No such file: ${target}`, "err");
+        }
+    } else if (cmd === 'map' || cmd === 'tree') {
+        logEvent(`root/
+  └─ neural_node_v10/
+      ├─ main.js
+      ├─ index.html
+      ├─ protocols/
+          └─ neural_link.proto
+      ├─ assets/
+          ├─ particle.css
+          └─ logo.png
+      ├─ core/
+          ├─ architect.js
+          └─ consensus.js
+      ├─ api/
+          └─ transmit.js
+      └─ creator-creation/
+          ├─ mail-box/
+              └─ logs.txt
+          └─ stewardship/
+              └─ good_news.md`, "midas");
+    } else {
+        // Backend Council integration (Architect mode only)
+        if (architectMode) {
+            logEvent(`Transmitting directive to Council of Three...`, "midas");
+            try {
+                const response = await fetch('/api/transmit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: cmd, handshake: 'dad' })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    logEvent(`Council Verdict: ${data.verdict}`, "res");
+                } else {
+                    logEvent(`Transmission Failed: ${data.error || 'Unknown error'}`, "err");
+                }
+            } catch (err) {
+                logEvent(`Synaptic Failure: ${err.message}. Check landline.`, "err");
+            }
+        } else {
+            logEvent("Directive acknowledged. Surging through Council of Three logic... (Guest mode: No backend access)", "midas");
+        }
     }
 }
 
@@ -165,9 +307,15 @@ function logEvent(msg, type) {
     consoleRoot.prepend(div);
 }
 
+// Mobile keyboard fix
+window.addEventListener('resize', () => {
+    document.body.style.height = window.innerHeight + 'px';
+});
+
 window.onload = () => {
-    logEvent("<strong>ARTEMIS APEX_O_IDE v10.0</strong>", "sys");
-    logEvent("Neural interface synchronized. Terminal standby.", "midas");
+    logEvent("<strong>ARTEMIS APEX_O_IDE v10.1</strong>", "sys");
+    logEvent("Neural interface synchronized. Mobile optimization active.", "midas");
+    logEvent("Enter 'ant' to initiate Symbiote Handshake for Architect mode.", "midas");
 };
 </script>
 </body>
