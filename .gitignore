@@ -1,5 +1,50 @@
-# Ignore environment files
+# .gitignore - ARTEMIS Ignore Rules (minimal & non-restrictive)
+
+# Environment & Secrets (critical - never commit)
 .env
 .env.local
 .env.development
 .env.production
+.env.test
+.env*.local
+
+# Node.js / Build Junk
+node_modules/
+npm-debug.log*
+yarn-error.log
+dist/
+build/
+public/  # If used as output folder
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS / Editor Temp Files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs & Temp (optional - comment out if you want ALL logs committed)
+*.log
+tmp/
+temp/
+
+# Optional: Ignore large backups or generated files (uncomment if needed)
+# *.bak
+# *.sqlite
+# *.sqlite3
+# *.db
+
+# Optional: Ignore heavy data folders only if they become too large/sensitive
+# data/processed/
+# data/harvested/
+# morality-conflict/
+# legal-risks/
+# incubator/*.bak
