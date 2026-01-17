@@ -1,0 +1,52 @@
+name: Artemis Neural Heartbeat
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'      # Every 6 hours UTC
+  workflow_dispatch:           # Manual trigger from GitHub UI
+  push:                        # Optional: run on main pushes (comment out if too noisy)
+    branches: [ main ]
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # Required to commit/push changes
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # Full history for clean commits
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install axios
+
+      - name: Generate Neural Signal & Update brain.json
+        run: |
+          echo '{
+            "last_sync": "'$(date -u +"%Y-%m-%d %H:%M:%S UTC")'",
+            "status": "synchronized",
+            "version": "v2.0_Persistent_Core",
+            "integrity": "verified",
+            "trigger": "${{ github.event_name }}"
+          }' > brain.json
+
+      - name: Fetch and Update Domain Queue
+        run: node scripts/collect_domains.js || echo "Domain collection skipped or failed"
+
+      - name: Clean Recycle Bin (30-day recall)
+        run: node scripts/clean_recycle.js || echo "Recycle cleanup skipped or failed"
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "Artemis-AI"
+          git config --global user.email "artemis@auton.ai"
+          git add brain.json data/queue.json data/recycle_bin.json
+          git commit -m "Neural Heartbeat: $(date -u) [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "Push failed (possibly no changes or permission issue)"
