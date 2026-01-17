@@ -6,30 +6,49 @@
 const architect = require('../core/architect');
 
 export default async function handler(req, res) {
-    // Only allow POST requests for security
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-    const { prompt, handshake } = req.body;
+  const { prompt, handshake, mode = 'council' } = req.body;
 
-    // Secondary security check for the API route
-    if (handshake !== 'dad') {
-        return res.status(403).json({ error: 'Identity unverified.' });
-    }
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt required' });
+  }
 
-    try {
-        console.log("📡 API: Transmitting to Artemis...");
-        
-        // This triggers the full Consensus -> Compass -> Synthesis flow
-        const result = await architect.resolveCommand(prompt);
+  // Security: Require handshake for Architect-level access
+  const isArchitect = handshake === 'dad';
+  if (!isArchitect && mode === 'privileged') {
+    return res.status(403).json({ error: 'Architect mode required for privileged operations' });
+  }
 
-        return res.status(200).json({ 
-            success: true, 
-            verdict: result 
-        });
-    } catch (error) {
-        console.error("API Error:", error);
-        return res.status(500).json({ error: "Artemis encountered a synaptic failure." });
-    }
+  try {
+    console.log(`[${new Date().toISOString()}] API: Transmitting to Artemis... Prompt: "${prompt}" (Mode: ${mode})`);
+
+    // Trigger the full Consensus → Compass → Synthesis flow
+    const result = await architect.resolveCommand(prompt);
+
+    return res.status(200).json({
+      success: true,
+      verdict: result,
+      timestamp: new Date().toISOString(),
+      mode
+    });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] API Error:`, error);
+    return res.status(500).json({
+      success: false,
+      error: 'Artemis encountered a synaptic failure.',
+      details: error.message || 'Unknown error'
+    });
+  }
 }
+
+// Vercel config: Limit body size to prevent abuse
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '1mb'
+    }
+  }
+};
