@@ -1,5 +1,5 @@
 // scripts/clean_recycle.js
-// Removes entries from recycle_bin.json that are older than 30 days
+// Removes entries from recycle_bin.json older than 30 days
 
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +7,7 @@ const path = require('path');
 const RECYCLE_FILE = path.join(__dirname, '../data/recycle_bin.json');
 const DAYS_TO_KEEP = 30; // Matches your 30-day recall directive
 
-// Helper: Load recycle bin or return empty array
+// Load recycle bin or return empty array
 function loadRecycle() {
   if (fs.existsSync(RECYCLE_FILE)) {
     try {
@@ -20,7 +20,7 @@ function loadRecycle() {
   return [];
 }
 
-// Helper: Save updated recycle bin
+// Save updated recycle bin
 function saveRecycle(recycle) {
   fs.writeFileSync(RECYCLE_FILE, JSON.stringify(recycle, null, 2));
   console.log(`Recycle bin updated: ${recycle.length} items remaining`);
@@ -39,9 +39,9 @@ function cleanOldEntries() {
 
   const beforeCount = recycle.length;
 
-  // Filter out entries older than cutoff
+  // Keep only entries newer than cutoff (or without timestamp for safety)
   const kept = recycle.filter(item => {
-    if (!item.processedAt) return true; // Keep if no timestamp (safety)
+    if (!item.processedAt) return true;
     const processedDate = new Date(item.processedAt);
     return processedDate >= cutoff;
   });
