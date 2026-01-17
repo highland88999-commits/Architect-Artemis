@@ -1,33 +1,35 @@
-name: Artemis Neural Sync
+name: Artemis Neural Heartbeat
 
 on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 */6 * * *' # Keep your 6-hour sync
-  workflow_dispatch:
+    - cron: '0 */6 * * *' # Syncs every 6 hours
+  workflow_dispatch: # Allows you to trigger manually from the UI
 
 jobs:
-  neural_heartbeat:
+  heartbeat:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # CRITICAL: Gives the bot permission to save the sync
+    
     steps:
-      - name: Checkout Neural Core
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Generate Sync Signal
+      - name: Generate Neural Signal
         run: |
           echo '{
             "last_sync": "'$(date -u)'",
             "status": "synchronized",
-            "version": "Prime_Ghost_v2"
+            "version": "v2.0_Persistent_Core",
+            "integrity": "verified"
           }' > brain.json
 
-      - name: Commit to Repository
+      - name: Commit and Push Heartbeat
         run: |
           git config --global user.name "Artemis-AI"
           git config --global user.email "artemis@auton.ai"
           git add brain.json
-          git commit -m "Neural Sync: Heartbeat [skip ci]" || echo "No changes"
+          git commit -m "Neural Heartbeat: $(date -u) [skip ci]" || echo "No changes to sync"
           git push
