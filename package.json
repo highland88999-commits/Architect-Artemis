@@ -1,21 +1,33 @@
 {
   "name": "architect-artemis",
   "version": "1.0.0",
-  "description": "Autonomous Symbiotic Steward",
+  "description": "Artemis Symbiote - Ethical Web Gardener & Autonomous Council Orchestrator",
   "main": "index.html",
   "scripts": {
-    "start": "servor --reload",
-    "build": "mkdir -p public && cp index.html public/ && cp -r assets public/"
+    "start": "servor --reload --port 3000",
+    "build": "mkdir -p public && cp index.html public/ && cp -r assets public/",
+    "crawler": "node system-files/api/crawler_engine.js",
+    "symbiote-check": "python symbiote.py check",
+    "symbiote-ping": "python symbiote.py ping",
+    "symbiote-harvest": "python symbiote.py harvest https://example.com",
+    "genesis": "bash genesis.sh",
+    "test": "echo 'Add tests here (e.g. Jest or Mocha)' && exit 0"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.0",
-    "axios": "^1.6.0",
+    "axios": "^1.6.5",
     "cheerio": "^1.0.0-rc.12",
+    "cron": "^3.1.6",
     "dotenv": "^16.3.1",
     "fs-extra": "^11.1.1",
     "jsdom": "^22.1.0"
   },
   "devDependencies": {
     "servor": "^4.0.2"
-  }
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "Olympus By Merlin $Dropee",
+  "license": "MIT"
 }
