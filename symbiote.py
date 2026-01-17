@@ -1,13 +1,29 @@
+#!/usr/bin/env python3
+"""
+symbiote.py - ARTEMIS Symbiote: Code Evolver + Monitoring + Basic Harvest
+Purpose: Evolve/repair code files, monitor system health, ping Council, harvest single pages
+Usage: python symbiote.py [command] [args]
+"""
+
 import os
+import sys
 import argparse
 import difflib
-import google.generativeai as genai
+import json
+import datetime
+import requests
 from pathlib import Path
+from urllib.parse import urlparse
 
 # ────────────────────────────────────────────────
-# CONFIG – fill these in
+# CONFIG
 # ────────────────────────────────────────────────
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # or hardcode for testing
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    print("Error: GEMINI_API_KEY not set in environment")
+    sys.exit(1)
+
+import google.generativeai as genai
 genai.configure(api_key=GEMINI_API_KEY)
 MODEL = "gemini-1.5-pro"  # or "gemini-1.5-flash" for speed
 
@@ -22,15 +38,36 @@ Rules:
 - Return ONLY the full repaired code – no fences, no explanations.
 - If major structural change suggested (e.g. Map), add it as a commented block at the end."""
 
+# Shared logging paths
+STEWARDSHIP_DIR = "creator-creation/stewardship"
+LOG_FILE = os.path.join(STEWARDSHIP_DIR, "symbiote_log.jsonl")
+
+def log_symbiote(event_type, details):
+    """Append log entry to shared JSONL file"""
+    os.makedirs(STEWARDSHIP_DIR, exist_ok=True)
+    entry = {
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "type": event_type,
+        "details": details
+    }
+    with open(LOG_FILE, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+    print(f"[Symbiote] Logged: {event_type}")
+
+# ────────────────────────────────────────────────
+# CODE EVOLUTION CORE (your original logic)
+# ────────────────────────────────────────────────
 def evolve_code(code: str, filename: str) -> str:
     model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM_PROMPT)
     prompt = f"Evolve and repair this code from {filename}:\n\n{code}"
     response = model.generate_content(prompt, generation_config={"temperature": 0.15})
     evolved = response.text.strip()
 
-    # Clean common artifacts
+    # Clean common artifacts (code fences)
     if evolved.startswith("```"):
-        evolved = "\n".join(evolved.splitlines()[1:-1]).strip()
+        lines = evolved.splitlines()
+        if lines[0].startswith("```") and lines[-1].startswith("```"):
+            evolved = "\n".join(lines[1:-1]).strip()
     return evolved
 
 def process_file(file_path: Path, dry_run: bool = False, backup: bool = True):
@@ -50,6 +87,12 @@ def process_file(file_path: Path, dry_run: bool = False, backup: bool = True):
 
     print(f"\nDiff for {file_path}:\n{diff or 'No visible diff (formatting?)'}")
 
+    log_symbiote("code_evolution", {
+        "file": str(file_path),
+        "changes_detected": evolved != original,
+        "diff_length": len(diff)
+    })
+
     if not dry_run:
         if backup:
             backup_path = file_path.with_suffix(file_path.suffix + ".symbiote.bak")
@@ -60,28 +103,118 @@ def process_file(file_path: Path, dry_run: bool = False, backup: bool = True):
     else:
         print(f"Dry run – not writing {file_path}")
 
+# ────────────────────────────────────────────────
+# SYMBIOTE MONITORING & HARVEST (new features)
+# ────────────────────────────────────────────────
+def check_env():
+    """Verify required env vars"""
+    missing = []
+    for var in ["GEMINI_API_KEY", "CLARIFAI_PAT"]:
+        if not os.getenv(var):
+            missing.append(var)
+    if missing:
+        print(f"Missing env vars: {', '.join(missing)}")
+        log_symbiote("env_error", {"missing": missing})
+        return False
+    print("Env vars OK")
+    log_symbiote("env_check", {"status": "ok"})
+    return True
+
+def ping_council(prompt="Symbiote test ping"):
+    """Simple POST to /api/transmit for Council test"""
+    url = "https://architect-artemis.vercel.app/api/transmit"  # Update to your real Vercel URL
+    payload = {
+        "prompt": prompt,
+        "handshake": "dad"
+    }
+    try:
+        response = requests.post(url, json=payload, timeout=15)
+        if response.status_code == 200:
+            verdict = response.json().get("verdict", "OK")
+            print("Council ping success:", verdict)
+            log_symbiote("council_ping", {"status": "success", "verdict": verdict})
+            return True
+        else:
+            print(f"Council ping failed: {response.status_code} - {response.text}")
+            log_symbiote("council_ping", {"status": "failed", "code": response.status_code})
+            return False
+    except Exception as e:
+        print(f"Council ping error: {e}")
+        log_symbiote("council_ping", {"status": "error", "error": str(e)})
+        return False
+
+def basic_harvest(url):
+    """Minimal harvest - title + description + basic contacts"""
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(response.text, "html.parser")
+            title = soup.title.string.strip() if soup.title else "Untitled"
+            desc = soup.find("meta", attrs={"name": "description"})
+            desc = desc["content"].strip() if desc else "No description"
+            emails = [a["href"].replace("mailto:", "").strip() for a in soup.find_all("a", href=lambda h: h and h.startswith("mailto:"))]
+            result = {"url": url, "title": title, "description": desc, "emails": emails}
+            print("Basic harvest:", result)
+            log_symbiote("basic_harvest", result)
+            return result
+        else:
+            print(f"Harvest failed: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"Harvest error: {e}")
+        return None
+
+# ────────────────────────────────────────────────
+# CLI Main
+# ────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="Artemis Symbiote: evolve code in directory")
-    parser.add_argument("path", type=str, help="File or directory to scan")
-    parser.add_argument("--dry-run", action="store_true", help="Show changes without writing")
-    parser.add_argument("--no-backup", action="store_true", help="Skip backups")
+    parser = argparse.ArgumentParser(description="Artemis Symbiote: evolve code, monitor, harvest, ping")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # Code evolution
+    evolve_parser = subparsers.add_parser("evolve", help="Evolve/repair code files")
+    evolve_parser.add_argument("path", type=str, help="File or directory to scan")
+    evolve_parser.add_argument("--dry-run", action="store_true", help="Show changes without writing")
+    evolve_parser.add_argument("--no-backup", action="store_true", help="Skip backups")
+
+    # Monitoring commands
+    subparsers.add_parser("check", help="Verify env vars")
+    subparsers.add_parser("ping", help="Test Council API")
+
+    # Harvest
+    harvest_parser = subparsers.add_parser("harvest", help="Basic single-page harvest")
+    harvest_parser.add_argument("url", type=str, help="URL to harvest")
+
     args = parser.parse_args()
 
-    target = Path(args.path).resolve()
-    backup = not args.no_backup
+    if args.command == "evolve":
+        target = Path(args.path).resolve()
+        backup = not args.no_backup
 
-    if target.is_file():
-        if target.suffix in SUPPORTED_EXTENSIONS:
-            process_file(target, args.dry_run, backup)
+        if target.is_file():
+            if target.suffix in SUPPORTED_EXTENSIONS:
+                process_file(target, args.dry_run, backup)
+            else:
+                print(f"Unsupported extension: {target.suffix}")
+        elif target.is_dir():
+            for file in target.rglob("*"):
+                if file.is_file() and file.suffix in SUPPORTED_EXTENSIONS:
+                    print(f"\nScanning {file.relative_to(target)}")
+                    process_file(file, args.dry_run, backup)
         else:
-            print(f"Unsupported extension: {target.suffix}")
-    elif target.is_dir():
-        for file in target.rglob("*"):
-            if file.is_file() and file.suffix in SUPPORTED_EXTENSIONS:
-                print(f"\nScanning {file.relative_to(target)}")
-                process_file(file, args.dry_run, backup)
-    else:
-        print("Path not found or invalid")
+            print("Path not found or invalid")
+
+    elif args.command == "check":
+        check_env()
+
+    elif args.command == "ping":
+        ping_council()
+
+    elif args.command == "harvest":
+        basic_harvest(args.url)
+
+    print("Symbiote task complete.")
 
 if __name__ == "__main__":
     main()
