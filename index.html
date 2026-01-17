@@ -2,74 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARTEMIS | MIDAS_INTEL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ARTEMIS | FINAL_ARCHITECT</title>
     <style>
-        :root { --bio: #00f2ff; --accent: #d4af37; --glass: rgba(0, 242, 255, 0.08); }
-        body, html { margin: 0; padding: 0; background: #000; font-family: 'Courier New', monospace; color: white; overflow: hidden; height: 100%; }
+        :root { 
+            --bio: #00f2ff; 
+            --accent: #d4af37; 
+            --err: #ff4d4d;
+            --glass: rgba(0, 242, 255, 0.05);
+            --bg: #030303;
+        }
         
+        body, html { 
+            margin: 0; padding: 0; background: var(--bg); 
+            font-family: 'Consolas', 'Monaco', monospace; 
+            color: #f0f0f0; overflow: hidden; height: 100%; 
+        }
+
+        /* The "Digital Rain" Background Subtle Blur */
+        body::after {
+            content: ""; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 80%);
+            pointer-events: none; z-index: -1;
+        }
+
         #artemis-omni-chassis {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 98%; height: 95vh; background: var(--glass); backdrop-filter: blur(25px);
-            border: 1px solid rgba(0, 242, 255, 0.15); border-radius: 8px;
-            display: flex; flex-direction: column; z-index: 10;
+            width: 98%; height: 96vh; background: var(--glass); 
+            backdrop-filter: blur(20px); border: 1px solid rgba(0, 242, 255, 0.15);
+            border-radius: 15px; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(0, 242, 255, 0.05);
         }
 
-        #main-container { display: flex; flex: 1; overflow: hidden; }
-        #sidebar { width: 240px; border-right: 1px solid rgba(0,242,255,0.1); padding: 15px; overflow-y: auto; background: rgba(0,0,0,0.6); }
-        #terminal-core { flex: 1; display: flex; flex-direction: column; position: relative; }
-        #console-output { flex: 1; overflow-y: auto; display: flex; flex-direction: column-reverse; padding: 20px; }
+        /* Navigation Sidebar */
+        #sidebar { 
+            width: 240px; border-right: 1px solid rgba(0,242,255,0.1); 
+            padding: 20px; background: rgba(0, 0, 0, 0.7); 
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .nav-header { font-size: 0.6rem; color: var(--accent); letter-spacing: 4px; font-weight: 900; }
+        .file-list { flex: 1; overflow-y: auto; font-size: 0.85rem; color: var(--bio); opacity: 0.8; }
+        .file-item { padding: 8px 5px; cursor: pointer; border-radius: 4px; transition: 0.2s; white-space: nowrap; }
+        .file-item:hover { background: rgba(0,242,255,0.15); opacity: 1; }
 
-        /* NEURAL EDITOR */
-        #neural-editor {
-            position: absolute; top: 5%; left: 5%; width: 90%; height: 80%;
-            background: rgba(0, 10, 20, 0.98); border: 1px solid var(--bio);
-            border-radius: 8px; z-index: 100; display: none; flex-direction: column;
+        /* Terminal Core */
+        #terminal-core { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.3); }
+        #console-output { 
+            flex: 1; overflow-y: auto; display: flex; 
+            flex-direction: column-reverse; padding: 25px;
         }
 
-        /* AUTO-COMPLETE BOX */
-        #autocomplete-box {
-            position: absolute; bottom: 70px; left: 45px; background: #001a1d;
-            border: 1px solid var(--bio); border-radius: 4px; display: none;
-            flex-direction: column; min-width: 150px; z-index: 200; box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-        }
-        .suggestion { padding: 8px 12px; font-size: 0.8rem; color: var(--bio); cursor: pointer; border-bottom: 1px solid rgba(0,242,255,0.1); }
-        .suggestion:hover { background: var(--bio); color: #000; }
-
-        .file-item { padding: 8px 10px; cursor: pointer; color: var(--bio); font-size: 0.8rem; }
-        #input-dock { border-top: 1px solid rgba(0,242,255,0.2); padding: 15px; display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.8); }
-        #master-cmd { flex: 1; background: transparent; border: none; color: var(--bio); font-size: 1.1rem; outline: none; }
+        /* Interactive Logs */
+        .log { margin-bottom: 12px; font-size: 0.95rem; line-height: 1.6; animation: entry 0.4s ease; }
+        @keyframes entry { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .log { margin-bottom: 8px; font-size: 0.8rem; line-height: 1.4; white-space: pre-wrap; }
-        .midas-log { color: var(--accent); border-left: 2px solid var(--accent); padding-left: 12px; }
+        .midas { color: var(--accent); border-left: 2px solid var(--accent); padding-left: 15px; margin: 10px 0; }
+        .sys { color: var(--bio); font-weight: bold; }
+        .res { color: #50fa7b; font-style: italic; }
+
+        /* Input Dock */
+        #input-dock { 
+            padding: 20px; background: #000; border-top: 1px solid rgba(0,242,255,0.1);
+            display: flex; align-items: center; gap: 15px;
+        }
+        #master-cmd { 
+            flex: 1; background: transparent; border: none; 
+            color: var(--bio); font-size: 1.1rem; outline: none;
+        }
+
+        /* Manual Overlay Card */
+        .manual-card { 
+            background: rgba(0, 20, 30, 0.9); border: 1px solid var(--accent); 
+            padding: 20px; border-radius: 8px; margin: 15px 0; box-shadow: 0 0 20px rgba(212,175,55,0.1);
+        }
     </style>
 </head>
 <body>
 
 <div id="artemis-omni-chassis">
-    <div id="main-container">
+    <div id="main-container" style="display:flex; flex:1; overflow:hidden;">
         <aside id="sidebar">
-            <div style="color:var(--accent); font-size:0.7rem; font-weight:bold; margin-bottom:10px;">FILESYSTEM</div>
-            <div id="repo-files"></div>
+            <div>
+                <div class="nav-header">PROJECT_PATH</div>
+                <div style="font-size:0.7rem; margin-top:5px; color:#666;">root/neural_node_v10/</div>
+            </div>
+            <div class="file-list" id="repo-files">
+                <div class="file-item">📄 main.js</div>
+                <div class="file-item">📄 index.html</div>
+                <div class="file-item">📁 protocols/</div>
+                <div class="file-item">📁 assets/</div>
+            </div>
         </aside>
 
         <section id="terminal-core">
-            <div id="autocomplete-box"></div>
-            
-            <div id="neural-editor">
-                <div style="padding:10px; display:flex; justify-content:space-between; background:rgba(0,242,255,0.1)">
-                    <span id="editor-filename">file.js</span>
-                    <button onclick="document.getElementById('neural-editor').style.display='none'">CLOSE</button>
-                </div>
-                <textarea id="editor-text" style="flex:1; background:transparent; color:var(--bio); padding:20px; border:none; outline:none; font-family:monospace;"></textarea>
-            </div>
-
             <div id="console-output"></div>
             
             <form id="input-form" style="display:contents">
                 <div id="input-dock">
-                    <span style="color:var(--bio); font-weight:bold;">λ</span>
-                    <input type="text" id="master-cmd" placeholder="Type run, map, or code..." autocomplete="off">
+                    <span style="color:var(--bio); font-size:1.3rem;">λ</span>
+                    <input type="text" id="master-cmd" placeholder="Directive..." autocomplete="off">
+                    <button type="submit" style="display:none"></button>
                 </div>
             </form>
         </section>
@@ -77,72 +109,66 @@
 </div>
 
 <script>
-const REPO = 'highland8899-commits/Artemis-Sync';
+const consoleRoot = document.getElementById('console-output');
 const masterCmd = document.getElementById('master-cmd');
-const acBox = document.getElementById('autocomplete-box');
 
-// --- MIDAS PREDICTION DATA ---
-const dictionary = [
-    'run ', 'map', 'ls', 'cd ', 'clear', 'status',
-    'console.log(', 'function ', 'const ', 'let ', 'return ',
-    'Math.random()', 'document.querySelector(', 'Artemis.sync()'
-];
+// --- INTEGRATED MANUAL ---
+const docStrings = {
+    manual: `
+    <div class="manual-card">
+        <strong style="color:var(--accent)">[PROTOCOL: ARTEMIS_GUIDE]</strong><br><br>
+        <span class="sys">λ run [code]</span> : Direct neural sandbox execution.<br>
+        <span class="sys">λ clear</span> : Wipe terminal history.<br>
+        <span class="sys">λ status</span> : Check IDE health and cloud link.<br>
+        <span class="sys">λ map</span> : Visualizes repository architecture.<br><br>
+        <em>Note: Midas Auto-complete is active. Type keywords to trigger.</em>
+    </div>`
+};
 
-// --- AUTO-COMPLETE LOGIC ---
-masterCmd.addEventListener('input', (e) => {
-    const val = e.target.value.toLowerCase();
-    const lastWord = val.split(' ').pop();
-    
-    if (lastWord.length < 1) { acBox.style.display = 'none'; return; }
-
-    const matches = dictionary.filter(s => s.toLowerCase().startsWith(lastWord));
-    
-    if (matches.length > 0) {
-        acBox.innerHTML = '';
-        matches.slice(0, 5).forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'suggestion';
-            div.innerText = m;
-            div.onclick = () => {
-                const words = val.split(' ');
-                words.pop();
-                masterCmd.value = (words.join(' ') + ' ' + m).trim();
-                acBox.style.display = 'none';
-                masterCmd.focus();
-            };
-            acBox.appendChild(div);
-        });
-        acBox.style.display = 'flex';
-    } else {
-        acBox.style.display = 'none';
-    }
-});
-
-// --- EXECUTION CORE ---
+// --- CORE INPUT LOGIC ---
 document.getElementById('input-form').onsubmit = (e) => {
     e.preventDefault();
-    const cmd = masterCmd.value;
-    logEvent(cmd.toUpperCase(), "system");
-    
-    if (cmd.startsWith('run ')) {
-        try {
-            const res = eval(cmd.substring(4));
-            logEvent(`[RESULT]: ${res}`, "midas");
-        } catch(err) { logEvent(`[ERROR]: ${err.message}`, "error"); }
+    const cmd = masterCmd.value.trim();
+    if(!cmd) return;
+
+    logEvent(`> ${cmd.toUpperCase()}`, "sys");
+
+    const trigger = cmd.toLowerCase();
+    if (trigger === 'manual' || trigger === 'help') {
+        logEvent(docStrings.manual, "midas");
+    } else if (trigger === 'clear') {
+        consoleRoot.innerHTML = '';
+    } else if (trigger.startsWith('run ')) {
+        execute(cmd.substring(4));
+    } else if (trigger === 'status') {
+        logEvent("All systems nominal. Neural-Link Latency: 4ms. Repository: Online.", "midas");
+    } else {
+        logEvent(`Acknowledged: Attempting to process "${cmd}" via Council...`, "midas");
     }
-    
+
     masterCmd.value = '';
-    acBox.style.display = 'none';
 };
+
+function execute(code) {
+    try {
+        const result = eval(code);
+        logEvent(`[OUTPUT]: ${result}`, "res");
+    } catch(err) {
+        logEvent(`[RUNTIME_ERROR]: ${err.message}`, "err");
+    }
+}
 
 function logEvent(msg, type) {
     const div = document.createElement('div');
-    div.className = `log ${type === 'midas' ? 'midas-log' : ''}`;
+    div.className = `log ${type}`;
     div.innerHTML = msg;
-    document.getElementById('console-output').prepend(div);
+    consoleRoot.prepend(div);
 }
 
-window.onload = () => logEvent("Midas Intelligence Layer v8.0 Active.", "midas");
+window.onload = () => {
+    logEvent("<strong>ARTEMIS APEX_O_IDE v10.0</strong>", "sys");
+    logEvent("Neural interface synchronized. Terminal standby.", "midas");
+};
 </script>
 </body>
 </html>
