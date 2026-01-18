@@ -26,9 +26,9 @@
 
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-        /* Guest Mode - Matrix Rain Landing */
+        /* Guest Mode - Matrix Rain Landing + Idea Request */
         #guest-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
+            position: absolute; inset: 0; z-index: 10;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(155,77,255,0.15));
         }
@@ -44,7 +44,7 @@
             min-height: 120px; max-height: 50vh; overflow-y: auto; margin-bottom: 15px;
             padding: 15px; background: rgba(0,0,0,0.6); border-radius: 8px;
             white-space: pre-wrap; word-break: break-all; font-size: 1.05em;
-            transition: all 0.6s ease;
+            transition: all 0.6s ease; transform-origin: top;
         }
 
         #guest-output.expanded { max-height: 80vh; transform: scale(1.02); }
@@ -65,8 +65,8 @@
 
         /* Architect Mode - Protected Console */
         #architect-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20;
-            display: none; flex-direction: column; background: linear-gradient(to bottom, rgba(0, 10, 20, 0.9), rgba(0, 170, 255, 0.15));
+            position: absolute; inset: 0; z-index: 20; display: none;
+            background: linear-gradient(to bottom, rgba(0, 10, 20, 0.9), rgba(0, 170, 255, 0.15));
         }
 
         #architect-chassis { flex: 1; display: flex; overflow: hidden; }
@@ -93,7 +93,7 @@
             color: var(--bio); font-size: 1.1em; outline: none; padding: 12px; border-radius: 6px;
         }
 
-        /* Common */
+        /* Common Glass Overlay with Bloom/Neon */
         .glass-overlay {
             position: absolute; inset: 0; background: rgba(0,0,0,0.4);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -122,7 +122,7 @@
         </div>
     </div>
 
-    <!-- Architect Mode: Protected Console -->
+    <!-- Architect Mode - Protected Console -->
     <div id="architect-layer">
         <div id="architect-sidebar">
             <div class="nav-header">REPOSITORY SCAN</div>
@@ -146,12 +146,12 @@
         </div>
     </div>
 
-    <!-- Password Overlay -->
+    <!-- Password Overlay for Architect -->
     <div id="password-overlay" class="glass-overlay" style="display: flex; align-items: center; justify-content: center;">
-        <div style="background: rgba(0,0,0,0.8); padding: 40px; border-radius: 16px; border: 2px solid var(--accent); box-shadow: 0 0 50px var(--accent);">
-            <p style="font-size: 1.5em; margin-bottom: 20px;">ENTER PASSWORD</p>
-            <input type="password" id="pass1" placeholder="First Key" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
-            <input type="password" id="pass2" placeholder="Second Key" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
+        <div style="background: rgba(0,0,0,0.8); padding: 40px; border-radius: 16px; border: 2px solid var(--accent); box-shadow: 0 0 50px var(--accent); text-align: center;">
+            <p style="font-size: 1.5em; margin-bottom: 20px;">ARCHITECT ACCESS</p>
+            <input type="password" id="pass1" placeholder="First Key (Spider)" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
+            <input type="password" id="pass2" placeholder="Second Key (Miles)" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
             <button onclick="checkPassword()" style="margin-top: 20px; padding: 12px 30px; background: var(--accent); color: #000; border: none; border-radius: 8px; cursor: pointer;">Unlock</button>
         </div>
     </div>
@@ -159,7 +159,7 @@
     <script src="assets/symbiote-fx.js"></script>
     <script>
         // ────────────────────────────────────────────────
-        // GLOBAL STATE & UTILS
+        // GLOBAL STATE
         // ────────────────────────────────────────────────
         let mode = "guest";
         let secretBuffer = "";
@@ -177,6 +177,8 @@
         const architectLayer = document.getElementById('architect-layer');
         const architectOutput = document.getElementById('architect-output');
         const architectCmd = document.getElementById('architect-cmd');
+
+        const passwordOverlay = document.getElementById('password-overlay');
 
         // ────────────────────────────────────────────────
         // PASSWORD PROTECTION (Architect only)
@@ -200,8 +202,6 @@
             }
         }
 
-        const passwordOverlay = document.getElementById('password-overlay');
-
         // ────────────────────────────────────────────────
         // GUEST MODE - MATRIX RAIN LANDING + IDEA REQUEST
         // ────────────────────────────────────────────────
@@ -220,14 +220,29 @@
             guestOutput.innerHTML += `<div class="sys">Scanning ${url}...</div>`;
             guestOutput.classList.add('expanded');
 
-            // Simulate rolling Gemini response (replace with real /api/transmit call)
-            setTimeout(() => {
-                guestOutput.innerHTML += `<div class="res">Gemini: Idea – Add lazy-loading to images for faster mobile experience. Nurture impact: Improves accessibility for users on slow connections.</div>`;
-                guestOutput.scrollTop = guestOutput.scrollHeight;
-            }, 2000);
+            // Real Council call (via /api/transmit)
+            fetch('/api/transmit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: `Provide one constructive idea or optimization for this site: ${url}. Focus on nurture and accessibility.`, handshake: 'dad' })
+            })
+            .then(r => r.json())
+            .then(data => {
+                const response = data.verdict || data.error || 'No response from Council.';
+                let i = 0;
+                const interval = setInterval(() => {
+                    guestOutput.innerHTML += response[i];
+                    guestOutput.scrollTop = guestOutput.scrollHeight;
+                    i++;
+                    if (i >= response.length) clearInterval(interval);
+                }, 50); // Typing effect
+            })
+            .catch(err => {
+                guestOutput.innerHTML += `<div class="err">Council offline: ${err.message}</div>`;
+            });
         }
 
-        // Collapse expanded output when user starts typing again
+        // Collapse expanded output when user starts typing
         guestCmd.addEventListener('input', () => {
             guestOutput.classList.remove('expanded');
         });
@@ -235,14 +250,13 @@
         // ────────────────────────────────────────────────
         // ARCHITECT MODE - FULL CONSOLE (your end)
         // ────────────────────────────────────────────────
-        // (Add your full console logic here from previous versions if desired)
-        // For now: simple echo + handshake confirmation
         architectCmd.addEventListener('keypress', e => {
             if (e.key === 'Enter') {
                 const cmd = architectCmd.value.trim();
                 architectOutput.innerHTML += `<div class="sys">> ${cmd}</div>`;
                 architectCmd.value = "";
                 architectOutput.scrollTop = architectOutput.scrollHeight;
+                // Add your full command processing here (from previous versions)
             }
         });
 
