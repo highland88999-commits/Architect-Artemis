@@ -11,7 +11,7 @@
             --accent: #d4af37;
             --purple-glow: #9b4dff;
             --err: #ff4d4d;
-            --glass: rgba(255, 255, 255, 0.06);
+            --glass: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(155, 77, 255, 0.25);
             --bg: #030303;
         }
@@ -26,137 +26,144 @@
         canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.35; }
 
         #logo-bg {
-            position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.15;
-            background:url('https://files.catbox.moe/abc123.png') center/cover no-repeat; /* ← your logo URL here */
-            animation:logo-breathe 12s infinite ease-in-out;
+            position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.12;
+            background:url('https://files.catbox.moe/abc123.png') center/cover no-repeat; /* your logo here */
+            animation:logo-breathe 15s infinite ease-in-out;
         }
 
         @keyframes logo-breathe {
-            0%,100% { opacity:0.15; transform:scale(1); }
-            50% { opacity:0.25; transform:scale(1.03); }
+            0%,100% { opacity:0.12; transform:scale(1.02); }
+            50% { opacity:0.22; transform:scale(1.05); }
         }
 
-        /* Guest Terminal (transparent glass) */
         #guest-terminal {
             width:90vw; max-width:720px; height:80vh; max-height:90vh;
             background:var(--glass); border:1px solid var(--glass-border);
-            border-radius:16px; backdrop-filter:blur(16px);
-            box-shadow:0 8px 32px rgba(0,0,0,0.6);
+            border-radius:20px; backdrop-filter:blur(18px);
+            box-shadow:0 8px 40px rgba(0,0,0,0.7);
             position:relative; display:none; flex-direction:column;
-            overflow:hidden; transition:all 0.4s ease;
+            overflow:hidden; transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+            z-index:10;
         }
 
         #guest-terminal.minimized {
-            height:60px; transform:scale(0.9) translateY(-90%);
-            opacity:0.6; pointer-events:none;
+            height:80px; transform:scale(0.92) translateY(-90%);
+            opacity:0.7; pointer-events:none;
         }
 
-        /* Artemis Response 8-Ball (big 4x4 rem) */
+        /* Artemis 8-Ball Response Display - Big 4x4 rem */
         #artemis-8ball {
-            width:16rem; height:16rem; margin:0 auto 20px auto;
-            background:#000; border-radius:50%; border:4px solid var(--accent);
-            box-shadow:0 0 60px var(--accent), inset 0 0 30px var(--purple-glow);
+            width:16rem; height:16rem; margin:40px auto 30px auto;
+            background:#000 url('https://files.catbox.moe/abc123.png') center/cover; /* logo as 8-ball bg */
+            border-radius:50%; border:5px solid var(--accent);
+            box-shadow:0 0 80px var(--accent), inset 0 0 40px var(--purple-glow);
             display:flex; align-items:center; justify-content:center;
             position:relative; overflow:hidden; cursor:pointer;
-            animation:midas-pulse 6s infinite ease-in-out;
-        }
-
-        #artemis-8ball::before {
-            content:''; position:absolute; inset:0; background:radial-gradient(circle at 30% 30%, rgba(212,175,55,0.2), transparent 60%);
-            pointer-events:none;
+            animation:midas-pulse 7s infinite ease-in-out;
         }
 
         #artemis-8ball span {
-            color:var(--accent); font-size:8rem; font-weight:bold;
-            text-shadow:0 0 20px var(--accent);
+            color:var(--accent); font-size:10rem; font-weight:bold;
+            text-shadow:0 0 30px var(--accent), 0 0 60px var(--purple-glow);
             z-index:2;
         }
 
+        #artemis-response {
+            position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+            color:var(--accent); font-size:1.8rem; text-align:center; padding:20px;
+            background:linear-gradient(to bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.8));
+            opacity:0; transition:opacity 0.8s;
+            pointer-events:none; z-index:1;
+        }
+
+        #artemis-8ball.active #artemis-response { opacity:1; }
+
         @keyframes midas-pulse {
-            0%,100% { box-shadow:0 0 40px var(--accent); }
-            50% { box-shadow:0 0 80px var(--accent), 0 0 120px var(--purple-glow); }
+            0%,100% { box-shadow:0 0 50px var(--accent); }
+            50% { box-shadow:0 0 100px var(--accent), 0 0 140px var(--purple-glow); }
         }
 
         /* Prompt Area */
         #prompt-area {
-            padding:0 20px 20px; text-align:center;
+            padding:0 20px 30px; text-align:center; margin-top:auto;
         }
 
         #guest-cmd {
-            width:100%; max-width:500px; padding:12px 16px;
-            background:rgba(0,0,0,0.5); border:1px solid var(--deep-bio);
-            color:var(--bio); font-size:1.1rem; border-radius:8px;
-            margin-bottom:12px;
+            width:100%; max-width:520px; padding:14px 20px;
+            background:rgba(0,0,0,0.6); border:1px solid var(--deep-bio);
+            color:var(--bio); font-size:1.2rem; border-radius:12px;
+            margin-bottom:16px;
         }
 
         #spin-btn {
-            padding:12px 32px; background:var(--accent); color:#000;
-            border:none; border-radius:8px; font-weight:bold; cursor:pointer;
-            box-shadow:0 0 20px var(--accent);
+            padding:14px 48px; background:var(--accent); color:#000;
+            border:none; border-radius:12px; font-weight:bold; font-size:1.2rem;
+            cursor:pointer; box-shadow:0 0 30px var(--accent);
+            transition:0.3s;
         }
 
-        /* Collapsible Icon Bar (10 icons) */
+        #spin-btn:hover { transform:scale(1.05); box-shadow:0 0 50px var(--accent); }
+
+        /* Collapsible Icon Bar */
         #icon-bar-collapsed {
             position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-            width:60px; height:60px; background:rgba(155,77,255,0.3);
+            width:70px; height:70px; background:rgba(155,77,255,0.35);
             border-radius:50%; border:2px solid var(--purple-glow);
             display:flex; align-items:center; justify-content:center;
-            cursor:pointer; z-index:50; box-shadow:0 0 30px var(--purple-glow);
+            font-size:2rem; color:var(--accent); cursor:pointer; z-index:50;
+            box-shadow:0 0 40px var(--purple-glow);
         }
 
         #icon-bar-expanded {
             position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-            display:none; flex-wrap:wrap; gap:12px; padding:16px;
-            background:rgba(0,0,0,0.7); border:1px solid var(--glass-border);
-            border-radius:16px; backdrop-filter:blur(12px);
+            display:none; flex-wrap:wrap; gap:16px; padding:20px;
+            background:rgba(0,0,0,0.75); border:1px solid var(--glass-border);
+            border-radius:20px; backdrop-filter:blur(16px);
             max-width:90vw; z-index:50;
         }
 
         .holo-icon {
-            width:60px; height:60px; background:rgba(155,77,255,0.2);
-            border-radius:12px; border:1px solid var(--purple-glow);
+            width:64px; height:64px; background:rgba(155,77,255,0.25);
+            border-radius:16px; border:1px solid var(--purple-glow);
             display:flex; align-items:center; justify-content:center;
             cursor:pointer; transition:0.3s;
         }
-        .holo-icon:hover { transform:scale(1.15); box-shadow:0 0 25px var(--purple-glow); }
+        .holo-icon:hover { transform:scale(1.2); box-shadow:0 0 35px var(--purple-glow); }
 
-        /* Holographic Overlay Window */
+        /* Holographic Overlay */
         .holo-window {
-            position:fixed; inset:10%; background:rgba(0,0,0,0.8);
-            border:1px solid var(--purple-glow); border-radius:16px;
-            backdrop-filter:blur(20px); box-shadow:0 0 60px rgba(155,77,255,0.5);
+            position:fixed; inset:5%; background:rgba(0,0,0,0.85);
+            border:1px solid var(--purple-glow); border-radius:20px;
+            backdrop-filter:blur(24px); box-shadow:0 0 80px rgba(155,77,255,0.6);
             display:none; flex-direction:column; z-index:60;
-            overflow:hidden;
         }
 
         .holo-header {
-            padding:12px; background:rgba(155,77,255,0.2);
+            padding:16px; background:rgba(155,77,255,0.25);
             display:flex; justify-content:space-between; align-items:center;
         }
 
         .holo-close {
-            width:32px; height:32px; background:var(--err); border-radius:50%;
+            width:40px; height:40px; background:var(--err); border-radius:50%;
             display:flex; align-items:center; justify-content:center;
-            cursor:pointer; color:#000; font-weight:bold;
+            cursor:pointer; color:#000; font-weight:bold; font-size:1.4rem;
         }
 
-        .holo-iframe {
-            flex:1; border:none;
-        }
+        .holo-iframe { flex:1; border:none; }
 
-        /* Lightning Bolt (Owner Access) */
+        /* Lightning Bolt - Owner Access */
         #lightning-access {
             position:fixed; bottom:20px; right:20px; z-index:70;
-            width:60px; height:60px; background:rgba(212,175,55,0.15);
-            border:2px solid var(--accent); border-radius:50%;
+            width:70px; height:70px; background:rgba(212,175,55,0.2);
+            border:3px solid var(--accent); border-radius:50%;
             display:flex; align-items:center; justify-content:center;
-            cursor:pointer; box-shadow:0 0 30px var(--accent);
-            animation:pulse-glow 3s infinite;
+            cursor:pointer; box-shadow:0 0 40px var(--accent);
+            animation:pulse-glow 3.5s infinite;
         }
 
         @keyframes pulse-glow {
-            0%,100% { box-shadow:0 0 20px var(--accent); }
-            50% { box-shadow:0 0 50px var(--accent); }
+            0%,100% { box-shadow:0 0 30px var(--accent); }
+            50% { box-shadow:0 0 70px var(--accent); }
         }
     </style>
 </head>
@@ -167,9 +174,10 @@
 
     <div id="guest-layer">
         <div id="guest-terminal">
-            <!-- Artemis 8-Ball Response Display -->
+            <!-- Big Artemis 8-Ball Response Display -->
             <div id="artemis-8ball">
                 <span>8</span>
+                <div id="artemis-response"></div>
             </div>
 
             <div id="prompt-area">
@@ -180,16 +188,15 @@
             <!-- Collapsible Icon Bar -->
             <div id="icon-bar-collapsed" onclick="toggleIconBar()">+</div>
             <div id="icon-bar-expanded">
-                <!-- Your 10 icons - replace href with real URLs -->
-                <div class="holo-icon" onclick="openHoloWindow('https://olympus-lac.vercel.app')"><svg>...</svg></div>
-                <div class="holo-icon" onclick="openHoloWindow('https://nexusvortex.netlify.app')"><svg>...</svg></div>
-                <!-- Add remaining 8 icons here -->
+                <!-- 10 Icons - replace href/src with real ones -->
+                <div class="holo-icon" onclick="openHoloWindow('https://olympus-lac.vercel.app')"><svg viewBox="0 0 24 24"><path d="..."/></svg></div>
+                <!-- ... add 9 more icons -->
                 <div class="holo-close" onclick="toggleIconBar()">×</div>
             </div>
         </div>
     </div>
 
-    <!-- Holographic Overlay Window -->
+    <!-- Holographic Overlay -->
     <div id="holo-window" class="holo-window">
         <div class="holo-header">
             <span>Artemis Holo View</span>
@@ -200,7 +207,7 @@
 
     <!-- Lightning Bolt - Owner Access -->
     <div id="lightning-access" onclick="requestArchitectAccess()">
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="var(--accent)">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="var(--accent)">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
     </div>
@@ -250,38 +257,51 @@
             document.getElementById('holo-window').style.display = 'none';
         }
 
-        // Lightning Bolt Access (no password visible)
+        // Lightning Bolt Access (passwords never in code - prompted only)
         function requestArchitectAccess() {
-            const pass1 = prompt("First Key");
-            const pass2 = prompt("Second Key");
-            if (pass1 === "Spider" && pass2 === "Miles") {
-                // Load architect mode (your existing logic)
+            const p1 = prompt("First Key");
+            const p2 = prompt("Second Key");
+            if (p1 === "Spider" && p2 === "Miles") {
+                // Load architect mode (add your existing architect-layer logic here)
                 document.getElementById('architect-layer').style.display = 'flex';
                 document.getElementById('guest-layer').style.display = 'none';
+                alert("Architect Mode Activated");
             } else {
                 alert("Access Denied");
             }
         }
 
-        // 8-Ball Midas Loop & Click Response
+        // Big 8-Ball - Artemis Response Center
         const ball = document.getElementById('artemis-8ball');
+        const responseDiv = document.getElementById('artemis-response');
         const midasFortunes = [
             "Midas awakens: Gold flows your way.",
             "Golden pivot: 10x awaits.",
-            "Wait for Midas candle: Riches align.",
+            "Midas candle: Riches align soon.",
             "Code is Midas lever: Unlock now.",
             "Architect reveals: True gold keys."
         ];
         let index = 0;
 
-        ball.addEventListener('click', () => {
-            const f = midasFortunes[index];
-            ball.innerHTML = `<span style="font-size:3rem; color:var(--accent); animation:glow 2s infinite">${f}</span>`;
+        // Simulate Artemis response (replace with your spin logic)
+        document.getElementById('spin-btn').onclick = () => {
+            const url = document.getElementById('guest-cmd').value.trim();
+            if (!url) return;
+
+            // Your spin logic here...
+            const fortune = midasFortunes[index];
+            responseDiv.textContent = fortune;
+            responseDiv.style.opacity = '1';
+            ball.classList.add('active');
+
             setTimeout(() => {
-                ball.innerHTML = '<span>8</span>';
-            }, 5000); // Show fortune for 5s, then back to 8
+                responseDiv.style.opacity = '0';
+                ball.classList.remove('active');
+            }, 6000);
+
             index = (index + 1) % midasFortunes.length;
-        });
+            document.getElementById('guest-cmd').value = '';
+        };
 
         // Initial show
         setTimeout(() => {
