@@ -128,6 +128,15 @@
             0%, 100% { box-shadow: 0 0 20px var(--deep-bio); }
             50% { box-shadow: 0 0 40px var(--deep-bio); }
         }
+
+        /* Prettier File Display */
+        .file-item {
+            padding: 10px; cursor: pointer; border-radius: 4px; transition: all 0.3s;
+            background: rgba(0,0,0,0.3); margin: 5px 0;
+        }
+        .file-item:hover {
+            background: rgba(0,242,255,0.1); box-shadow: 0 0 10px var(--bio);
+        }
     </style>
 </head>
 <body>
@@ -152,13 +161,7 @@
         <div id="architect-sidebar">
             <div class="nav-header">REPOSITORY SCAN</div>
             <div id="repo-files">
-                <div class="file-item">📄 main.js</div>
-                <div class="file-item">📄 index.html</div>
-                <div class="file-item">📁 protocols/</div>
-                <div class="file-item">📁 assets/</div>
-                <div class="file-item">📁 core/</div>
-                <div class="file-item">📁 api/</div>
-                <div class="file-item">📁 creator-creation/</div>
+                <!-- Dynamically populated from GitHub API -->
             </div>
         </div>
 
@@ -211,6 +214,7 @@
 
         const passwordOverlay = document.getElementById('password-overlay');
         const architectIcon = document.getElementById('architect-icon');
+        const repoFiles = document.getElementById('repo-files');
 
         // ────────────────────────────────────────────────
         // PASSWORD PROTECTION (Architect only)
@@ -232,9 +236,36 @@
                 architectCmd.focus();
                 if (window.symbiote) window.symbiote.setMode('network');
                 architectOutput.innerHTML += "<div class='sys'>> ACCESS GRANTED. ARCHITECT MODE ACTIVE.</div>";
+                loadRepoTree();  // Pull real repo files on unlock
             } else {
                 architectOutput.innerHTML += "<div class='err'>> ACCESS DENIED.</div>";
                 setTimeout(() => passwordOverlay.style.display = "none", 1500);
+            }
+        }
+
+        // ────────────────────────────────────────────────
+        // PULL REAL REPO TREE FROM GITHUB API (prettier display)
+        // ────────────────────────────────────────────────
+        async function loadRepoTree() {
+            repoFiles.innerHTML = '<div class="sys">Loading repo tree...</div>';
+            try {
+                const response = await fetch('https://api.github.com/repos/highland88999-commits/Architect-Artemis/git/trees/main?recursive=1');
+                const data = await response.json();
+                if (data.tree) {
+                    repoFiles.innerHTML = '';
+                    data.tree.forEach(item => {
+                        const icon = item.type === 'tree' ? '📁' : '📄';
+                        const div = document.createElement('div');
+                        div.className = 'file-item';
+                        div.innerHTML = `${icon} ${item.path}`;
+                        div.onclick = () => processCommand(`cat ${item.path}`);
+                        repoFiles.appendChild(div);
+                    });
+                } else {
+                    repoFiles.innerHTML = '<div class="err">Failed to load repo tree.</div>';
+                }
+            } catch (err) {
+                repoFiles.innerHTML = '<div class="err">GitHub API error: ${err.message}</div>';
             }
         }
 
