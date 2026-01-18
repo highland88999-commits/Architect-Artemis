@@ -1,7 +1,7 @@
 {
-  "last_sync": "2026-01-18 12:25:33 UTC",
+  "last_sync": "2026-01-18 14:02:32 UTC",
   "status": "synchronized",
   "version": "v2.0_Persistent_Core",
   "integrity": "verified",
-  "trigger": "schedule"
+  "trigger": "workflow_dispatch"
 }
