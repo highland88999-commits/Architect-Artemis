@@ -3,361 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Architect Artemis | Terminal</title>
+    <title>Project Artemis | Symbiote</title>
     <style>
         :root {
-            --matrix-green: #0f0;
-            --purple-glow: #bc13fe;
-            --err-red: #ff4444;
-            --bg-dark: #000;
+            --bio: #00f2ff;
+            --deep-bio: #00aaff;
+            --accent: #d4af37;
+            --purple-glow: #9b4dff;
+            --err: #ff4d4d;
+            --glass: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(155, 77, 255, 0.25);
+            --bg: #030303;
         }
 
+        * { margin:0; padding:0; box-sizing:border-box; }
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-dark);
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-            color: var(--matrix-green);
+            width:100%; height:100%; overflow:hidden; background:var(--bg);
+            font-family:'Consolas','Courier New',monospace; color:var(--bio);
+            touch-action:manipulation;
         }
 
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            /* Adjusting opacity based on screen size as requested */
-            opacity: 0.6;
+        canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.35; }
+
+        #logo-bg {
+            position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.15;
+            background:url('https://files.catbox.moe/abc123.png') center/cover no-repeat; /* ← your logo URL here */
+            animation:logo-breathe 12s infinite ease-in-out;
         }
 
-        @media (max-width: 768px) {
-            canvas { opacity: 0.4; }
+        @keyframes logo-breathe {
+            0%,100% { opacity:0.15; transform:scale(1); }
+            50% { opacity:0.25; transform:scale(1.03); }
         }
 
-        /* Terminal Styles */
-        .terminal {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 600px;
-            height: 400px;
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid var(--matrix-green);
-            box-shadow: 0 0 15px var(--matrix-green);
-            display: none;
-            flex-direction: column;
-            transition: all 0.3s ease;
+        /* Guest Terminal (transparent glass) */
+        #guest-terminal {
+            width:90vw; max-width:720px; height:80vh; max-height:90vh;
+            background:var(--glass); border:1px solid var(--glass-border);
+            border-radius:16px; backdrop-filter:blur(16px);
+            box-shadow:0 8px 32px rgba(0,0,0,0.6);
+            position:relative; display:none; flex-direction:column;
+            overflow:hidden; transition:all 0.4s ease;
         }
 
-        .terminal.minimized {
-            height: 35px;
-            overflow: hidden;
-            transform: translate(-50%, 0);
-            top: 10px;
+        #guest-terminal.minimized {
+            height:60px; transform:scale(0.9) translateY(-90%);
+            opacity:0.6; pointer-events:none;
         }
 
-        .terminal-header {
-            background: var(--matrix-green);
-            color: black;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
+        /* Artemis Response 8-Ball (big 4x4 rem) */
+        #artemis-8ball {
+            width:16rem; height:16rem; margin:0 auto 20px auto;
+            background:#000; border-radius:50%; border:4px solid var(--accent);
+            box-shadow:0 0 60px var(--accent), inset 0 0 30px var(--purple-glow);
+            display:flex; align-items:center; justify-content:center;
+            position:relative; overflow:hidden; cursor:pointer;
+            animation:midas-pulse 6s infinite ease-in-out;
         }
 
-        .terminal-content {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            font-size: 14px;
+        #artemis-8ball::before {
+            content:''; position:absolute; inset:0; background:radial-gradient(circle at 30% 30%, rgba(212,175,55,0.2), transparent 60%);
+            pointer-events:none;
         }
 
-        .input-line {
-            display: flex;
-            border-top: 1px solid #333;
-            padding: 10px;
+        #artemis-8ball span {
+            color:var(--accent); font-size:8rem; font-weight:bold;
+            text-shadow:0 0 20px var(--accent);
+            z-index:2;
         }
 
-        input {
-            background: transparent;
-            border: none;
-            color: var(--matrix-green);
-            flex: 1;
-            outline: none;
-            font-family: inherit;
+        @keyframes midas-pulse {
+            0%,100% { box-shadow:0 0 40px var(--accent); }
+            50% { box-shadow:0 0 80px var(--accent), 0 0 120px var(--purple-glow); }
         }
 
-        .btn {
-            background: var(--matrix-green);
-            color: black;
-            border: none;
-            padding: 0 15px;
-            cursor: pointer;
-            font-weight: bold;
+        /* Prompt Area */
+        #prompt-area {
+            padding:0 20px 20px; text-align:center;
         }
 
-        /* Layers */
-        #password-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
+        #guest-cmd {
+            width:100%; max-width:500px; padding:12px 16px;
+            background:rgba(0,0,0,0.5); border:1px solid var(--deep-bio);
+            color:var(--bio); font-size:1.1rem; border-radius:8px;
+            margin-bottom:12px;
         }
 
-        #architect-layer {
-            display: none;
-            padding: 20px;
-            flex-direction: column;
+        #spin-btn {
+            padding:12px 32px; background:var(--accent); color:#000;
+            border:none; border-radius:8px; font-weight:bold; cursor:pointer;
+            box-shadow:0 0 20px var(--accent);
         }
 
-        /* Animations */
-        .glow { animation: pulse 1.5s infinite; }
-        @keyframes pulse {
-            0% { text-shadow: 0 0 5px var(--purple-glow); }
-            50% { text-shadow: 0 0 20px var(--purple-glow); }
-            100% { text-shadow: 0 0 5px var(--purple-glow); }
+        /* Collapsible Icon Bar (10 icons) */
+        #icon-bar-collapsed {
+            position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+            width:60px; height:60px; background:rgba(155,77,255,0.3);
+            border-radius:50%; border:2px solid var(--purple-glow);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; z-index:50; box-shadow:0 0 30px var(--purple-glow);
         }
 
-        .err { color: var(--err-red); }
-        .midas { color: var(--purple-glow); font-weight: bold; margin-top: 10px; }
-        
-        .file-item { padding: 5px 0; border-bottom: 1px solid #111; }
+        #icon-bar-expanded {
+            position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+            display:none; flex-wrap:wrap; gap:12px; padding:16px;
+            background:rgba(0,0,0,0.7); border:1px solid var(--glass-border);
+            border-radius:16px; backdrop-filter:blur(12px);
+            max-width:90vw; z-index:50;
+        }
+
+        .holo-icon {
+            width:60px; height:60px; background:rgba(155,77,255,0.2);
+            border-radius:12px; border:1px solid var(--purple-glow);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:0.3s;
+        }
+        .holo-icon:hover { transform:scale(1.15); box-shadow:0 0 25px var(--purple-glow); }
+
+        /* Holographic Overlay Window */
+        .holo-window {
+            position:fixed; inset:10%; background:rgba(0,0,0,0.8);
+            border:1px solid var(--purple-glow); border-radius:16px;
+            backdrop-filter:blur(20px); box-shadow:0 0 60px rgba(155,77,255,0.5);
+            display:none; flex-direction:column; z-index:60;
+            overflow:hidden;
+        }
+
+        .holo-header {
+            padding:12px; background:rgba(155,77,255,0.2);
+            display:flex; justify-content:space-between; align-items:center;
+        }
+
+        .holo-close {
+            width:32px; height:32px; background:var(--err); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:#000; font-weight:bold;
+        }
+
+        .holo-iframe {
+            flex:1; border:none;
+        }
+
+        /* Lightning Bolt (Owner Access) */
+        #lightning-access {
+            position:fixed; bottom:20px; right:20px; z-index:70;
+            width:60px; height:60px; background:rgba(212,175,55,0.15);
+            border:2px solid var(--accent); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; box-shadow:0 0 30px var(--accent);
+            animation:pulse-glow 3s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%,100% { box-shadow:0 0 20px var(--accent); }
+            50% { box-shadow:0 0 50px var(--accent); }
+        }
     </style>
 </head>
 <body>
 
     <canvas id="matrix"></canvas>
+    <div id="logo-bg"></div>
 
     <div id="guest-layer">
-        <div id="guest-terminal" class="terminal">
-            <div class="terminal-header" onclick="toggleMinimize(document.getElementById('guest-terminal'))">
-                <span>GUEST@ARTEMIS:~</span>
-                <span>[ - □ × ]</span>
+        <div id="guest-terminal">
+            <!-- Artemis 8-Ball Response Display -->
+            <div id="artemis-8ball">
+                <span>8</span>
             </div>
-            <div class="terminal-content" id="guest-output">
-                <div>Welcome to the Artemis Core.</div>
-                <div>Submit a URL to analyze monetization vectors.</div>
-                <br>
+
+            <div id="prompt-area">
+                <input type="text" id="guest-cmd" placeholder="https://example.com" autocomplete="off">
+                <button id="spin-btn">SPIN</button>
             </div>
-            <div class="input-line">
-                <span>>&nbsp;</span>
-                <input type="text" id="guest-cmd" placeholder="https://..." autofocus>
-                <button class="btn" id="guest-send-btn">SEND</button>
+
+            <!-- Collapsible Icon Bar -->
+            <div id="icon-bar-collapsed" onclick="toggleIconBar()">+</div>
+            <div id="icon-bar-expanded">
+                <!-- Your 10 icons - replace href with real URLs -->
+                <div class="holo-icon" onclick="openHoloWindow('https://olympus-lac.vercel.app')"><svg>...</svg></div>
+                <div class="holo-icon" onclick="openHoloWindow('https://nexusvortex.netlify.app')"><svg>...</svg></div>
+                <!-- Add remaining 8 icons here -->
+                <div class="holo-close" onclick="toggleIconBar()">×</div>
             </div>
         </div>
     </div>
 
-    <div id="password-overlay">
-        <h2 style="color: var(--purple-glow);">ARCHITECT ACCESS REQUIRED</h2>
-        <input type="password" id="pass1" placeholder="Identity" style="border: 1px solid var(--matrix-green); margin: 5px; padding: 10px; text-align: center;">
-        <input type="password" id="pass2" placeholder="Key" style="border: 1px solid var(--matrix-green); margin: 5px; padding: 10px; text-align: center;">
-        <button class="btn" onclick="checkPassword()" style="margin-top: 15px; height: 40px;">DECRYPT</button>
+    <!-- Holographic Overlay Window -->
+    <div id="holo-window" class="holo-window">
+        <div class="holo-header">
+            <span>Artemis Holo View</span>
+            <div class="holo-close" onclick="closeHoloWindow()">×</div>
+        </div>
+        <iframe id="holo-iframe" class="holo-iframe"></iframe>
     </div>
 
-    <div id="architect-layer" class="terminal" style="display: none; height: 80vh; max-width: 800px;">
-        <div class="terminal-header">
-            <span>ARCHITECT_ROOT@SYSTEM</span>
-        </div>
-        <div class="terminal-content" id="repo-files">
-            Initializing secure link...
-        </div>
+    <!-- Lightning Bolt - Owner Access -->
+    <div id="lightning-access" onclick="requestArchitectAccess()">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="var(--accent)">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
     </div>
-
-    <button onclick="showPasswordOverlay()" style="position: fixed; bottom: 10px; right: 10px; background: transparent; border: 1px solid #333; color: #333; font-size: 10px; cursor: pointer;">ADMIN</button>
 
     <script>
-        // --- Matrix Engine ---
+        // Purple Rain Matrix
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         let width, height, columns, drops;
-
         function initMatrix() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             columns = Math.floor(width / 16);
             drops = new Array(columns).fill(1);
         }
-
         function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = '#0f0';
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0,0,width,height);
+            ctx.fillStyle = '#9b4dff';
             ctx.font = '16px monospace';
             for (let i = 0; i < drops.length; i++) {
-                ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), i * 16, drops[i] * 16);
-                if (drops[i] * 16 > height && Math.random() > 0.975) drops[i] = 0;
+                ctx.fillText(String.fromCharCode(0x30A0 + Math.random()*96), i*16, drops[i]*16);
+                if (drops[i]*16 > height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         }
         window.addEventListener('resize', initMatrix);
-        initMatrix();
-        setInterval(drawMatrix, 35);
+        initMatrix(); setInterval(drawMatrix, 35);
 
-        // --- State Management ---
-        const fortunes = ["Massive capital inflow soon.", "A digital pivot will yield 10x.", "Wait for the next candle.", "Code is your leverage.", "Architect Mode holds the true keys."];
-        const interestClusters = {
-            finance: ['crypto', 'bank', 'invest', 'stock', 'trade'],
-            tech: ['ai', 'code', 'dev', 'software', 'app'],
-            creative: ['design', 'art', 'music', 'video']
-        };
-        const monetizationGifts = {
-            finance: "Tokenize the underlying asset for a 15% carry.",
-            tech: "Implement an API-first SaaS layer for recurring b2b.",
-            creative: "Launch a gated community using limited access NFTs.",
-            default: "Increase pricing by 20% and automate lead gen."
-        };
-
-        let ideaCount = parseInt(localStorage.getItem('ideaCount') || '0');
-        const today = new Date().toDateString();
-
-        // Daily Reset Logic
-        if (localStorage.getItem('lastReset') !== today) {
-            ideaCount = 0;
-            localStorage.setItem('ideaCount', '0');
-            localStorage.setItem('lastReset', today);
+        // Icon Bar Collapse/Expand
+        function toggleIconBar() {
+            const collapsed = document.getElementById('icon-bar-collapsed');
+            const expanded = document.getElementById('icon-bar-expanded');
+            collapsed.style.display = expanded.style.display === 'flex' ? 'flex' : 'none';
+            expanded.style.display = expanded.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        // --- UI Logic ---
-        function toggleMinimize(el) {
-            el.classList.toggle('minimized');
-            if (!el.classList.contains('minimized')) {
-                document.getElementById('guest-cmd')?.focus();
+        // Open Holographic Window
+        function openHoloWindow(url) {
+            const win = document.getElementById('holo-window');
+            const iframe = document.getElementById('holo-iframe');
+            iframe.src = url;
+            win.style.display = 'flex';
+        }
+
+        function closeHoloWindow() {
+            document.getElementById('holo-window').style.display = 'none';
+        }
+
+        // Lightning Bolt Access (no password visible)
+        function requestArchitectAccess() {
+            const pass1 = prompt("First Key");
+            const pass2 = prompt("Second Key");
+            if (pass1 === "Spider" && pass2 === "Miles") {
+                // Load architect mode (your existing logic)
+                document.getElementById('architect-layer').style.display = 'flex';
+                document.getElementById('guest-layer').style.display = 'none';
+            } else {
+                alert("Access Denied");
             }
         }
 
-        const guestTerminal = document.getElementById('guest-terminal');
-        const passwordOverlay = document.getElementById('password-overlay');
+        // 8-Ball Midas Loop & Click Response
+        const ball = document.getElementById('artemis-8ball');
+        const midasFortunes = [
+            "Midas awakens: Gold flows your way.",
+            "Golden pivot: 10x awaits.",
+            "Wait for Midas candle: Riches align.",
+            "Code is Midas lever: Unlock now.",
+            "Architect reveals: True gold keys."
+        ];
+        let index = 0;
 
-        // Double Click (Desktop)
-        guestTerminal.addEventListener('dblclick', () => toggleMinimize(guestTerminal));
-
-        // Double Tap (Mobile)
-        let lastTap = 0;
-        document.body.addEventListener('touchend', (e) => {
-            const current = new Date().getTime();
-            const diff = current - lastTap;
-            if (diff < 300 && diff > 0) {
-                if (guestTerminal.contains(e.target)) toggleMinimize(guestTerminal);
-                if (passwordOverlay.contains(e.target)) toggleMinimize(passwordOverlay);
-                e.preventDefault();
-            }
-            lastTap = current;
-        }, { passive: false });
-
-        // --- Core Functions ---
-        document.getElementById('guest-send-btn').onclick = () => {
-            const input = document.getElementById('guest-cmd');
-            const url = input.value.trim().toLowerCase();
-            const out = document.getElementById('guest-output');
-
-            // Reset Command Hidden
-            if (url === "reset-count") {
-                ideaCount = 0;
-                localStorage.setItem('ideaCount', '0');
-                out.innerHTML += `<div style="color:yellow">> Idea count reset to zero.</div>`;
-                input.value = "";
-                return;
-            }
-
-            if (!url || !/^(https?:\/\/)/i.test(url)) {
-                out.innerHTML += `<div class="err">> ERROR: Invalid URL. Need https://...</div>`;
-                out.scrollTop = out.scrollHeight;
-                return;
-            }
-
-            ideaCount++;
-            localStorage.setItem('ideaCount', ideaCount);
-
-            // Slot Machine Animation
-            out.innerHTML += `<div>> Spinning Pattern Wheel... [${ideaCount}/3]</div>`;
-            out.innerHTML += `<div id="spin-loader" style="color:var(--purple-glow);">Spinning... 🎰</div>`;
-            out.scrollTop = out.scrollHeight;
-
+        ball.addEventListener('click', () => {
+            const f = midasFortunes[index];
+            ball.innerHTML = `<span style="font-size:3rem; color:var(--accent); animation:glow 2s infinite">${f}</span>`;
             setTimeout(() => {
-                document.getElementById('spin-loader')?.remove();
-                out.innerHTML += `<div>> Scanning clusters...</div>`;
-                out.scrollTop = out.scrollHeight;
-            }, 600);
-
-            setTimeout(() => {
-                out.innerHTML += `<div>> Matching vectors...</div>`;
-                out.scrollTop = out.scrollHeight;
-            }, 1200);
-
-            setTimeout(() => {
-                let key = 'default';
-                for (let [cat, words] of Object.entries(interestClusters)) {
-                    if (words.some(w => url.includes(w))) {
-                        key = cat;
-                        break;
-                    }
-                }
-                const gift = monetizationGifts[key];
-                out.innerHTML += `<div class="midas glow">[GIFT]: ${gift}</div><br>`;
-                out.scrollTop = out.scrollHeight;
-                input.value = "";
-            }, 2000);
-        };
-
-        // Oracle / 8-Ball
-        canvas.addEventListener('dblclick', () => {
-            const out = document.getElementById('guest-output');
-            const f = fortunes[Math.floor(Math.random() * fortunes.length)];
-            out.innerHTML += `<div style="color:var(--purple-glow); margin:10px 0; border-left: 2px solid var(--purple-glow); padding-left:10px;">[ORACLE]: ${f}</div>`;
-            out.scrollTop = out.scrollHeight;
+                ball.innerHTML = '<span>8</span>';
+            }, 5000); // Show fortune for 5s, then back to 8
+            index = (index + 1) % midasFortunes.length;
         });
 
-        function showPasswordOverlay() {
-            passwordOverlay.style.display = "flex";
-        }
-
-        function checkPassword() {
-            const p1 = document.getElementById('pass1').value.trim();
-            const p2 = document.getElementById('pass2').value.trim();
-            if (p1 === "Spider" && p2 === "Miles") {
-                passwordOverlay.style.display = "none";
-                document.getElementById('guest-layer').style.display = "none";
-                document.getElementById('architect-layer').style.display = "flex";
-                loadRepoTree();
-            } else {
-                alert("ACCESS DENIED: Credentials Invalid.");
-            }
-        }
-
-        async function loadRepoTree() {
-            const list = document.getElementById('repo-files');
-            list.innerHTML = "Syncing with GitHub Artemis Core...";
-            try {
-                const res = await fetch('https://api.github.com/repos/highland88999-commits/Architect-Artemis/contents');
-                if (!res.ok) throw new Error('API Offline');
-                const data = await res.json();
-                list.innerHTML = "";
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = "file-item";
-                    div.innerText = `📄 ${item.name || item.path}`;
-                    list.appendChild(div);
-                });
-            } catch (e) {
-                list.innerHTML = `<div class="err">System Offline or GitHub Rate-Limited. Please try later.</div>`;
-            }
-        }
-
-        // Init
+        // Initial show
         setTimeout(() => {
-            guestTerminal.style.display = 'flex';
-            document.getElementById('guest-cmd').focus();
-        }, 3000);
-
+            document.getElementById('guest-terminal').style.display = 'flex';
+        }, 2000);
     </script>
 </body>
 </html>
