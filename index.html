@@ -23,11 +23,11 @@
             touch-action:manipulation;
         }
 
-        canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.35; }
+        canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.3; } /* Thin rain */
 
         #logo-bg {
             position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.12;
-            background:url('https://files.catbox.moe/abc123.png') center/cover no-repeat; /* your logo here */
+            background:url('https://i.imgur.com/yourlogo.png') center/cover no-repeat; /* Replace with actual logo URL */
             animation:logo-breathe 15s infinite ease-in-out;
         }
 
@@ -51,32 +51,48 @@
             opacity:0.7; pointer-events:none;
         }
 
-        /* Artemis 8-Ball Response Display - Big 4x4 rem */
+        /* Magic 8-Ball - Natural 90s Effect (Shake + Liquid Reveal) */
         #artemis-8ball {
             width:16rem; height:16rem; margin:40px auto 30px auto;
-            background:#000 url('https://files.catbox.moe/abc123.png') center/cover; /* logo as 8-ball bg */
-            border-radius:50%; border:5px solid var(--accent);
+            background:#000; border-radius:50%; border:5px solid var(--accent);
             box-shadow:0 0 80px var(--accent), inset 0 0 40px var(--purple-glow);
-            display:flex; align-items:center; justify-content:center;
             position:relative; overflow:hidden; cursor:pointer;
             animation:midas-pulse 7s infinite ease-in-out;
         }
 
-        #artemis-8ball span {
-            color:var(--accent); font-size:10rem; font-weight:bold;
-            text-shadow:0 0 30px var(--accent), 0 0 60px var(--purple-glow);
-            z-index:2;
+        #ball-liquid {
+            position:absolute; inset:0; background:linear-gradient(to bottom, #00008b, #000, #00008b);
+            opacity:0.8; transform:translateY(50%);
+            transition:transform 1s ease-out;
         }
 
-        #artemis-response {
-            position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-            color:var(--accent); font-size:1.8rem; text-align:center; padding:20px;
-            background:linear-gradient(to bottom,rgba(0,0,0,0.6),rgba(0,0,0,0.8));
-            opacity:0; transition:opacity 0.8s;
-            pointer-events:none; z-index:1;
+        #ball-triangle {
+            position:absolute; bottom:20%; left:50%; transform:translateX(-50%);
+            width:0; height:0; border-left:60px solid transparent; border-right:60px solid transparent;
+            border-bottom:100px solid #fff; opacity:0;
+            transition:opacity 1.5s;
         }
 
-        #artemis-8ball.active #artemis-response { opacity:1; }
+        #ball-fortune {
+            position:absolute; bottom:25%; left:50%; transform:translateX(-50%);
+            color:#000; font-size:1.2rem; text-align:center; max-width:100px;
+            font-weight:bold;
+        }
+
+        #artemis-8ball.shaking #ball-liquid {
+            animation:shake-liquid 0.8s ease-in-out;
+        }
+
+        #artemis-8ball.revealing #ball-liquid { transform:translateY(0); }
+        #artemis-8ball.revealing #ball-triangle { opacity:1; }
+
+        @keyframes shake-liquid {
+            0% { transform:translateY(50%); }
+            25% { transform:translateY(45%) rotate(5deg); }
+            50% { transform:translateY(55%) rotate(-5deg); }
+            75% { transform:translateY(45%) rotate(5deg); }
+            100% { transform:translateY(50%); }
+        }
 
         @keyframes midas-pulse {
             0%,100% { box-shadow:0 0 50px var(--accent); }
@@ -117,7 +133,7 @@
         #icon-bar-expanded {
             position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
             display:none; flex-wrap:wrap; gap:16px; padding:20px;
-            background:rgba(0,0,0,0.75); border:1px solid var(--glass-border);
+            background:var(--glass); border:1px solid var(--glass-border);
             border-radius:20px; backdrop-filter:blur(16px);
             max-width:90vw; z-index:50;
         }
@@ -132,7 +148,7 @@
 
         /* Holographic Overlay */
         .holo-window {
-            position:fixed; inset:5%; background:rgba(0,0,0,0.85);
+            position:fixed; inset:5%; background:var(--glass);
             border:1px solid var(--purple-glow); border-radius:20px;
             backdrop-filter:blur(24px); box-shadow:0 0 80px rgba(155,77,255,0.6);
             display:none; flex-direction:column; z-index:60;
@@ -176,8 +192,10 @@
         <div id="guest-terminal">
             <!-- Big Artemis 8-Ball Response Display -->
             <div id="artemis-8ball">
+                <div id="ball-liquid"></div>
+                <div id="ball-triangle"></div>
+                <div id="ball-fortune"></div>
                 <span>8</span>
-                <div id="artemis-response"></div>
             </div>
 
             <div id="prompt-area">
@@ -188,9 +206,9 @@
             <!-- Collapsible Icon Bar -->
             <div id="icon-bar-collapsed" onclick="toggleIconBar()">+</div>
             <div id="icon-bar-expanded">
-                <!-- 10 Icons - replace href/src with real ones -->
+                <!-- 10 Icons - replace with your buttons -->
                 <div class="holo-icon" onclick="openHoloWindow('https://olympus-lac.vercel.app')"><svg viewBox="0 0 24 24"><path d="..."/></svg></div>
-                <!-- ... add 9 more icons -->
+                <!-- ... add 9 more -->
                 <div class="holo-close" onclick="toggleIconBar()">×</div>
             </div>
         </div>
@@ -257,25 +275,26 @@
             document.getElementById('holo-window').style.display = 'none';
         }
 
-        // Lightning Bolt Access (passwords never in code - prompted only)
+        // Lightning Bolt Access (prompts, no visible passwords)
         function requestArchitectAccess() {
             const p1 = prompt("First Key");
             const p2 = prompt("Second Key");
             if (p1 === "Spider" && p2 === "Miles") {
-                // Load architect mode (add your existing architect-layer logic here)
+                // Load architect mode (add your logic)
                 document.getElementById('architect-layer').style.display = 'flex';
                 document.getElementById('guest-layer').style.display = 'none';
-                alert("Architect Mode Activated");
             } else {
                 alert("Access Denied");
             }
         }
 
-        // Big 8-Ball - Artemis Response Center
+        // Magic 8-Ball - Natural Shake & Reveal
         const ball = document.getElementById('artemis-8ball');
-        const responseDiv = document.getElementById('artemis-response');
+        const liquid = document.getElementById('ball-liquid');
+        const triangle = document.getElementById('ball-triangle');
+        const fortuneText = document.getElementById('ball-fortune');
         const midasFortunes = [
-            "Midas awakens: Gold flows your way.",
+            "Midas touch: Gold flows your way.",
             "Golden pivot: 10x awaits.",
             "Midas candle: Riches align soon.",
             "Code is Midas lever: Unlock now.",
@@ -283,25 +302,19 @@
         ];
         let index = 0;
 
-        // Simulate Artemis response (replace with your spin logic)
-        document.getElementById('spin-btn').onclick = () => {
-            const url = document.getElementById('guest-cmd').value.trim();
-            if (!url) return;
-
-            // Your spin logic here...
-            const fortune = midasFortunes[index];
-            responseDiv.textContent = fortune;
-            responseDiv.style.opacity = '1';
-            ball.classList.add('active');
+        ball.addEventListener('click', () => {
+            ball.classList.add('shaking');
+            setTimeout(() => {
+                ball.classList.remove('shaking');
+                ball.classList.add('revealing');
+                fortuneText.textContent = midasFortunes[index];
+                index = (index + 1) % midasFortunes.length;
+            }, 800);
 
             setTimeout(() => {
-                responseDiv.style.opacity = '0';
-                ball.classList.remove('active');
-            }, 6000);
-
-            index = (index + 1) % midasFortunes.length;
-            document.getElementById('guest-cmd').value = '';
-        };
+                ball.classList.remove('revealing');
+            }, 5000);
+        });
 
         // Initial show
         setTimeout(() => {
