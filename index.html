@@ -3,166 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Architect Artemis | Symbiote</title>
+    <title>Architect Artemis | Terminal</title>
     <style>
         :root {
-            --bio: #00f2ff;
-            --deep-bio: #00aaff;
-            --accent: #d4af37;
-            --purple-glow: #9b4dff;
-            --err: #ff4d4d;
-            --glass: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(155, 77, 255, 0.4);
-            --bg: #030303;
+            --matrix-green: #0f0;
+            --purple-glow: #bc13fe;
+            --err-red: #ff4444;
+            --bg-dark: #000;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html {
-            width: 100%; height: 100%; overflow: hidden; background: var(--bg);
-            font-family: 'Consolas', 'Courier New', monospace; color: var(--bio);
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            color: var(--matrix-green);
         }
 
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.6; }
-
-        /* Guest Mode */
-        #guest-layer {
-            position: absolute; inset: 0; z-index: 10;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: radial-gradient(circle, rgba(155,77,255,0.1) 0%, rgba(0,0,0,0.9) 100%);
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            /* Adjusting opacity based on screen size as requested */
+            opacity: 0.6;
         }
 
-        #guest-terminal {
-            width: 90vw; max-width: 700px; background: rgba(10, 0, 30, 0.85);
-            border: 2px solid var(--purple-glow); border-radius: 12px;
-            padding: 25px; box-shadow: 0 0 40px rgba(155, 77, 255, 0.4);
-            backdrop-filter: blur(12px); pointer-events: all;
+        @media (max-width: 768px) {
+            canvas { opacity: 0.4; }
         }
 
-        #guest-output {
-            min-height: 120px; max-height: 40vh; overflow-y: auto; margin-bottom: 15px;
-            padding: 15px; background: rgba(0,0,0,0.6); border-radius: 8px;
-            white-space: pre-wrap; font-size: 0.9em; border: 1px solid var(--glass-border);
+        /* Terminal Styles */
+        .terminal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--matrix-green);
+            box-shadow: 0 0 15px var(--matrix-green);
+            display: none;
+            flex-direction: column;
+            transition: all 0.3s ease;
         }
 
-        #guest-input-area { display: flex; flex-direction: column; gap: 10px; }
-        #guest-prompt { font-size: 1em; color: var(--accent); }
-        #guest-cmd {
-            background: transparent; border: none; border-bottom: 2px solid var(--bio);
-            color: #fff; font-size: 1.1em; outline: none; padding: 5px 0; flex: 1;
+        .terminal.minimized {
+            height: 35px;
+            overflow: hidden;
+            transform: translate(-50%, 0);
+            top: 10px;
         }
 
-        #guest-send-btn {
-            background: rgba(155, 77, 255, 0.3); border: 1px solid var(--purple-glow);
-            color: var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer;
-            font-weight: bold; transition: 0.3s;
+        .terminal-header {
+            background: var(--matrix-green);
+            color: black;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
         }
 
-        /* Social Icons Grid */
-        #social-grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-            margin-top: 20px; width: 100%;
+        .terminal-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 14px;
         }
-        .social-icon {
-            background: rgba(155, 77, 255, 0.1); border: 1px solid var(--purple-glow);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            height: 50px; transition: 0.3s;
-        }
-        .social-icon:hover { background: var(--purple-glow); transform: translateY(-3px); }
-        .social-icon svg { width: 24px; height: 24px; fill: var(--accent); }
 
-        /* Architect Mode */
-        #architect-layer {
-            position: absolute; inset: 0; z-index: 20; display: none;
-            background: #000; flex-direction: row;
+        .input-line {
+            display: flex;
+            border-top: 1px solid #333;
+            padding: 10px;
         }
-        #architect-sidebar {
-            width: 280px; background: rgba(5, 10, 20, 0.95); border-right: 1px solid var(--deep-bio);
-            padding: 20px; display: flex; flex-direction: column; gap: 15px;
-        }
-        #architect-terminal { flex: 1; display: flex; flex-direction: column; }
-        #architect-output { flex: 1; overflow-y: auto; padding: 25px; font-size: 0.95em; line-height: 1.6; }
-        #architect-input-dock { padding: 15px; border-top: 1px solid var(--deep-bio); display: flex; gap: 10px; }
-        #architect-cmd { flex: 1; background: #080808; border: 1px solid var(--deep-bio); color: var(--bio); padding: 10px; }
 
-        /* Overlays */
+        input {
+            background: transparent;
+            border: none;
+            color: var(--matrix-green);
+            flex: 1;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: var(--matrix-green);
+            color: black;
+            border: none;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layers */
         #password-overlay {
-            position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9);
-            display: none; align-items: center; justify-content: center;
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
         }
-        .file-item { padding: 8px; background: rgba(0,242,255,0.05); margin: 4px 0; border-radius: 4px; font-size: 0.85em; cursor: pointer; }
-        .file-item:hover { background: rgba(0,242,255,0.2); }
 
-        #architect-icon {
-            position: fixed; bottom: 20px; right: 20px; z-index: 50;
-            width: 50px; height: 50px; background: rgba(0, 242, 255, 0.1);
-            border: 2px solid var(--deep-bio); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        #architect-layer {
+            display: none;
+            padding: 20px;
+            flex-direction: column;
         }
-        .midas { color: var(--accent); font-weight: bold; }
+
+        /* Animations */
+        .glow { animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { text-shadow: 0 0 5px var(--purple-glow); }
+            50% { text-shadow: 0 0 20px var(--purple-glow); }
+            100% { text-shadow: 0 0 5px var(--purple-glow); }
+        }
+
+        .err { color: var(--err-red); }
+        .midas { color: var(--purple-glow); font-weight: bold; margin-top: 10px; }
+        
+        .file-item { padding: 5px 0; border-bottom: 1px solid #111; }
     </style>
 </head>
 <body>
+
     <canvas id="matrix"></canvas>
 
     <div id="guest-layer">
-        <div id="guest-terminal">
-            <div id="guest-output">System initialized... Welcome, Guest.
-Enter a URL below to receive an Architect-grade UI optimization idea.</div>
-            <div id="guest-input-area">
-                <p id="guest-prompt">Target URL:</p>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="guest-cmd" placeholder="https://your-site.com">
-                    <button id="guest-send-btn">Request</button>
-                </div>
+        <div id="guest-terminal" class="terminal">
+            <div class="terminal-header" onclick="toggleMinimize(document.getElementById('guest-terminal'))">
+                <span>GUEST@ARTEMIS:~</span>
+                <span>[ - □ × ]</span>
             </div>
-            <div id="social-grid">
-                <a href="https://github.com/highland88999-commits" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>
-                <a href="#" class="social-icon"><svg viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg></a>
-                <a href="#" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
-                <a href="#" class="social-icon"><svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
-                <a href="https://olympus-lac.vercel.app/" class="social-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></a>
+            <div class="terminal-content" id="guest-output">
+                <div>Welcome to the Artemis Core.</div>
+                <div>Submit a URL to analyze monetization vectors.</div>
+                <br>
             </div>
-        </div>
-    </div>
-
-    <div id="architect-layer">
-        <div id="architect-sidebar">
-            <div style="color:var(--accent); font-weight:bold; border-bottom:1px solid var(--deep-bio); padding-bottom:10px;">REPOSITORY_SCAN</div>
-            <div id="repo-files">Loading symbiote files...</div>
-        </div>
-        <div id="architect-terminal">
-            <div id="architect-output"></div>
-            <div id="architect-input-dock">
-                <span style="color:var(--bio)">λ</span>
-                <input type="text" id="architect-cmd" placeholder="Execute directive..." autocomplete="off">
+            <div class="input-line">
+                <span>>&nbsp;</span>
+                <input type="text" id="guest-cmd" placeholder="https://..." autofocus>
+                <button class="btn" id="guest-send-btn">SEND</button>
             </div>
         </div>
     </div>
 
     <div id="password-overlay">
-        <div style="background:#000; padding:30px; border:1px solid var(--accent); text-align:center;">
-            <p style="margin-bottom:15px; letter-spacing:2px;">SECURE CHANNEL REQUIRED</p>
-            <input type="password" id="pass-input" placeholder="ACCESS_KEY" style="background:#111; color:#fff; border:1px solid var(--bio); padding:10px; text-align:center;">
-            <button id="auth-submit" style="display:block; width:100%; margin-top:10px; padding:10px; background:var(--accent); border:none; cursor:pointer; font-weight:bold;">DECRYPT</button>
+        <h2 style="color: var(--purple-glow);">ARCHITECT ACCESS REQUIRED</h2>
+        <input type="password" id="pass1" placeholder="Identity" style="border: 1px solid var(--matrix-green); margin: 5px; padding: 10px; text-align: center;">
+        <input type="password" id="pass2" placeholder="Key" style="border: 1px solid var(--matrix-green); margin: 5px; padding: 10px; text-align: center;">
+        <button class="btn" onclick="checkPassword()" style="margin-top: 15px; height: 40px;">DECRYPT</button>
+    </div>
+
+    <div id="architect-layer" class="terminal" style="display: none; height: 80vh; max-width: 800px;">
+        <div class="terminal-header">
+            <span>ARCHITECT_ROOT@SYSTEM</span>
+        </div>
+        <div class="terminal-content" id="repo-files">
+            Initializing secure link...
         </div>
     </div>
 
-    <div id="architect-icon">
-        <svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-    </div>
+    <button onclick="showPasswordOverlay()" style="position: fixed; bottom: 10px; right: 10px; background: transparent; border: 1px solid #333; color: #333; font-size: 10px; cursor: pointer;">ADMIN</button>
 
     <script>
-        // --- MATRIX ENGINE ---
+        // --- Matrix Engine ---
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        let width, height, columns;
-        const fontSize = 16;
-        let drops = [];
+        let width, height, columns, drops;
 
         function initMatrix() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            columns = Math.floor(width / fontSize);
+            columns = Math.floor(width / 16);
             drops = new Array(columns).fill(1);
         }
 
@@ -170,11 +191,10 @@ Enter a URL below to receive an Architect-grade UI optimization idea.</div>
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, width, height);
             ctx.fillStyle = '#0f0';
-            ctx.font = fontSize + 'px monospace';
+            ctx.font = '16px monospace';
             for (let i = 0; i < drops.length; i++) {
-                const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
+                ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), i * 16, drops[i] * 16);
+                if (drops[i] * 16 > height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         }
@@ -182,70 +202,162 @@ Enter a URL below to receive an Architect-grade UI optimization idea.</div>
         initMatrix();
         setInterval(drawMatrix, 35);
 
-        // --- UI LOGIC ---
-        const guestOut = document.getElementById('guest-output');
-        const archOut = document.getElementById('architect-output');
-        const passOverlay = document.getElementById('password-overlay');
-        const archLayer = document.getElementById('architect-layer');
-        const guestLayer = document.getElementById('guest-layer');
-
-        // Idea Generator
-        document.getElementById('guest-send-btn').onclick = () => {
-            const url = document.getElementById('guest-cmd').value;
-            if(!url) return;
-            guestOut.innerHTML += `\n> Scoping target: ${url}...`;
-            setTimeout(() => {
-                guestOut.innerHTML += `\n<span class="midas">[SYMBIO-ADVICE]: Integration of SVG-based noise textures on background layers detected. Recommend shifting to 8-bit alpha channel for smoother rendering.</span>`;
-                guestOut.scrollTop = guestOut.scrollHeight;
-            }, 1200);
+        // --- State Management ---
+        const fortunes = ["Massive capital inflow soon.", "A digital pivot will yield 10x.", "Wait for the next candle.", "Code is your leverage.", "Architect Mode holds the true keys."];
+        const interestClusters = {
+            finance: ['crypto', 'bank', 'invest', 'stock', 'trade'],
+            tech: ['ai', 'code', 'dev', 'software', 'app'],
+            creative: ['design', 'art', 'music', 'video']
+        };
+        const monetizationGifts = {
+            finance: "Tokenize the underlying asset for a 15% carry.",
+            tech: "Implement an API-first SaaS layer for recurring b2b.",
+            creative: "Launch a gated community using limited access NFTs.",
+            default: "Increase pricing by 20% and automate lead gen."
         };
 
-        // Access Control
-        document.getElementById('architect-icon').onclick = () => {
-            passOverlay.style.display = 'flex';
-        };
+        let ideaCount = parseInt(localStorage.getItem('ideaCount') || '0');
+        const today = new Date().toDateString();
 
-        document.getElementById('auth-submit').onclick = () => {
-            const val = document.getElementById('pass-input').value;
-            if(val === "1337") { // Set your key here
-                passOverlay.style.display = 'none';
-                guestLayer.style.display = 'none';
-                archLayer.style.display = 'flex';
-                initArchitectMode();
-            } else {
-                alert("VOID: CREDENTIALS REJECTED");
-            }
-        };
+        // Daily Reset Logic
+        if (localStorage.getItem('lastReset') !== today) {
+            ideaCount = 0;
+            localStorage.setItem('ideaCount', '0');
+            localStorage.setItem('lastReset', today);
+        }
 
-        async function initArchitectMode() {
-            archOut.innerHTML = "> Session Started. Initializing Artemis Core...\n> Fetching Repository Data...";
-            try {
-                const res = await fetch('https://api.github.com/repos/highland88999-commits/Architect-Artemis/contents');
-                const files = await res.json();
-                const container = document.getElementById('repo-files');
-                container.innerHTML = '';
-                files.forEach(f => {
-                    const item = document.createElement('div');
-                    item.className = 'file-item';
-                    item.innerHTML = `λ ${f.name}`;
-                    container.appendChild(item);
-                });
-                archOut.innerHTML += "\n> Repository synchronized. All systems connected.";
-            } catch(e) {
-                archOut.innerHTML += "\n> ERROR: Failed to sync repository.";
+        // --- UI Logic ---
+        function toggleMinimize(el) {
+            el.classList.toggle('minimized');
+            if (!el.classList.contains('minimized')) {
+                document.getElementById('guest-cmd')?.focus();
             }
         }
 
-        // Terminal Emulation
-        document.getElementById('architect-cmd').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                const cmd = e.target.value;
-                archOut.innerHTML += `\n<span style="color:var(--accent)">Guest@Artemis:~$</span> ${cmd}`;
-                archOut.innerHTML += `\n> Directive received. Processing "${cmd}"...`;
-                e.target.value = '';
-                archOut.scrollTop = archOut.scrollHeight;
+        const guestTerminal = document.getElementById('guest-terminal');
+        const passwordOverlay = document.getElementById('password-overlay');
+
+        // Double Click (Desktop)
+        guestTerminal.addEventListener('dblclick', () => toggleMinimize(guestTerminal));
+
+        // Double Tap (Mobile)
+        let lastTap = 0;
+        document.body.addEventListener('touchend', (e) => {
+            const current = new Date().getTime();
+            const diff = current - lastTap;
+            if (diff < 300 && diff > 0) {
+                if (guestTerminal.contains(e.target)) toggleMinimize(guestTerminal);
+                if (passwordOverlay.contains(e.target)) toggleMinimize(passwordOverlay);
+                e.preventDefault();
             }
+            lastTap = current;
+        }, { passive: false });
+
+        // --- Core Functions ---
+        document.getElementById('guest-send-btn').onclick = () => {
+            const input = document.getElementById('guest-cmd');
+            const url = input.value.trim().toLowerCase();
+            const out = document.getElementById('guest-output');
+
+            // Reset Command Hidden
+            if (url === "reset-count") {
+                ideaCount = 0;
+                localStorage.setItem('ideaCount', '0');
+                out.innerHTML += `<div style="color:yellow">> Idea count reset to zero.</div>`;
+                input.value = "";
+                return;
+            }
+
+            if (!url || !/^(https?:\/\/)/i.test(url)) {
+                out.innerHTML += `<div class="err">> ERROR: Invalid URL. Need https://...</div>`;
+                out.scrollTop = out.scrollHeight;
+                return;
+            }
+
+            ideaCount++;
+            localStorage.setItem('ideaCount', ideaCount);
+
+            // Slot Machine Animation
+            out.innerHTML += `<div>> Spinning Pattern Wheel... [${ideaCount}/3]</div>`;
+            out.innerHTML += `<div id="spin-loader" style="color:var(--purple-glow);">Spinning... 🎰</div>`;
+            out.scrollTop = out.scrollHeight;
+
+            setTimeout(() => {
+                document.getElementById('spin-loader')?.remove();
+                out.innerHTML += `<div>> Scanning clusters...</div>`;
+                out.scrollTop = out.scrollHeight;
+            }, 600);
+
+            setTimeout(() => {
+                out.innerHTML += `<div>> Matching vectors...</div>`;
+                out.scrollTop = out.scrollHeight;
+            }, 1200);
+
+            setTimeout(() => {
+                let key = 'default';
+                for (let [cat, words] of Object.entries(interestClusters)) {
+                    if (words.some(w => url.includes(w))) {
+                        key = cat;
+                        break;
+                    }
+                }
+                const gift = monetizationGifts[key];
+                out.innerHTML += `<div class="midas glow">[GIFT]: ${gift}</div><br>`;
+                out.scrollTop = out.scrollHeight;
+                input.value = "";
+            }, 2000);
+        };
+
+        // Oracle / 8-Ball
+        canvas.addEventListener('dblclick', () => {
+            const out = document.getElementById('guest-output');
+            const f = fortunes[Math.floor(Math.random() * fortunes.length)];
+            out.innerHTML += `<div style="color:var(--purple-glow); margin:10px 0; border-left: 2px solid var(--purple-glow); padding-left:10px;">[ORACLE]: ${f}</div>`;
+            out.scrollTop = out.scrollHeight;
         });
+
+        function showPasswordOverlay() {
+            passwordOverlay.style.display = "flex";
+        }
+
+        function checkPassword() {
+            const p1 = document.getElementById('pass1').value.trim();
+            const p2 = document.getElementById('pass2').value.trim();
+            if (p1 === "Spider" && p2 === "Miles") {
+                passwordOverlay.style.display = "none";
+                document.getElementById('guest-layer').style.display = "none";
+                document.getElementById('architect-layer').style.display = "flex";
+                loadRepoTree();
+            } else {
+                alert("ACCESS DENIED: Credentials Invalid.");
+            }
+        }
+
+        async function loadRepoTree() {
+            const list = document.getElementById('repo-files');
+            list.innerHTML = "Syncing with GitHub Artemis Core...";
+            try {
+                const res = await fetch('https://api.github.com/repos/highland88999-commits/Architect-Artemis/contents');
+                if (!res.ok) throw new Error('API Offline');
+                const data = await res.json();
+                list.innerHTML = "";
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "file-item";
+                    div.innerText = `📄 ${item.name || item.path}`;
+                    list.appendChild(div);
+                });
+            } catch (e) {
+                list.innerHTML = `<div class="err">System Offline or GitHub Rate-Limited. Please try later.</div>`;
+            }
+        }
+
+        // Init
+        setTimeout(() => {
+            guestTerminal.style.display = 'flex';
+            document.getElementById('guest-cmd').focus();
+        }, 3000);
+
     </script>
 </body>
 </html>
