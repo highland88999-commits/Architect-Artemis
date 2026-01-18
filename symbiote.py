@@ -218,3 +218,49 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def discover_music_artists(genre=None, limit=10, min_nurture=7):
+    """
+    Use the Council to discover underground/indie music artists.
+    Returns list of leads with name, links, contacts, genre, nurture_score.
+    """
+    genre_filter = f" in the {genre} genre" if genre else ""
+    prompt = f"""
+    Discover {limit} underground or indie music artists{genre_filter}.
+    Focus on positive, constructive potential (nurture directive).
+    For each artist provide:
+    - name
+    - primary_genre
+    - website_or_social (if available)
+    - contact_email_or_form_link (only if public)
+    - brief_reason (why they have nurture potential)
+    - nurture_score (1-10)
+    
+    Output ONLY valid JSON array of objects. No extra text.
+    """
+
+    payload = {
+        "prompt": prompt,
+        "handshake": "dad"  # Architect access
+    }
+
+    try:
+        response = requests.post(ARTEMIS_URL, json=payload, timeout=45)
+        if response.status_code == 200:
+            raw = response.json().get('verdict', '[]')
+            # Parse JSON from response (Council should return clean JSON)
+            try:
+                leads = json.loads(raw)
+                # Filter high-nurture only
+                filtered = [lead for lead in leads if lead.get('nurture_score', 0) >= min_nurture]
+                print(f"✅ Discovered {len(filtered)} high-nurture artists")
+                return filtered
+            except json.JSONDecodeError:
+                print("❌ Invalid JSON from Council")
+                return []
+        else:
+            print(f"❌ Council failed: {response.status_code}")
+            return []
+    except Exception as e:
+        print(f"❌ Discovery error: {e}")
+        return []
