@@ -264,3 +264,20 @@ def discover_music_artists(genre=None, limit=10, min_nurture=7):
     except Exception as e:
         print(f"❌ Discovery error: {e}")
         return []
+
+
+def discover_music_artists(genre=None, limit=10, min_nurture=7):
+    # ... existing prompt ...
+    
+    # Optional: Add a quick robots.txt check for discovered sites (future-proof)
+    # This is lightweight and can be expanded later
+
+if filtered:
+    timestamp = datetime.datetime.utcnow().isoformat()
+    stewardship_file = os.path.join(STEWARDSHIP_DIR, f"artist_leads_{timestamp}.json")
+    os.makedirs(STEWARDSHIP_DIR, exist_ok=True)
+    with open(stewardship_file, 'w') as f:
+        json.dump(filtered, f, indent=2)
+    log_symbiote("artist_discovery", {"count": len(filtered), "file": stewardship_file})
+
+    
