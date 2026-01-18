@@ -62,36 +62,42 @@
 
         #ball-liquid {
             position:absolute; inset:0; background:linear-gradient(to bottom, #00008b, #000, #00008b);
-            opacity:0.8; transform:translateY(50%);
-            transition:transform 1s ease-out;
+            opacity:0.9; transform:translateY(100%);
+            transition:transform 1.2s ease-out;
         }
 
         #ball-triangle {
-            position:absolute; bottom:20%; left:50%; transform:translateX(-50%);
-            width:0; height:0; border-left:60px solid transparent; border-right:60px solid transparent;
-            border-bottom:100px solid #fff; opacity:0;
-            transition:opacity 1.5s;
+            position:absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(0deg);
+            width:0; height:0; border-left:70px solid transparent; border-right:70px solid transparent;
+            border-bottom:120px solid #fff; opacity:0;
+            transition:opacity 1.8s, transform 1s;
         }
 
         #ball-fortune {
-            position:absolute; bottom:25%; left:50%; transform:translateX(-50%);
-            color:#000; font-size:1.2rem; text-align:center; max-width:100px;
-            font-weight:bold;
+            position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+            color:#000; font-size:1rem; text-align:center; max-width:120px;
+            font-weight:bold; opacity:0;
+            transition:opacity 1.8s;
+        }
+
+        #artemis-8ball.shaking {
+            animation:shake-ball 0.8s ease-in-out;
         }
 
         #artemis-8ball.shaking #ball-liquid {
-            animation:shake-liquid 0.8s ease-in-out;
+            transform:translateY(80%) rotate(3deg);
         }
 
         #artemis-8ball.revealing #ball-liquid { transform:translateY(0); }
-        #artemis-8ball.revealing #ball-triangle { opacity:1; }
+        #artemis-8ball.revealing #ball-triangle { opacity:1; transform:translate(-50%, -50%) rotate(180deg); }
+        #artemis-8ball.revealing #ball-fortune { opacity:1; }
 
-        @keyframes shake-liquid {
-            0% { transform:translateY(50%); }
-            25% { transform:translateY(45%) rotate(5deg); }
-            50% { transform:translateY(55%) rotate(-5deg); }
-            75% { transform:translateY(45%) rotate(5deg); }
-            100% { transform:translateY(50%); }
+        @keyframes shake-ball {
+            0% { transform:rotate(0deg); }
+            25% { transform:rotate(5deg); }
+            50% { transform:rotate(-5deg); }
+            75% { transform:rotate(5deg); }
+            100% { transform:rotate(0deg); }
         }
 
         @keyframes midas-pulse {
