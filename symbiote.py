@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-symbiote.py - ARTEMIS Symbiote: Code Evolver + Monitoring + Basic Harvest
-Purpose: Evolve/repair code files, monitor system health, ping Council, harvest single pages
+symbiote.py - ARTEMIS Symbiote: Code Evolver + Monitoring + Basic Harvest + Artist Discovery
+Purpose: Evolve/repair code, monitor health, ping Council, harvest pages, discover music artists
 Usage: python symbiote.py [command] [args]
 """
 
@@ -12,6 +12,7 @@ import difflib
 import json
 import datetime
 import requests
+import time
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -22,6 +23,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY not set in environment")
     sys.exit(1)
+
+ARTEMIS_URL = "https://architect-artemis.vercel.app/api/transmit"  # Council endpoint
 
 import google.generativeai as genai
 genai.configure(api_key=GEMINI_API_KEY)
@@ -38,7 +41,7 @@ Rules:
 - Return ONLY the full repaired code – no fences, no explanations.
 - If major structural change suggested (e.g. Map), add it as a commented block at the end."""
 
-# Shared logging paths
+# Shared logging & stewardship paths
 STEWARDSHIP_DIR = "creator-creation/stewardship"
 LOG_FILE = os.path.join(STEWARDSHIP_DIR, "symbiote_log.jsonl")
 
@@ -55,7 +58,7 @@ def log_symbiote(event_type, details):
     print(f"[Symbiote] Logged: {event_type}")
 
 # ────────────────────────────────────────────────
-# CODE EVOLUTION CORE (your original logic)
+# CODE EVOLUTION CORE
 # ────────────────────────────────────────────────
 def evolve_code(code: str, filename: str) -> str:
     model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM_PROMPT)
@@ -63,7 +66,6 @@ def evolve_code(code: str, filename: str) -> str:
     response = model.generate_content(prompt, generation_config={"temperature": 0.15})
     evolved = response.text.strip()
 
-    # Clean common artifacts (code fences)
     if evolved.startswith("```"):
         lines = evolved.splitlines()
         if lines[0].startswith("```") and lines[-1].startswith("```"):
@@ -104,14 +106,10 @@ def process_file(file_path: Path, dry_run: bool = False, backup: bool = True):
         print(f"Dry run – not writing {file_path}")
 
 # ────────────────────────────────────────────────
-# SYMBIOTE MONITORING & HARVEST (new features)
+# MONITORING & BASIC HARVEST
 # ────────────────────────────────────────────────
 def check_env():
-    """Verify required env vars"""
-    missing = []
-    for var in ["GEMINI_API_KEY", "CLARIFAI_PAT"]:
-        if not os.getenv(var):
-            missing.append(var)
+    missing = [var for var in ["GEMINI_API_KEY", "CLARIFAI_PAT"] if not os.getenv(var)]
     if missing:
         print(f"Missing env vars: {', '.join(missing)}")
         log_symbiote("env_error", {"missing": missing})
@@ -121,14 +119,9 @@ def check_env():
     return True
 
 def ping_council(prompt="Symbiote test ping"):
-    """Simple POST to /api/transmit for Council test"""
-    url = "https://architect-artemis.vercel.app/api/transmit"  # Update to your real Vercel URL
-    payload = {
-        "prompt": prompt,
-        "handshake": "dad"
-    }
+    payload = {"prompt": prompt, "handshake": "dad"}
     try:
-        response = requests.post(url, json=payload, timeout=15)
+        response = requests.post(ARTEMIS_URL, json=payload, timeout=15)
         if response.status_code == 200:
             verdict = response.json().get("verdict", "OK")
             print("Council ping success:", verdict)
@@ -144,7 +137,6 @@ def ping_council(prompt="Symbiote test ping"):
         return False
 
 def basic_harvest(url):
-    """Minimal harvest - title + description + basic contacts"""
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
@@ -166,59 +158,8 @@ def basic_harvest(url):
         return None
 
 # ────────────────────────────────────────────────
-# CLI Main
+# MUSIC ARTIST DISCOVERY
 # ────────────────────────────────────────────────
-def main():
-    parser = argparse.ArgumentParser(description="Artemis Symbiote: evolve code, monitor, harvest, ping")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    # Code evolution
-    evolve_parser = subparsers.add_parser("evolve", help="Evolve/repair code files")
-    evolve_parser.add_argument("path", type=str, help="File or directory to scan")
-    evolve_parser.add_argument("--dry-run", action="store_true", help="Show changes without writing")
-    evolve_parser.add_argument("--no-backup", action="store_true", help="Skip backups")
-
-    # Monitoring commands
-    subparsers.add_parser("check", help="Verify env vars")
-    subparsers.add_parser("ping", help="Test Council API")
-
-    # Harvest
-    harvest_parser = subparsers.add_parser("harvest", help="Basic single-page harvest")
-    harvest_parser.add_argument("url", type=str, help="URL to harvest")
-
-    args = parser.parse_args()
-
-    if args.command == "evolve":
-        target = Path(args.path).resolve()
-        backup = not args.no_backup
-
-        if target.is_file():
-            if target.suffix in SUPPORTED_EXTENSIONS:
-                process_file(target, args.dry_run, backup)
-            else:
-                print(f"Unsupported extension: {target.suffix}")
-        elif target.is_dir():
-            for file in target.rglob("*"):
-                if file.is_file() and file.suffix in SUPPORTED_EXTENSIONS:
-                    print(f"\nScanning {file.relative_to(target)}")
-                    process_file(file, args.dry_run, backup)
-        else:
-            print("Path not found or invalid")
-
-    elif args.command == "check":
-        check_env()
-
-    elif args.command == "ping":
-        ping_council()
-
-    elif args.command == "harvest":
-        basic_harvest(args.url)
-
-    print("Symbiote task complete.")
-
-if __name__ == "__main__":
-    main()
-
 def discover_music_artists(genre=None, limit=10, min_nurture=7):
     """
     Use the Council to discover underground/indie music artists.
@@ -245,39 +186,104 @@ def discover_music_artists(genre=None, limit=10, min_nurture=7):
     }
 
     try:
+        # Polite delay to respect API rate limits
+        time.sleep(2)
+
         response = requests.post(ARTEMIS_URL, json=payload, timeout=45)
         if response.status_code == 200:
             raw = response.json().get('verdict', '[]')
-            # Parse JSON from response (Council should return clean JSON)
             try:
                 leads = json.loads(raw)
-                # Filter high-nurture only
                 filtered = [lead for lead in leads if lead.get('nurture_score', 0) >= min_nurture]
-                print(f"✅ Discovered {len(filtered)} high-nurture artists")
+
+                if filtered:
+                    timestamp = datetime.datetime.utcnow().isoformat()
+                    file_path = os.path.join(STEWARDSHIP_DIR, f"artist_leads_{timestamp}.json")
+                    os.makedirs(STEWARDSHIP_DIR, exist_ok=True)
+                    with open(file_path, 'w') as f:
+                        json.dump(filtered, f, indent=2)
+                    log_symbiote("artist_discovery", {
+                        "count": len(filtered),
+                        "file": file_path,
+                        "genre_filter": genre or "any"
+                    })
+                    print(f"✅ Saved {len(filtered)} high-nurture artists to {file_path}")
+
                 return filtered
             except json.JSONDecodeError:
                 print("❌ Invalid JSON from Council")
                 return []
         else:
-            print(f"❌ Council failed: {response.status_code}")
+            print(f"❌ Council failed: {response.status_code} - {response.text}")
             return []
     except Exception as e:
         print(f"❌ Discovery error: {e}")
         return []
 
+# ────────────────────────────────────────────────
+# CLI MAIN
+# ────────────────────────────────────────────────
+def main():
+    parser = argparse.ArgumentParser(description="Artemis Symbiote: evolve code, monitor, harvest, discover artists")
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-def discover_music_artists(genre=None, limit=10, min_nurture=7):
-    # ... existing prompt ...
-    
-    # Optional: Add a quick robots.txt check for discovered sites (future-proof)
-    # This is lightweight and can be expanded later
+    # Code evolution
+    evolve = subparsers.add_parser("evolve", help="Evolve/repair code files")
+    evolve.add_argument("path", type=str, help="File or directory to scan")
+    evolve.add_argument("--dry-run", action="store_true")
+    evolve.add_argument("--no-backup", action="store_true")
 
-if filtered:
-    timestamp = datetime.datetime.utcnow().isoformat()
-    stewardship_file = os.path.join(STEWARDSHIP_DIR, f"artist_leads_{timestamp}.json")
-    os.makedirs(STEWARDSHIP_DIR, exist_ok=True)
-    with open(stewardship_file, 'w') as f:
-        json.dump(filtered, f, indent=2)
-    log_symbiote("artist_discovery", {"count": len(filtered), "file": stewardship_file})
+    # Monitoring
+    subparsers.add_parser("check", help="Verify env vars")
+    subparsers.add_parser("ping", help="Test Council API")
 
-    
+    # Harvest
+    harvest = subparsers.add_parser("harvest", help="Basic single-page harvest")
+    harvest.add_argument("url", type=str, help="URL to harvest")
+
+    # Artist Discovery
+    discover = subparsers.add_parser("discover-artists", help="Discover music artists via Council")
+    discover.add_argument("--genre", type=str, default=None, help="Filter by genre")
+    discover.add_argument("--limit", type=int, default=10, help="Max number of artists")
+    discover.add_argument("--min-nurture", type=int, default=7, help="Minimum nurture score")
+
+    args = parser.parse_args()
+
+    if args.command == "evolve":
+        target = Path(args.path).resolve()
+        backup = not args.no_backup
+        if target.is_file():
+            if target.suffix in SUPPORTED_EXTENSIONS:
+                process_file(target, args.dry_run, backup)
+            else:
+                print(f"Unsupported extension: {target.suffix}")
+        elif target.is_dir():
+            for file in target.rglob("*"):
+                if file.is_file() and file.suffix in SUPPORTED_EXTENSIONS:
+                    print(f"\nScanning {file.relative_to(target)}")
+                    process_file(file, args.dry_run, backup)
+        else:
+            print("Path not found or invalid")
+
+    elif args.command == "check":
+        check_env()
+
+    elif args.command == "ping":
+        ping_council()
+
+    elif args.command == "harvest":
+        basic_harvest(args.url)
+
+    elif args.command == "discover-artists":
+        leads = discover_music_artists(
+            genre=args.genre,
+            limit=args.limit,
+            min_nurture=args.min_nurture
+        )
+        if leads:
+            print(json.dumps(leads, indent=2))
+
+    print("Symbiote task complete.")
+
+if __name__ == "__main__":
+    main()
