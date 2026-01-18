@@ -103,6 +103,31 @@
         }
 
         .glow-border { box-shadow: 0 0 25px var(--purple-glow), inset 0 0 15px var(--purple-glow); }
+
+        /* Lightning Bolt Icon (bottom-right) */
+        #architect-icon {
+            position: fixed; bottom: 20px; right: 20px; z-index: 30;
+            width: 60px; height: 60px; background: rgba(0, 242, 255, 0.15);
+            border: 2px solid var(--deep-bio); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--deep-bio);
+            animation: pulse-glow 3s infinite;
+        }
+
+        #architect-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px var(--deep-bio);
+        }
+
+        #architect-icon svg {
+            width: 32px; height: 32px; fill: var(--accent);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--deep-bio); }
+            50% { box-shadow: 0 0 40px var(--deep-bio); }
+        }
     </style>
 </head>
 <body>
@@ -146,14 +171,21 @@
         </div>
     </div>
 
-    <!-- Password Overlay for Architect -->
-    <div id="password-overlay" class="glass-overlay" style="display: flex; align-items: center; justify-content: center;">
+    <!-- Password Overlay for Architect (hidden on load) -->
+    <div id="password-overlay" class="glass-overlay" style="display: none; align-items: center; justify-content: center;">
         <div style="background: rgba(0,0,0,0.8); padding: 40px; border-radius: 16px; border: 2px solid var(--accent); box-shadow: 0 0 50px var(--accent); text-align: center;">
             <p style="font-size: 1.5em; margin-bottom: 20px;">ARCHITECT ACCESS</p>
-            <input type="password" id="pass1" placeholder="First Key (Spider)" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
-            <input type="password" id="pass2" placeholder="Second Key (Miles)" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
+            <input type="password" id="pass1" placeholder="First Key" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
+            <input type="password" id="pass2" placeholder="Second Key" style="display: block; margin: 10px auto; width: 200px; padding: 10px;">
             <button onclick="checkPassword()" style="margin-top: 20px; padding: 12px 30px; background: var(--accent); color: #000; border: none; border-radius: 8px; cursor: pointer;">Unlock</button>
         </div>
+    </div>
+
+    <!-- Lightning Bolt Icon (bottom-right) -->
+    <div id="architect-icon" onclick="showPasswordOverlay()">
+        <svg viewBox="0 0 24 24">
+            <path d="M13 10L3 21h7l-1 4h7l10-11h-7l2-4z"/>
+        </svg>
     </div>
 
     <script src="assets/symbiote-fx.js"></script>
@@ -162,7 +194,6 @@
         // GLOBAL STATE
         // ────────────────────────────────────────────────
         let mode = "guest";
-        let secretBuffer = "";
         let architectUnlocked = false;
 
         const canvas = document.getElementById('canvas');
@@ -179,10 +210,15 @@
         const architectCmd = document.getElementById('architect-cmd');
 
         const passwordOverlay = document.getElementById('password-overlay');
+        const architectIcon = document.getElementById('architect-icon');
 
         // ────────────────────────────────────────────────
         // PASSWORD PROTECTION (Architect only)
         // ────────────────────────────────────────────────
+        function showPasswordOverlay() {
+            passwordOverlay.style.display = "flex";
+        }
+
         function checkPassword() {
             const p1 = document.getElementById('pass1').value.trim();
             const p2 = document.getElementById('pass2').value.trim();
@@ -198,13 +234,18 @@
                 architectOutput.innerHTML += "<div class='sys'>> ACCESS GRANTED. ARCHITECT MODE ACTIVE.</div>";
             } else {
                 architectOutput.innerHTML += "<div class='err'>> ACCESS DENIED.</div>";
-                setTimeout(() => location.reload(), 1500);
+                setTimeout(() => passwordOverlay.style.display = "none", 1500);
             }
         }
 
         // ────────────────────────────────────────────────
         // GUEST MODE - MATRIX RAIN LANDING + IDEA REQUEST
         // ────────────────────────────────────────────────
+        setTimeout(() => {
+            guestTerminal.style.display = 'block';
+            guestCmd.focus();
+        }, 3000); // Auto-show after rain settles
+
         guestCmd.addEventListener('keypress', e => {
             if (e.key === 'Enter') requestIdea();
         });
@@ -261,7 +302,7 @@
         });
 
         // Initial state
-        passwordOverlay.style.display = "flex";
+        passwordOverlay.style.display = "none";  // Hidden on load
         guestLayer.style.display = "flex";
     </script>
 </body>
