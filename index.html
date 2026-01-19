@@ -19,7 +19,7 @@
     body, html {
       width:100%; height:100%; overflow:hidden; background:#000;
       font-family: 'Courier New', monospace; color:var(--cyan);
-      touch-action: none; /* improved drag precision */
+      touch-action: manipulation;
     }
 
     /* Background video */
@@ -43,6 +43,18 @@
       justify-content: center;
       padding: 4vh 6vw;
       position: relative;
+    }
+
+    /* Oracle + Prompt protected zone (invisible square boundary) */
+    #protected-zone {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 60vh;
+      pointer-events: none;
+      z-index: 50; /* above dock but below icons during drag */
     }
 
     /* Oracle circle */
@@ -181,7 +193,7 @@
       backdrop-filter: blur(26px);
       max-width: 96vw;
       z-index: 100;
-      user-select: none; /* prevent text selection during drag */
+      user-select: none;
     }
 
     .app-icon, .folder {
@@ -198,9 +210,16 @@
       position: relative;
     }
 
-    .app-icon:hover, .folder:hover {
-      transform: scale(1.1);
-      box-shadow: var(--glow-c);
+    .app-icon.dragging, .folder.dragging {
+      opacity: 0.7;
+      transform: scale(1.15);
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .app-icon.drag-over {
+      box-shadow: 0 0 20px var(--cyan);
+      transform: scale(1.15);
     }
 
     .app-icon svg {
@@ -209,7 +228,6 @@
       fill: var(--cyan);
     }
 
-    /* Folder style – stacked icons */
     .folder {
       background: rgba(0,242,255,0.28);
       overflow: hidden;
@@ -295,19 +313,6 @@
       flex: 1;
       border: none;
     }
-
-    /* Dragging style */
-    .dragging {
-      opacity: 0.7;
-      transform: scale(1.15);
-      z-index: 9999;
-      pointer-events: none;
-    }
-
-    .drag-target {
-      box-shadow: 0 0 20px var(--cyan);
-      transform: scale(1.15);
-    }
   </style>
 </head>
 <body>
@@ -318,6 +323,9 @@
   </video>
 
   <div id="container">
+    <!-- Protected zone (invisible square around oracle + prompt) -->
+    <div id="protected-zone"></div>
+
     <!-- Oracle circle -->
     <div id="oracle-circle">
       <video id="oracle-video" autoplay loop muted playsinline>
@@ -336,9 +344,9 @@
     <!-- Dock orb -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Expanded dock with drag & folder support -->
+    <!-- Expanded dock -->
     <div id="dock-expanded">
-      <!-- Social apps – new tab -->
+      <!-- Icons here – socials open new tab, native open holo -->
       <div class="app-icon" data-url="https://facebook.com"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
       <div class="app-icon" data-url="https://x.com"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
       <div class="app-icon" data-url="https://instagram.com"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg></div>
@@ -407,65 +415,69 @@
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
-    // === Drag & Drop + Folder System ===
+    // === Drag & Drop + Folder System + Protected Zone ===
     let draggedIcon = null;
     let holdTimer;
-    const holdDelay = 500; // ms to start drag
+    const holdDelay = 500;
 
     const dockExpanded = document.getElementById('dock-expanded');
+    const protectedZone = document.getElementById('protected-zone');
 
+    // Start hold to drag
     dockExpanded.addEventListener('touchstart', (e) => {
-      const icon = e.target.closest('.app-icon:not([onclick])'); // avoid close button
-      if (!icon) return;
+      const icon = e.target.closest('.app-icon, .folder');
+      if (!icon || icon.classList.contains('app-icon[onclick]')) return; // skip close button
 
       holdTimer = setTimeout(() => {
-        draggedIcon = icon;
+        draggedIcon = icon.cloneNode(true); // clone for smooth drag visual
         draggedIcon.classList.add('dragging');
-        draggedIcon.style.position = 'absolute';
-        draggedIcon.style.zIndex = '9999';
+        document.body.appendChild(draggedIcon);
         moveAt(e.touches[0]);
       }, holdDelay);
 
       e.preventDefault();
     });
 
+    // Move during drag
     document.addEventListener('touchmove', (e) => {
       if (!draggedIcon) return;
       e.preventDefault();
       moveAt(e.touches[0]);
     });
 
+    // End drag
     document.addEventListener('touchend', (e) => {
       clearTimeout(holdTimer);
       if (!draggedIcon) return;
 
-      const target = e.changedTouches[0];
-      const dropTarget = getElementAtPoint(target.clientX, target.clientY);
+      const touch = e.changedTouches[0];
+      const dropTarget = getElementAtPoint(touch.clientX, touch.clientY);
+
+      // Check if drop is inside protected zone
+      if (isInProtectedZone(touch.clientX, touch.clientY)) {
+        // Snap back (don't drop)
+        draggedIcon.remove();
+        draggedIcon = null;
+        return;
+      }
 
       if (dropTarget && dropTarget.classList.contains('folder')) {
         // Drop into folder
-        dropTarget.appendChild(draggedIcon);
-        draggedIcon.classList.remove('dragging');
-        draggedIcon.style.position = '';
-        draggedIcon.style.zIndex = '';
+        dropTarget.appendChild(draggedIcon.querySelector('.app-icon') || draggedIcon);
       } else if (dropTarget && dropTarget.classList.contains('app-icon')) {
-        // Swap positions
-        const parent = dockExpanded;
-        const children = Array.from(parent.children);
-        const draggedIdx = children.indexOf(draggedIcon);
-        const targetIdx = children.indexOf(dropTarget);
-        if (draggedIdx < targetIdx) {
-          parent.insertBefore(draggedIcon, dropTarget.nextSibling);
-        } else {
-          parent.insertBefore(draggedIcon, dropTarget);
-        }
+        // Create folder from two icons
+        const folder = createFolder();
+        folder.appendChild(dropTarget);
+        folder.appendChild(draggedIcon.querySelector('.app-icon') || draggedIcon);
+        dockExpanded.insertBefore(folder, dropTarget.nextSibling);
       } else {
-        // Drop back to original position or anywhere
+        // Reorder or drop in free space
+        if (dropTarget) {
+          dockExpanded.insertBefore(draggedIcon, dropTarget.nextSibling);
+        }
       }
 
-      draggedIcon.classList.remove('dragging');
-      draggedIcon.style.position = '';
-      draggedIcon.style.zIndex = '';
+      draggedIcon.remove();
       draggedIcon = null;
     });
 
@@ -480,19 +492,74 @@
       return elem ? elem.closest('.app-icon, .folder') : null;
     }
 
-    // Long-press on folder to expand/collapse (optional visual feedback)
-    dockExpanded.addEventListener('touchstart', (e) => {
-      const folder = e.target.closest('.folder');
-      if (!folder) return;
-      // Toggle expanded state on long press if needed
-    });
+    function isInProtectedZone(x, y) {
+      const rect = protectedZone.getBoundingClientRect();
+      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+    }
 
-    // Prompt submission (unchanged)
+    function createFolder() {
+      const folder = document.createElement('div');
+      folder.classList.add('folder');
+      folder.addEventListener('click', () => folder.classList.toggle('expanded'));
+      return folder;
+    }
+
+    // Prompt submission (typewriter from previous)
+    let typingTimer;
+
+    function fadeInMessage(text) {
+      const newColor = getRandomColor();
+      const oracleCircle = document.getElementById('oracle-circle');
+      const shaderOverlay = document.getElementById('shader-overlay');
+      const oracleMessage = document.getElementById('oracle-message');
+
+      clearTimeout(typingTimer);
+      oracleMessage.textContent = '';
+
+      oracleCircle.style.borderColor = newColor;
+      oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
+      shaderOverlay.style.opacity = 0.82;
+      oracleMessage.style.opacity = 1;
+
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          oracleMessage.textContent += text.charAt(i);
+          i++;
+          typingTimer = setTimeout(type, 50);
+        } else {
+          setTimeout(fadeOutMessage, 8000);
+        }
+      }
+
+      setTimeout(type, 300);
+    }
+
+    function fadeOutMessage() {
+      const shaderOverlay = document.getElementById('shader-overlay');
+      const oracleMessage = document.getElementById('oracle-message');
+      const oracleCircle = document.getElementById('oracle-circle');
+
+      shaderOverlay.style.opacity = 0;
+      oracleMessage.style.opacity = 0;
+
+      setTimeout(() => {
+        oracleCircle.style.borderColor = 'var(--gold)';
+        oracleCircle.style.boxShadow = 'var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55)';
+      }, 500);
+    }
+
+    function getRandomColor() {
+      const colorPalette = ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc', '#ff6699', '#ccff33'];
+      return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    }
+
     const cmd = document.getElementById('guest-cmd');
     document.getElementById('send-btn').addEventListener('click', () => {
       const text = cmd.value.trim();
       if (text) {
-        fadeInMessage(text);
+        fadeOutMessage();
+        setTimeout(() => fadeInMessage(text), 300);
         cmd.value = '';
       }
     });
@@ -503,9 +570,6 @@
         document.getElementById('send-btn').click();
       }
     });
-
-    // Fade-in message (typewriter already in previous code – keep it)
-    // ... (paste your existing fadeInMessage, fadeOutMessage, getRandomColor here) ...
   </script>
 </body>
 </html>
