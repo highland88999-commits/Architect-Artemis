@@ -22,7 +22,6 @@
       touch-action: manipulation;
     }
 
-    /* Full-screen background video – aggressive mobile fix */
     #bg-video {
       position: fixed;
       inset: 0;
@@ -45,7 +44,6 @@
       position: relative;
     }
 
-    /* Protected central zone (oracle + prompt) */
     #protected-zone {
       position: absolute;
       top: 5%;
@@ -57,7 +55,6 @@
       z-index: 50;
     }
 
-    /* Oracle circle */
     #oracle-circle {
       width: 21rem;
       height: 21rem;
@@ -116,7 +113,6 @@
       50% { text-shadow: 0 0 20px rgba(0,242,255,1), 0 0 30px rgba(0,242,255,0.5); }
     }
 
-    /* Prompt area */
     #prompt-area {
       width: 100%;
       max-width: 600px;
@@ -156,7 +152,6 @@
       box-shadow: 0 0 90px var(--cyan);
     }
 
-    /* Dock orb */
     #dock-orb {
       position: fixed;
       bottom: 36px;
@@ -187,7 +182,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 26px;
-      padding: 32px 44px 80px 44px; /* extra padding bottom for bottom-left placement */
+      padding: 32px 44px 100px 44px; /* extra bottom padding */
       background: var(--glass);
       border-radius: 44px;
       border: 1px solid var(--border);
@@ -217,18 +212,6 @@
       box-shadow: var(--glow-c);
     }
 
-    .app-icon.dragging, .folder.dragging {
-      opacity: 0.7;
-      transform: scale(1.15);
-      z-index: 9999;
-      pointer-events: none;
-    }
-
-    .app-icon.drag-over {
-      box-shadow: 0 0 20px var(--cyan);
-      transform: scale(1.15);
-    }
-
     .app-icon svg {
       width: 42px;
       height: 42px;
@@ -255,7 +238,6 @@
       margin: 4px;
     }
 
-    /* Lightning orb – symbiote backend */
     #lightning-orb {
       position: fixed;
       bottom: 36px;
@@ -279,7 +261,6 @@
       50%     { box-shadow: 0 0 95px var(--gold); }
     }
 
-    /* Holo overlay */
     #holo-overlay {
       display: none;
       position: fixed;
@@ -324,16 +305,14 @@
 </head>
 <body>
 
-  <!-- Background video – extra fallback -->
+  <!-- Background video -->
   <video id="bg-video" autoplay loop muted playsinline preload="auto">
     <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
   </video>
 
   <div id="container">
-    <!-- Protected central zone -->
     <div id="protected-zone"></div>
 
-    <!-- Oracle circle -->
     <div id="oracle-circle">
       <video id="oracle-video" autoplay loop muted playsinline>
         <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
@@ -342,24 +321,21 @@
       <div id="oracle-message"></div>
     </div>
 
-    <!-- Prompt area -->
     <div id="prompt-area">
       <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
       <button id="send-btn">SEND</button>
     </div>
 
-    <!-- Dock orb -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Expanded dock – native apps centered under prompt, two specific ones bottom-left -->
     <div id="dock-expanded">
-      <!-- Specific two native apps (Dropbox-like + Google Play) – bottom-left placement -->
-      <div style="position: absolute; bottom: 20px; left: 20px; display: flex; gap: 26px; flex-direction: column;">
+      <!-- Bottom-left: the two circled native apps -->
+      <div style="position: absolute; bottom: 20px; left: 20px; display: flex; flex-direction: column; gap: 26px;">
         <div class="app-icon" data-url="https://www.dropbox.com" data-holo="true"><svg viewBox="0 0 24 24"><path d="M6.5 2L12 7l5.5-5L23 7l-5.5 5L23 17l-5.5 5L12 17l-5.5 5L1 17l5.5-5L1 7z"/></svg></div>
         <div class="app-icon" data-url="https://play.google.com/store" data-holo="true"><svg viewBox="0 0 24 24"><path d="M3.25 2.25v19.5l17.5-9.75-17.5-9.75z"/></svg></div>
       </div>
 
-      <!-- Other native apps – centered -->
+      <!-- Centered native apps -->
       <div class="app-icon" data-url="https://olympus-lac.vercel.app/" data-holo="true"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
       <div class="app-icon" data-url="https://nexus-symbiote.onrender.com/" data-holo="true"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
 
@@ -374,14 +350,12 @@
     </div>
   </div>
 
-  <!-- Lightning orb – symbiote backend -->
   <div id="lightning-orb" onclick="openApp('https://nexus-symbiote.onrender.com/')">
     <svg viewBox="0 0 24 24" width="46" height="46" fill="var(--gold)">
       <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
     </svg>
   </div>
 
-  <!-- Holo overlay -->
   <div id="holo-overlay" style="display:none;">
     <div class="holo-header">
       <span>Artemis View</span>
@@ -391,7 +365,7 @@
   </div>
 
   <script>
-    // Mobile Autoplay Fix for background
+    // Mobile Autoplay Fix
     window.addEventListener('load', function() {
       const videos = document.querySelectorAll('video');
       videos.forEach(video => {
@@ -404,7 +378,6 @@
       });
     });
 
-    // Dock & App Opening
     function toggleDock() {
       const orb = document.getElementById('dock-orb');
       const expanded = document.getElementById('dock-expanded');
@@ -427,88 +400,7 @@
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
-    // === Drag & Drop + Folder System ===
-    let draggedIcon = null;
-    let holdTimer;
-    const holdDelay = 500;
-
-    const dockExpanded = document.getElementById('dock-expanded');
-    const protectedZone = document.getElementById('protected-zone');
-
-    dockExpanded.addEventListener('touchstart', (e) => {
-      const icon = e.target.closest('.app-icon, .folder');
-      if (!icon || icon.hasAttribute('onclick')) return;
-
-      holdTimer = setTimeout(() => {
-        draggedIcon = icon.cloneNode(true);
-        draggedIcon.classList.add('dragging');
-        document.body.appendChild(draggedIcon);
-        moveAt(e.touches[0]);
-      }, holdDelay);
-
-      e.preventDefault();
-    });
-
-    document.addEventListener('touchmove', (e) => {
-      if (!draggedIcon) return;
-      e.preventDefault();
-      moveAt(e.touches[0]);
-    });
-
-    document.addEventListener('touchend', (e) => {
-      clearTimeout(holdTimer);
-      if (!draggedIcon) return;
-
-      const touch = e.changedTouches[0];
-      const dropTarget = getElementAtPoint(touch.clientX, touch.clientY);
-
-      if (isInProtectedZone(touch.clientX, touch.clientY)) {
-        draggedIcon.remove();
-        draggedIcon = null;
-        return;
-      }
-
-      const originalIcon = draggedIcon.querySelector('.app-icon') || draggedIcon;
-
-      if (dropTarget && dropTarget.classList.contains('folder')) {
-        dropTarget.appendChild(originalIcon);
-      } else if (dropTarget && dropTarget.classList.contains('app-icon')) {
-        const folder = createFolder();
-        folder.appendChild(dropTarget.cloneNode(true));
-        folder.appendChild(originalIcon);
-        dockExpanded.replaceChild(folder, dropTarget);
-      } else {
-        dockExpanded.appendChild(originalIcon);
-      }
-
-      draggedIcon.remove();
-      draggedIcon = null;
-    });
-
-    function moveAt(touch) {
-      if (!draggedIcon) return;
-      draggedIcon.style.left = touch.clientX - draggedIcon.offsetWidth / 2 + 'px';
-      draggedIcon.style.top = touch.clientY - draggedIcon.offsetHeight / 2 + 'px';
-    }
-
-    function getElementAtPoint(x, y) {
-      const elem = document.elementFromPoint(x, y);
-      return elem ? elem.closest('.app-icon, .folder') : null;
-    }
-
-    function isInProtectedZone(x, y) {
-      const rect = protectedZone.getBoundingClientRect();
-      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-    }
-
-    function createFolder() {
-      const folder = document.createElement('div');
-      folder.classList.add('folder');
-      folder.addEventListener('click', () => folder.classList.toggle('expanded'));
-      return folder;
-    }
-
-    // Prompt submission
+    // Prompt submission (typewriter)
     let typingTimer;
 
     function fadeInMessage(text) {
