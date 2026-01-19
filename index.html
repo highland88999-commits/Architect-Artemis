@@ -23,17 +23,24 @@
             touch-action:manipulation;
         }
 
-        canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.3; } /* Thin rain */
+        /* Matrix Background */
+        canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.3; }
 
+        /* Centered Logo using Base64 Data */
         #logo-bg {
-            position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.12;
-            background:url('https://i.imgur.com/yourlogo.png') center/cover no-repeat; /* Replace with actual logo URL */
-            animation:logo-breathe 15s infinite ease-in-out;
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.15;
+            background: url('data:image/png;base64,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) center/contain no-repeat;
+            filter: drop-shadow(0 0 20px var(--purple-glow));
+            animation: logo-breathe 15s infinite ease-in-out;
         }
 
         @keyframes logo-breathe {
-            0%,100% { opacity:0.12; transform:scale(1.02); }
-            50% { opacity:0.22; transform:scale(1.05); }
+            0%,100% { opacity: 0.12; transform: scale(1); }
+            50% { opacity: 0.25; transform: scale(1.08); filter: hue-rotate(15deg); }
         }
 
         #guest-terminal {
@@ -43,150 +50,122 @@
             box-shadow:0 8px 40px rgba(0,0,0,0.7);
             position:relative; display:none; flex-direction:column;
             overflow:hidden; transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-            z-index:10;
+            z-index:10; margin: 5vh auto;
         }
 
-        #guest-terminal.minimized {
-            height:80px; transform:scale(0.92) translateY(-90%);
-            opacity:0.7; pointer-events:none;
-        }
-
-        /* Magic 8-Ball - Natural 90s Effect (Shake + Liquid Reveal) */
+        /* 8-Ball UI */
         #artemis-8ball {
-            width:16rem; height:16rem; margin:40px auto 30px auto;
+            width:14rem; height:14rem; margin:40px auto 20px auto;
             background:#000; border-radius:50%; border:5px solid var(--accent);
             box-shadow:0 0 80px var(--accent), inset 0 0 40px var(--purple-glow);
             position:relative; overflow:hidden; cursor:pointer;
-            animation:midas-pulse 7s infinite ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 5rem; color: var(--accent);
         }
 
         #ball-liquid {
             position:absolute; inset:0; background:linear-gradient(to bottom, #00008b, #000, #00008b);
             opacity:0.9; transform:translateY(100%);
-            transition:transform 1.2s ease-out;
+            transition:transform 1.2s ease-out; z-index: 2;
         }
 
         #ball-triangle {
             position:absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(0deg);
             width:0; height:0; border-left:70px solid transparent; border-right:70px solid transparent;
             border-bottom:120px solid #fff; opacity:0;
-            transition:opacity 1.8s, transform 1s;
+            transition:opacity 1.8s, transform 1s; z-index: 3;
         }
 
         #ball-fortune {
             position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
-            color:#000; font-size:1rem; text-align:center; max-width:120px;
-            font-weight:bold; opacity:0;
-            transition:opacity 1.8s;
+            color:#000; font-size:0.9rem; text-align:center; max-width:110px;
+            font-weight:bold; opacity:0; z-index: 4; pointer-events: none;
         }
 
-        #artemis-8ball.shaking {
-            animation:shake-ball 0.8s ease-in-out;
-        }
-
-        #artemis-8ball.shaking #ball-liquid {
-            transform:translateY(80%) rotate(3deg);
-        }
-
+        #artemis-8ball.shaking { animation:shake-ball 0.8s ease-in-out; }
         #artemis-8ball.revealing #ball-liquid { transform:translateY(0); }
         #artemis-8ball.revealing #ball-triangle { opacity:1; transform:translate(-50%, -50%) rotate(180deg); }
         #artemis-8ball.revealing #ball-fortune { opacity:1; }
 
         @keyframes shake-ball {
-            0% { transform:rotate(0deg); }
-            25% { transform:rotate(5deg); }
-            50% { transform:rotate(-5deg); }
-            75% { transform:rotate(5deg); }
-            100% { transform:rotate(0deg); }
-        }
-
-        @keyframes midas-pulse {
-            0%,100% { box-shadow:0 0 50px var(--accent); }
-            50% { box-shadow:0 0 100px var(--accent), 0 0 140px var(--purple-glow); }
+            0%, 100% { transform:rotate(0deg); }
+            25% { transform:rotate(10deg); }
+            50% { transform:rotate(-10deg); }
+            75% { transform:rotate(10deg); }
         }
 
         /* Prompt Area */
-        #prompt-area {
-            padding:0 20px 30px; text-align:center; margin-top:auto;
-        }
-
+        #prompt-area { padding:0 20px 30px; text-align:center; margin-top:auto; }
         #guest-cmd {
             width:100%; max-width:520px; padding:14px 20px;
             background:rgba(0,0,0,0.6); border:1px solid var(--deep-bio);
-            color:var(--bio); font-size:1.2rem; border-radius:12px;
-            margin-bottom:16px;
+            color:var(--bio); font-size:1.1rem; border-radius:12px;
+            margin-bottom:16px; outline: none;
         }
-
         #spin-btn {
             padding:14px 48px; background:var(--accent); color:#000;
             border:none; border-radius:12px; font-weight:bold; font-size:1.2rem;
-            cursor:pointer; box-shadow:0 0 30px var(--accent);
-            transition:0.3s;
+            cursor:pointer; box-shadow:0 0 30px var(--accent); transition:0.3s;
         }
-
         #spin-btn:hover { transform:scale(1.05); box-shadow:0 0 50px var(--accent); }
 
-        /* Collapsible Icon Bar */
+        /* Icon Bar Styles */
         #icon-bar-collapsed {
             position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-            width:70px; height:70px; background:rgba(155,77,255,0.35);
+            width:60px; height:60px; background:rgba(155,77,255,0.35);
             border-radius:50%; border:2px solid var(--purple-glow);
             display:flex; align-items:center; justify-content:center;
             font-size:2rem; color:var(--accent); cursor:pointer; z-index:50;
-            box-shadow:0 0 40px var(--purple-glow);
+            box-shadow:0 0 30px var(--purple-glow);
         }
 
         #icon-bar-expanded {
             position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-            display:none; flex-wrap:wrap; gap:16px; padding:20px;
+            display:none; flex-wrap:wrap; gap:12px; padding:20px;
             background:var(--glass); border:1px solid var(--glass-border);
             border-radius:20px; backdrop-filter:blur(16px);
-            max-width:90vw; z-index:50;
+            max-width:95vw; z-index:51; justify-content: center;
         }
 
         .holo-icon {
-            width:64px; height:64px; background:rgba(155,77,255,0.25);
-            border-radius:16px; border:1px solid var(--purple-glow);
+            width:56px; height:56px; background:rgba(155,77,255,0.15);
+            border-radius:12px; border:1px solid var(--purple-glow);
             display:flex; align-items:center; justify-content:center;
             cursor:pointer; transition:0.3s;
         }
-        .holo-icon:hover { transform:scale(1.2); box-shadow:0 0 35px var(--purple-glow); }
-
-        /* Holographic Overlay */
-        .holo-window {
-            position:fixed; inset:5%; background:var(--glass);
-            border:1px solid var(--purple-glow); border-radius:20px;
-            backdrop-filter:blur(24px); box-shadow:0 0 80px rgba(155,77,255,0.6);
-            display:none; flex-direction:column; z-index:60;
-        }
-
-        .holo-header {
-            padding:16px; background:rgba(155,77,255,0.25);
-            display:flex; justify-content:space-between; align-items:center;
-        }
+        .holo-icon:hover { transform:scale(1.15); background:rgba(155,77,255,0.4); box-shadow:0 0 20px var(--purple-glow); }
 
         .holo-close {
-            width:40px; height:40px; background:var(--err); border-radius:50%;
+            width:56px; height:56px; background:var(--err); border-radius:12px;
             display:flex; align-items:center; justify-content:center;
-            cursor:pointer; color:#000; font-weight:bold; font-size:1.4rem;
+            cursor:pointer; color:#000; font-weight:bold; font-size:1.5rem;
         }
 
-        .holo-iframe { flex:1; border:none; }
+        /* Architect Layer */
+        #architect-layer {
+            display:none; position:fixed; inset:0; z-index:100;
+            background:radial-gradient(circle, #1a1a1a, #000);
+            flex-direction:column; align-items:center; justify-content:center;
+        }
 
-        /* Lightning Bolt - Owner Access */
+        /* Holo Window */
+        .holo-window {
+            position:fixed; inset:10%; background:rgba(0,0,0,0.9);
+            border:1px solid var(--purple-glow); border-radius:20px;
+            backdrop-filter:blur(24px); box-shadow:0 0 80px rgba(155,77,255,0.4);
+            display:none; flex-direction:column; z-index:60;
+        }
+        .holo-header { padding:12px; background:rgba(155,77,255,0.2); display:flex; justify-content:space-between; align-items:center; }
+        .holo-iframe { flex:1; border:none; width:100%; height:100%; }
+
         #lightning-access {
             position:fixed; bottom:20px; right:20px; z-index:70;
-            width:70px; height:70px; background:rgba(212,175,55,0.2);
-            border:3px solid var(--accent); border-radius:50%;
+            width:60px; height:60px; background:rgba(212,175,55,0.1);
+            border:2px solid var(--accent); border-radius:50%;
             display:flex; align-items:center; justify-content:center;
-            cursor:pointer; box-shadow:0 0 40px var(--accent);
-            animation:pulse-glow 3.5s infinite;
+            cursor:pointer; animation: pulse-glow 3s infinite;
         }
-
-        @keyframes pulse-glow {
-            0%,100% { box-shadow:0 0 30px var(--accent); }
-            50% { box-shadow:0 0 70px var(--accent); }
-        }
+        @keyframes pulse-glow { 0%,100% { box-shadow:0 0 15px var(--accent); } 50% { box-shadow:0 0 40px var(--accent); } }
     </style>
 </head>
 <body>
@@ -196,7 +175,6 @@
 
     <div id="guest-layer">
         <div id="guest-terminal">
-            <!-- Big Artemis 8-Ball Response Display -->
             <div id="artemis-8ball">
                 <div id="ball-liquid"></div>
                 <div id="ball-triangle"></div>
@@ -205,71 +183,111 @@
             </div>
 
             <div id="prompt-area">
-                <input type="text" id="guest-cmd" placeholder="https://example.com" autocomplete="off">
+                <input type="text" id="guest-cmd" placeholder="Enter target sequence or URL..." autocomplete="off">
                 <button id="spin-btn">SPIN</button>
             </div>
+        </div>
 
-            <!-- Collapsible Icon Bar -->
-            <div id="icon-bar-collapsed" onclick="toggleIconBar()">+</div>
-            <div id="icon-bar-expanded">
-                <!-- 10 Icons - replace with your buttons -->
-                <div class="holo-icon" onclick="openHoloWindow('https://olympus-lac.vercel.app')"><svg viewBox="0 0 24 24"><path d="..."/></svg></div>
-                <!-- ... add 9 more -->
-                <div class="holo-close" onclick="toggleIconBar()">×</div>
+        <div id="icon-bar-collapsed" onclick="toggleIconBar()">+</div>
+        
+        <div id="icon-bar-expanded">
+            <div class="holo-icon" title="Facebook" onclick="openHoloWindow('https://facebook.com')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
             </div>
+            <div class="holo-icon" title="X" onclick="openHoloWindow('https://x.com')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </div>
+            <div class="holo-icon" title="Instagram" onclick="openHoloWindow('https://instagram.com')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.332 3.608 1.308.975.975 1.245 2.242 1.308 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.063 1.366-.333 2.633-1.308 3.608-.975.975-2.242 1.245-3.608 1.308-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.063-2.633-.333-3.608-1.308-.975-.975-1.245-2.242-1.308-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.332-2.633 1.308-3.608.975-.975 2.242-1.245 3.608-1.308 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+            <div class="holo-icon" title="TikTok" onclick="openHoloWindow('https://tiktok.com')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.06 3.43-.01 6.86-.03 10.29-.01 1.98-.74 4.02-2.22 5.34-1.42 1.37-3.44 1.83-5.35 1.62-2.1-.15-4.11-1.32-5.18-3.15-.96-1.58-1.08-3.56-.47-5.3.65-1.9 2.32-3.46 4.31-3.87.11-.02.22-.04.33-.05V12.3c-1.12.06-2.25.4-3.23 1.02-2.2 1.41-3.04 4.41-1.92 6.78.89 1.99 3.1 3.2 5.26 3.02 1.9-.06 3.7-1.35 4.34-3.13.2-.55.3-1.14.3-1.73.01-4.14-.01-8.28.01-12.42-.01-1.73.02-3.46-.01-5.19z"/></svg>
+            </div>
+            <div class="holo-icon" title="Olympus" onclick="openHoloWindow('https://olympus-lac.vercel.app/')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M12 2L1 21h22L12 2zm0 5.4L18.6 19H5.4L12 7.4z"/></svg>
+            </div>
+            <div class="holo-icon" title="Nexus" onclick="openHoloWindow('https://nexusvortex.netlify.app/')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+            </div>
+            <div class="holo-icon" title="Messenger" onclick="openHoloWindow('https://messenger.facebook.com')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.9 1.17 5.46 3.07 7.23V22l3-1.65c.61.17 1.25.26 1.93.26 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm1.06 12.96l-2.58-2.73-5.04 2.73 5.54-5.89 2.65 2.73 4.97-2.73-5.54 5.89z"/></svg>
+            </div>
+            <div class="holo-icon" title="Google Play" onclick="openHoloWindow('https://play.google.com/store')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M3.25 2.25v19.5l17.5-9.75-17.5-9.75z"/></svg>
+            </div>
+            <div class="holo-icon" title="App Store" onclick="openHoloWindow('https://apps.apple.com')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--bio)"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.1 2.48-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.31-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.89 1.22-2.13 1.08-3.37-1.06.04-2.35.71-3.11 1.6-.68.79-1.28 2.05-1.12 3.26 1.18.09 2.39-.57 3.15-1.49z"/></svg>
+            </div>
+            <div class="holo-icon" title="Artemis" onclick="alert('Artemis System Online')">
+                <svg viewBox="0 0 24 24" width="30" height="30" fill="var(--accent)"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+            </div>
+            <div class="holo-close" onclick="toggleIconBar()">×</div>
         </div>
     </div>
 
-    <!-- Holographic Overlay -->
+    <div id="architect-layer">
+        <h1 style="color:var(--accent); text-shadow:0 0 20px var(--accent);">ARCHITECT OVERRIDE ACTIVE</h1>
+        <p style="color:var(--bio); margin: 15px 0;">Symbiote authorization confirmed.</p>
+        <button onclick="location.reload()" style="margin-top:20px; background:none; border:1px solid var(--err); color:var(--err); cursor:pointer; padding:12px 24px; font-family: inherit;">TERMINATE SESSION</button>
+    </div>
+
     <div id="holo-window" class="holo-window">
         <div class="holo-header">
             <span>Artemis Holo View</span>
-            <div class="holo-close" onclick="closeHoloWindow()">×</div>
+            <div class="holo-close" style="width:30px; height:30px; font-size: 1rem;" onclick="closeHoloWindow()">×</div>
         </div>
         <iframe id="holo-iframe" class="holo-iframe"></iframe>
     </div>
 
-    <!-- Lightning Bolt - Owner Access -->
     <div id="lightning-access" onclick="requestArchitectAccess()">
-        <svg viewBox="0 0 24 24" width="40" height="40" fill="var(--accent)">
+        <svg viewBox="0 0 24 24" width="35" height="35" fill="var(--accent)">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
     </div>
 
     <script>
-        // Purple Rain Matrix
+        // Matrix Background Effect
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         let width, height, columns, drops;
+
         function initMatrix() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            columns = Math.floor(width / 16);
+            columns = Math.floor(width / 18);
             drops = new Array(columns).fill(1);
         }
+
         function drawMatrix() {
             ctx.fillStyle = 'rgba(0,0,0,0.05)';
             ctx.fillRect(0,0,width,height);
             ctx.fillStyle = '#9b4dff';
-            ctx.font = '16px monospace';
+            ctx.font = '15px monospace';
             for (let i = 0; i < drops.length; i++) {
-                ctx.fillText(String.fromCharCode(0x30A0 + Math.random()*96), i*16, drops[i]*16);
-                if (drops[i]*16 > height && Math.random() > 0.975) drops[i] = 0;
+                const text = String.fromCharCode(0x30A0 + Math.random()*96);
+                ctx.fillText(text, i*18, drops[i]*18);
+                if (drops[i]*18 > height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         }
         window.addEventListener('resize', initMatrix);
-        initMatrix(); setInterval(drawMatrix, 35);
+        initMatrix(); 
+        setInterval(drawMatrix, 40);
 
-        // Icon Bar Collapse/Expand
+        // Icon Bar Logic
         function toggleIconBar() {
             const collapsed = document.getElementById('icon-bar-collapsed');
             const expanded = document.getElementById('icon-bar-expanded');
-            collapsed.style.display = expanded.style.display === 'flex' ? 'flex' : 'none';
-            expanded.style.display = expanded.style.display === 'flex' ? 'none' : 'flex';
+            if (expanded.style.display === 'flex') {
+                expanded.style.display = 'none';
+                collapsed.style.display = 'flex';
+            } else {
+                expanded.style.display = 'flex';
+                collapsed.style.display = 'none';
+            }
         }
 
-        // Open Holographic Window
+        // Holo Window Management
         function openHoloWindow(url) {
             const win = document.getElementById('holo-window');
             const iframe = document.getElementById('holo-iframe');
@@ -279,26 +297,28 @@
 
         function closeHoloWindow() {
             document.getElementById('holo-window').style.display = 'none';
+            document.getElementById('holo-iframe').src = '';
         }
 
-        // Lightning Bolt Access (prompts, no visible passwords)
+        // Architect Mode Authentication
         function requestArchitectAccess() {
-            const p1 = prompt("First Key");
-            const p2 = prompt("Second Key");
+            const p1 = prompt("Identity Recognition:");
+            const p2 = prompt("Secret Key:");
             if (p1 === "Spider" && p2 === "Miles") {
-                // Load architect mode (add your logic)
                 document.getElementById('architect-layer').style.display = 'flex';
                 document.getElementById('guest-layer').style.display = 'none';
+                document.body.style.border = "2px solid var(--accent)";
             } else {
-                alert("Access Denied");
+                alert("ACCESS VIOLATION: Unauthorized Identity");
             }
         }
 
-        // Magic 8-Ball - Natural Shake & Reveal
+        // Magic 8-Ball System
         const ball = document.getElementById('artemis-8ball');
-        const liquid = document.getElementById('ball-liquid');
-        const triangle = document.getElementById('ball-triangle');
+        const spinBtn = document.getElementById('spin-btn');
+        const inputField = document.getElementById('guest-cmd');
         const fortuneText = document.getElementById('ball-fortune');
+
         const midasFortunes = [
             "Midas touch: Gold flows your way.",
             "Golden pivot: 10x awaits.",
@@ -306,26 +326,44 @@
             "Code is Midas lever: Unlock now.",
             "Architect reveals: True gold keys."
         ];
-        let index = 0;
+        let fortuneIndex = 0;
 
-        ball.addEventListener('click', () => {
+        function shakeBall() {
+            if (ball.classList.contains('revealing')) {
+                ball.classList.remove('revealing');
+                return;
+            }
+
             ball.classList.add('shaking');
+            
             setTimeout(() => {
                 ball.classList.remove('shaking');
                 ball.classList.add('revealing');
-                fortuneText.textContent = midasFortunes[index];
-                index = (index + 1) % midasFortunes.length;
+                fortuneText.textContent = midasFortunes[fortuneIndex];
+                fortuneIndex = (fortuneIndex + 1) % midasFortunes.length;
             }, 800);
 
+            // Reset after viewing
             setTimeout(() => {
                 ball.classList.remove('revealing');
-            }, 5000);
+            }, 6000);
+        }
+
+        ball.addEventListener('click', shakeBall);
+        spinBtn.addEventListener('click', () => {
+            if (!inputField.value) {
+                alert("Input required for system spin.");
+                return;
+            }
+            shakeBall();
         });
 
-        // Initial show
-        setTimeout(() => {
-            document.getElementById('guest-terminal').style.display = 'flex';
-        }, 2000);
+        // Entrance Animation
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('guest-terminal').style.display = 'flex';
+            }, 1000);
+        };
     </script>
 </body>
 </html>
