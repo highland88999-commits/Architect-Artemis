@@ -14,23 +14,14 @@
       --glow-g:   0 0 45px rgba(212, 175, 55, 0.65);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
     body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: 'Courier New', monospace;
-      color: var(--cyan);
-      touch-action: manipulation;
+      width:100%; height:100%; overflow:hidden; background:#000;
+      font-family: 'Courier New', monospace; color:var(--cyan);
+      touch-action:manipulation;
     }
 
-    /* === VIDEO BACKGROUND – BEHIND EVERYTHING === */
+    /* === FULL-SCREEN VIDEO BACKGROUND – YOUR CATBOX VIDEO === */
     #bg-video {
       position: fixed;
       inset: 0;
@@ -59,7 +50,7 @@
       position: relative;
     }
 
-    /* 8-ball */
+    /* Magic 8-Ball with Thought Cloud */
     #artemis-8ball {
       width: 21rem;
       height: 21rem;
@@ -82,49 +73,69 @@
       transition: transform 1.6s cubic-bezier(0.34,1.56,0.64,1);
     }
 
-    #ball-triangle {
+    #read-prompt {
       position: absolute;
-      top: 50%;
+      bottom: 20%;
       left: 50%;
-      transform: translate(-50%,-50%) rotate(0deg);
+      transform: translateX(-50%);
+      background: rgba(0,242,255,0.25);
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: bold;
+      padding: 10px 24px;
+      border-radius: 30px;
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--cyan);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 1.2s, transform 0.4s;
+      box-shadow: 0 0 20px rgba(0,242,255,0.5);
+      pointer-events: none;
+    }
+
+    #read-prompt.visible {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    #thought-cloud {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%) scale(0.1);
+      width: 280px;
+      min-height: 120px;
+      background: rgba(255,255,255,0.92);
+      border-radius: 30px 30px 30px 10px;
+      padding: 20px 28px;
+      color: #000;
+      font-size: 1.25rem;
+      font-weight: 500;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0,242,255,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    #thought-cloud.visible {
+      transform: translateX(-50%) scale(1);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #thought-cloud::after {
+      content: "";
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 105px solid transparent;
-      border-right: 105px solid transparent;
-      border-bottom: 180px solid #fff;
-      opacity: 0;
-      transition: all 1.8s ease-out;
-    }
-
-    #ball-fortune {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%,-50%);
-      color: #000;
-      font-size: 1.45rem;
-      font-weight: bold;
-      text-align: center;
-      max-width: 170px;
-      opacity: 0;
-      transition: opacity 2.2s;
-    }
-
-    #artemis-8ball.shaking #ball-liquid {
-      transform: translateY(68%) rotate(8deg);
-    }
-
-    #artemis-8ball.revealing #ball-liquid {
-      transform: translateY(0);
-    }
-
-    #artemis-8ball.revealing #ball-triangle {
-      opacity: 1;
-      transform: translate(-50%,-50%) rotate(180deg);
-    }
-
-    #artemis-8ball.revealing #ball-fortune {
-      opacity: 1;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 30px solid rgba(255,255,255,0.92);
     }
 
     /* Prompt area */
@@ -254,7 +265,7 @@
       50%     { box-shadow: 0 0 95px var(--gold); }
     }
 
-    /* Holo overlay */
+    /* Holo overlay (only used for sites that allow iframes) */
     #holo-overlay {
       display: none;
       position: fixed;
@@ -299,17 +310,24 @@
 </head>
 <body>
 
-  <!-- Video background -->
+  <!-- Full-screen video background -->
   <video id="bg-video" autoplay loop muted playsinline>
     <source src="https://files.catbox.moe/uuixld.mp4" type="video/mp4">
   </video>
 
   <div id="container">
-    <!-- Magic 8-ball -->
+    <!-- Magic 8-ball with thought cloud -->
     <div id="artemis-8ball">
       <div id="ball-liquid"></div>
-      <div id="ball-triangle"></div>
-      <div id="ball-fortune"></div>
+
+      <!-- Read Message prompt -->
+      <div id="read-prompt" onclick="showThoughtCloud()">Read Message</div>
+
+      <!-- Thought cloud -->
+      <div id="thought-cloud">
+        <div id="cloud-message"></div>
+      </div>
+
       <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:14rem; color:var(--gold); text-shadow:0 0 70px var(--gold);">8</span>
     </div>
 
@@ -319,42 +337,42 @@
       <button id="send-btn">SEND</button>
     </div>
 
-    <!-- Dock orb (center bottom) -->
+    <!-- Dock orb -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Expanded dock with 10 icons (matching your screenshot) -->
+    <!-- Expanded dock with 10 icons -->
     <div id="dock-expanded">
-      <div class="app-icon" onclick="openHolo('https://facebook.com')"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://x.com')"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://instagram.com')"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://tiktok.com')"><svg viewBox="0 0 24 24"><path d="M12.53.02C13.84.02 15.14.02 16.44.02 16.56.32 16.67.63 16.78.93 17.03 1.63 17.27 2.33 17.5 3.03 17.71 3.73 17.91 4.43 18.1 5.13 18.29 5.83 18.47 6.53 18.64 7.23 18.8 7.93 18.95 8.63 19.09 9.33 19.22 10.03 19.34 10.73 19.45 11.43 19.55 12.13 19.64 12.83 19.72 13.53 19.79 14.23 19.85 14.93 19.9 15.63 19.94 16.33 19.97 17.03 19.99 17.73 20 18.43 20 19.13 20 19.83 20 20.53 20 21.23 20 21.93 20 22.63 20 23.33 20 24.03 20 24.73 20 25.43 20 26.13 20 26.83 20 27.53 20 28.23 20 28.93 20 29.63 20 30.33 20 31.03 20 31.73 20 32.43 20 33.13 20 33.83 20 34.53 20 35.23 20 35.93 20 36.63 20 37.33 20 38.03 20 38.73 20 39.43 20 40.13 20 40.83 20 41.53 20 42.23 20 42.93 20"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://olympus-lac.vercel.app/')"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://nexusvortex.netlify.app/')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://messenger.facebook.com')"><svg viewBox="0 0 24 24"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.9 1.17 5.46 3.07 7.23V22l3-1.65c.61.17 1.25.26 1.93.26 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm1.06 12.96l-2.58-2.73-5.04 2.73 5.54-5.89 2.65 2.73 4.97-2.73-5.54 5.89z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://play.google.com/store')"><svg viewBox="0 0 24 24"><path d="M3.25 2.25v19.5l17.5-9.75-17.5-9.75z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://apps.apple.com')"><svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.06 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
-      <div class="app-icon" onclick="openHolo('https://olympus-lac.vercel.app/')"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://facebook.com')"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://x.com')"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://instagram.com')"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://tiktok.com')"><svg viewBox="0 0 24 24"><path d="M12.53.02C13.84.02 15.14.02 16.44.02 16.56.32 16.67.63 16.78.93 17.03 1.63 17.27 2.33 17.5 3.03 17.71 3.73 17.91 4.43 18.1 5.13 18.29 5.83 18.47 6.53 18.64 7.23 18.8 7.93 18.95 8.63 19.09 9.33 19.22 10.03 19.34 10.73 19.45 11.43 19.55 12.13 19.64 12.83 19.72 13.53 19.79 14.23 19.85 14.93 19.9 15.63 19.94 16.33 19.97 17.03 19.99 17.73 20 18.43 20 19.13 20 19.83 20 20.53 20 21.23 20 21.93 20 22.63 20 23.33 20 24.03 20 24.73 20 25.43 20 26.13 20 26.83 20 27.53 20 28.23 20 28.93 20 29.63 20 30.33 20 31.03 20 31.73 20 32.43 20 33.13 20 33.83 20 34.53 20 35.23 20 35.93 20 36.63 20 37.33 20 38.03 20 38.73 20 39.43 20 40.13 20 40.83 20 41.53 20 42.23 20 42.93 20"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://olympus-lac.vercel.app/')"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://nexusvortex.netlify.app/')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://messenger.facebook.com')"><svg viewBox="0 0 24 24"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.9 1.17 5.46 3.07 7.23V22l3-1.65c.61.17 1.25.26 1.93.26 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm1.06 12.96l-2.58-2.73-5.04 2.73 5.54-5.89 2.65 2.73 4.97-2.73-5.54 5.89z"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://play.google.com/store')"><svg viewBox="0 0 24 24"><path d="M3.25 2.25v19.5l17.5-9.75-17.5-9.75z"/></svg></div>
+      <div class="app-icon" onclick="openApp('https://apps.apple.com')"><svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.06 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
       <div class="app-icon" onclick="toggleDock()">×</div>
     </div>
   </div>
 
-  <!-- Lightning orb – backend access (bottom right) -->
+  <!-- Lightning orb – backend access -->
   <div id="lightning-orb" onclick="requestArchitectAccess()">
     <svg viewBox="0 0 24 24" width="46" height="46" fill="var(--gold)">
       <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
     </svg>
   </div>
 
-  <!-- Holo overlay -->
-  <div id="holo-overlay" style="display:none; position:fixed; inset:5%; background:var(--glass); border:1px solid var(--cyan); border-radius:36px; backdrop-filter:blur(30px); box-shadow:0 0 110px rgba(0,242,255,0.65); z-index:200; flex-direction:column;">
+  <!-- Holo overlay (only used for sites that allow iframes) -->
+  <div id="holo-overlay" style="display:none;">
     <div class="holo-header">
       <span>Artemis View</span>
       <div class="holo-close" onclick="closeHolo()">×</div>
     </div>
-    <iframe id="holo-iframe" style="flex:1;border:none;"></iframe>
+    <iframe id="holo-iframe"></iframe>
   </div>
 
   <script>
+    // === Dock & App Opening ===
     function toggleDock() {
       const orb = document.getElementById('dock-orb');
       const expanded = document.getElementById('dock-expanded');
@@ -362,29 +380,40 @@
       expanded.style.display = expanded.style.display === 'flex' ? 'none' : 'flex';
     }
 
-    function openHolo(url) {
-      document.getElementById('holo-iframe').src = url;
-      document.getElementById('holo-overlay').style.display = 'flex';
-      toggleDock(); // auto-close dock after launch
+    function openApp(url) {
+      // For sites that block iframes (Facebook, X, Instagram, etc.) open in new tab
+      if (url.includes('facebook') || url.includes('x.com') || url.includes('instagram') || url.includes('tiktok')) {
+        window.open(url, '_blank');
+      } else {
+        // For your own sites (Olympus, Nexus, etc.) try iframe first
+        document.getElementById('holo-iframe').src = url;
+        document.getElementById('holo-overlay').style.display = 'flex';
+      }
+      toggleDock(); // close dock after click
     }
 
     function closeHolo() {
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
+    // === Architect Access ===
     function requestArchitectAccess() {
       const k1 = prompt("First Key");
       const k2 = prompt("Second Key");
       if (k1 === "Spider" && k2 === "Miles") {
         alert("Backend / Architect Access Granted");
-        // → insert your backend loading logic here
+        // → Add your real backend loading logic here later
       } else {
         alert("Access Denied");
       }
     }
 
-    // 8-ball logic
+    // === Magic 8-Ball with Thought Cloud ===
     const ball = document.getElementById('artemis-8ball');
+    const readPrompt = document.getElementById('read-prompt');
+    const thoughtCloud = document.getElementById('thought-cloud');
+    const cloudMessage = document.getElementById('cloud-message');
+
     const fortunes = [
       "Midas touch: Gold flows your way.",
       "Golden pivot: 10× awaits.",
@@ -395,14 +424,29 @@
     let idx = 0;
 
     function shakeReveal() {
+      readPrompt.classList.remove('visible');
+      thoughtCloud.classList.remove('visible');
+
       ball.classList.add('shaking');
       setTimeout(() => {
         ball.classList.remove('shaking');
         ball.classList.add('revealing');
-        document.getElementById('ball-fortune').textContent = fortunes[idx];
-        idx = (idx + 1) % fortunes.length;
+        setTimeout(() => {
+          readPrompt.classList.add('visible');
+        }, 800);
       }, 1000);
-      setTimeout(() => ball.classList.remove('revealing'), 5500);
+    }
+
+    function showThoughtCloud() {
+      readPrompt.classList.remove('visible');
+      cloudMessage.textContent = fortunes[idx];
+      thoughtCloud.classList.add('visible');
+
+      setTimeout(() => {
+        thoughtCloud.classList.remove('visible');
+      }, 8000);
+
+      idx = (idx + 1) % fortunes.length;
     }
 
     ball.addEventListener('click', shakeReveal);
