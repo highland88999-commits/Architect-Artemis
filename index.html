@@ -22,17 +22,17 @@
       touch-action:manipulation;
     }
 
-    /* Full-screen background video */
+    /* Background Video Layer */
     #bg-video {
-      position: fixed;
+      position: fixed !important;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: -20;
-      opacity: 0.65;
+      z-index: -20 !important;
+      opacity: 0.7;
       pointer-events: none;
-      filter: brightness(1.1) contrast(1.15) drop-shadow(0 0 40px #00f2ff);
+      filter: brightness(1.05) contrast(1.1) drop-shadow(0 0 35px #00f2ff);
     }
 
     #container {
@@ -56,7 +56,7 @@
       overflow: hidden;
       cursor: pointer;
       margin-bottom: 7vh;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      transition: all 0.5s ease;
     }
 
     #oracle-video {
@@ -65,7 +65,6 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: center center;
     }
 
     #shader-overlay {
@@ -84,17 +83,26 @@
       align-items: center;
       justify-content: center;
       color: var(--cyan);
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: bold;
       text-align: center;
-      padding: 20px;
+      padding: 30px;
       opacity: 0;
-      transition: opacity 0.6s ease;
       text-shadow: 0 0 15px rgba(0,242,255,0.8);
       pointer-events: none;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+      line-height: 1.4;
+      text-transform: uppercase;
+      animation: textPulse 2s infinite;
     }
 
-    /* Prompt area */
+    @keyframes textPulse {
+      0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); }
+      50% { text-shadow: 0 0 20px rgba(0,242,255,1), 0 0 30px rgba(0,242,255,0.5); }
+    }
+
+    /* Input area */
     #prompt-area {
       width: 100%;
       max-width: 600px;
@@ -111,9 +119,10 @@
       border: 1px solid var(--border);
       border-radius: 26px;
       color: var(--cyan);
-      font-size: 1.35rem;
+      font-size: 1.2rem;
       backdrop-filter: blur(18px);
       box-shadow: inset 0 0 35px rgba(0,242,255,0.22);
+      outline: none;
     }
 
     #send-btn {
@@ -125,23 +134,20 @@
       font-weight: bold;
       font-size: 1.35rem;
       cursor: pointer;
-      box-shadow: 0 0 55px var(--cyan);
+      box-shadow: 0 0 40px var(--cyan);
       transition: all 0.3s;
     }
 
-    #send-btn:hover {
-      transform: scale(1.09);
-      box-shadow: 0 0 90px var(--cyan);
-    }
+    #send-btn:hover { transform: scale(1.05); box-shadow: 0 0 60px var(--cyan); }
 
-    /* Dock orb */
+    /* Docking and Apps */
     #dock-orb {
       position: fixed;
       bottom: 36px;
       left: 50%;
       transform: translateX(-50%);
-      width: 96px;
-      height: 96px;
+      width: 80px;
+      height: 80px;
       background: var(--glass);
       border-radius: 50%;
       border: 3px solid var(--cyan);
@@ -149,7 +155,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
+      font-size: 2.5rem;
       color: var(--gold);
       cursor: pointer;
       box-shadow: var(--glow-c);
@@ -163,21 +169,22 @@
       transform: translateX(-50%);
       display: none;
       flex-wrap: wrap;
-      gap: 26px;
-      padding: 32px 44px;
+      justify-content: center;
+      gap: 20px;
+      padding: 25px;
       background: var(--glass);
-      border-radius: 44px;
+      border-radius: 40px;
       border: 1px solid var(--border);
       backdrop-filter: blur(26px);
-      max-width: 96vw;
-      z-index: 100;
+      max-width: 90vw;
+      z-index: 101;
     }
 
     .app-icon {
-      width: 76px;
-      height: 76px;
-      background: rgba(0,242,255,0.18);
-      border-radius: 24px;
+      width: 65px;
+      height: 65px;
+      background: rgba(0,242,255,0.1);
+      border-radius: 18px;
       border: 1px solid var(--cyan);
       display: flex;
       align-items: center;
@@ -186,94 +193,65 @@
       transition: all 0.3s;
     }
 
-    .app-icon:hover {
-      transform: scale(1.2);
-      box-shadow: var(--glow-c);
-    }
+    .app-icon:hover { transform: scale(1.15); box-shadow: var(--glow-c); }
+    .app-icon svg { width: 35px; height: 35px; fill: var(--cyan); }
 
-    .app-icon svg {
-      width: 42px;
-      height: 42px;
-      fill: var(--cyan);
-    }
-
-    /* Lightning orb */
     #lightning-orb {
       position: fixed;
       bottom: 36px;
       right: 36px;
-      width: 84px;
-      height: 84px;
-      background: rgba(212,175,55,0.22);
-      border: 4px solid var(--gold);
+      width: 70px;
+      height: 70px;
+      background: rgba(212,175,55,0.2);
+      border: 3px solid var(--gold);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: var(--glow-g);
       z-index: 110;
       animation: pulse-gold 4.5s infinite;
     }
 
     @keyframes pulse-gold {
-      0%,100% { box-shadow: 0 0 45px var(--gold); }
-      50%     { box-shadow: 0 0 95px var(--gold); }
+      0%,100% { box-shadow: 0 0 30px var(--gold); }
+      50%     { box-shadow: 0 0 70px var(--gold); }
     }
 
-    /* Holo overlay */
     #holo-overlay {
       display: none;
       position: fixed;
       inset: 5%;
       background: var(--glass);
       border: 1px solid var(--cyan);
-      border-radius: 36px;
+      border-radius: 30px;
       backdrop-filter: blur(30px);
-      box-shadow: 0 0 110px rgba(0,242,255,0.65);
       z-index: 200;
       flex-direction: column;
     }
 
     .holo-header {
-      padding: 22px;
-      background: rgba(0,242,255,0.22);
+      padding: 15px;
+      background: rgba(0,242,255,0.15);
       display: flex;
       justify-content: space-between;
-      align-items: center;
       border-bottom: 1px solid var(--border);
     }
 
     .holo-close {
-      width: 48px;
-      height: 48px;
-      background: #ff3366;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #000;
-      font-weight: bold;
-      font-size: 1.7rem;
-    }
-
-    #holo-iframe {
-      flex: 1;
-      border: none;
+      width: 35px; height: 35px; background: #ff3366;
+      border-radius: 50%; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; color: #000; font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <!-- Full-screen background video -->
   <video id="bg-video" autoplay loop muted playsinline preload="auto">
     <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
-    Your browser does not support the video tag.
   </video>
 
   <div id="container">
-    <!-- Oracle circle -->
     <div id="oracle-circle">
       <video id="oracle-video" autoplay loop muted playsinline>
         <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
@@ -282,145 +260,114 @@
       <div id="oracle-message"></div>
     </div>
 
-    <!-- Prompt area -->
     <div id="prompt-area">
       <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
       <button id="send-btn">SEND</button>
     </div>
 
-    <!-- Dock orb -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Expanded dock -->
     <div id="dock-expanded">
       <div class="app-icon" onclick="openApp('https://facebook.com')"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
       <div class="app-icon" onclick="openApp('https://x.com')"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
       <div class="app-icon" onclick="openApp('https://instagram.com')"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg></div>
-      <div class="app-icon" onclick="openApp('https://tiktok.com')"><svg viewBox="0 0 24 24"><path d="M12.53.02C13.84.02 15.14.02 16.44.02 16.56.32 16.67.63 16.78.93 17.03 1.63 17.27 2.33 17.5 3.03 17.71 3.73 17.91 4.43 18.1 5.13 18.29 5.83 18.47 6.53 18.64 7.23 18.8 7.93 18.95 8.63 19.09 9.33 19.22 10.03 19.34 10.73 19.45 11.43 19.55 12.13 19.64 12.83 19.72 13.53 19.79 14.23 19.85 14.93 19.9 15.63 19.94 16.33 19.97 17.03 19.99 17.73 20 18.43 20 19.13 20 19.83 20 20.53 20 21.23 20 21.93 20 22.63 20 23.33 20 24.03 20 24.73 20 25.43 20 26.13 20 26.83 20 27.53 20 28.23 20 28.93 20 29.63 20 30.33 20 31.03 20 31.73 20 32.43 20 33.13 20 33.83 20 34.53 20 35.23 20 35.93 20 36.63 20 37.33 20 38.03 20 38.73 20 39.43 20 40.13 20 40.83 20 41.53 20 42.23 20 42.93 20"/></svg></div>
-      <div class="app-icon" onclick="openApp('https://olympus-lac.vercel.app/')"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-      <div class="app-icon" onclick="openApp('https://nexusvortex.netlify.app/')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
-      <div class="app-icon" onclick="openApp('https://messenger.facebook.com')"><svg viewBox="0 0 24 24"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.9 1.17 5.46 3.07 7.23V22l3-1.65c.61.17 1.25.26 1.93.26 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm1.06 12.96l-2.58-2.73-5.04 2.73 5.54-5.89 2.65 2.73 4.97-2.73-5.54 5.89z"/></svg></div>
-      <div class="app-icon" onclick="openApp('https://play.google.com/store')"><svg viewBox="0 0 24 24"><path d="M3.25 2.25v19.5l17.5-9.75-17.5-9.75z"/></svg></div>
-      <div class="app-icon" onclick="openApp('https://apps.apple.com')"><svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.06 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
       <div class="app-icon" onclick="toggleDock()">×</div>
     </div>
   </div>
 
-  <!-- Lightning orb -->
   <div id="lightning-orb" onclick="requestArchitectAccess()">
-    <svg viewBox="0 0 24 24" width="46" height="46" fill="var(--gold)">
-      <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-    </svg>
+    <svg viewBox="0 0 24 24" width="40" height="40" fill="var(--gold)"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
   </div>
 
-  <!-- Holo overlay -->
-  <div id="holo-overlay" style="display:none;">
-    <div class="holo-header">
-      <span>Artemis View</span>
-      <div class="holo-close" onclick="closeHolo()">×</div>
-    </div>
-    <iframe id="holo-iframe"></iframe>
+  <div id="holo-overlay">
+    <div class="holo-header"><span>Artemis View</span><div class="holo-close" onclick="closeHolo()">×</div></div>
+    <iframe id="holo-iframe" style="flex:1; border:none;"></iframe>
   </div>
 
   <script>
-    // === Mobile Autoplay Fix for Background Video ===
+    // Robust Mobile Autoplay Fix
     window.addEventListener('load', function() {
-      const bgVideo = document.getElementById('bg-video');
-      if (bgVideo) {
-        const playPromise = bgVideo.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // Autoplay blocked — play on first user interaction
-            document.body.addEventListener('touchstart', () => {
-              bgVideo.play();
-            }, { once: true });
-          });
-        }
-      }
+      const videos = document.querySelectorAll('video');
+      const enableMedia = () => {
+        videos.forEach(v => v.play());
+        document.removeEventListener('touchstart', enableMedia);
+      };
+      document.addEventListener('touchstart', enableMedia, { passive: true });
     });
 
-    // === Dock & App Opening ===
     function toggleDock() {
       const orb = document.getElementById('dock-orb');
       const expanded = document.getElementById('dock-expanded');
-      orb.style.display = expanded.style.display === 'flex' ? 'flex' : 'none';
-      expanded.style.display = expanded.style.display === 'flex' ? 'none' : 'flex';
+      const isVisible = expanded.style.display === 'flex';
+      orb.style.display = isVisible ? 'flex' : 'none';
+      expanded.style.display = isVisible ? 'none' : 'flex';
     }
 
-    function openApp(url) {
-      window.open(url, '_blank');
-      toggleDock();
-    }
+    function openApp(url) { window.open(url, '_blank'); toggleDock(); }
+    function closeHolo() { document.getElementById('holo-overlay').style.display = 'none'; }
 
-    function closeHolo() {
-      document.getElementById('holo-overlay').style.display = 'none';
-    }
-
-    // === Architect Access ===
     function requestArchitectAccess() {
-      const k1 = prompt("First Key");
-      const k2 = prompt("Second Key");
-      if (k1 === "Spider" && k2 === "Miles") {
-        alert("Backend / Architect Access Granted");
-      } else {
-        alert("Access Denied");
-      }
+      if (prompt("First Key") === "Spider" && prompt("Second Key") === "Miles") {
+        alert("Architect Access Granted");
+      } else { alert("Access Denied"); }
     }
 
-    // === Oracle Logic ===
+    // --- Oracle Logic with Typewriter ---
+    let typingTimer;
     const oracleCircle = document.getElementById('oracle-circle');
     const shaderOverlay = document.getElementById('shader-overlay');
     const oracleMessage = document.getElementById('oracle-message');
 
-    const colorPalette = [
-      '#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff',
-      '#3366ff', '#9933ff', '#ff33cc', '#ff6699', '#ccff33'
-    ];
-
     function getRandomColor() {
-      return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+      const palette = ['#ff3366','#ff6f00','#d4af37','#66ff66','#00f2ff','#3366ff','#9933ff'];
+      return palette[Math.floor(Math.random() * palette.length)];
     }
 
     function fadeInMessage(text) {
+      clearTimeout(typingTimer);
       const newColor = getRandomColor();
-      oracleCircle.style.borderColor = newColor;
-      oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
-
-      shaderOverlay.style.opacity = 0.82;
-      oracleMessage.textContent = text;
+      
+      // UI Preparation
+      oracleMessage.textContent = '';
       oracleMessage.style.opacity = 1;
+      oracleCircle.style.borderColor = newColor;
+      oracleCircle.style.boxShadow = `0 0 45px ${newColor}, inset 0 0 90px rgba(0,242,255,0.5)`;
+      shaderOverlay.style.opacity = 0.85;
 
-      setTimeout(() => {
-        oracleMessage.style.opacity = 0.6;
-        setTimeout(() => oracleMessage.style.opacity = 1, 400);
-        setTimeout(() => oracleMessage.style.opacity = 0.6, 800);
-      }, 8000);
-
-      setTimeout(fadeOutMessage, 10000);
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          oracleMessage.textContent += text.charAt(i);
+          i++;
+          typingTimer = setTimeout(type, 50); // Speed
+        } else {
+          // Finished typing: schedule fade out
+          setTimeout(() => {
+            oracleMessage.style.opacity = 0.5; // Visual warning before close
+            setTimeout(() => fadeOutMessage(), 1500);
+          }, 8000);
+        }
+      }
+      setTimeout(type, 300);
     }
 
     function fadeOutMessage() {
       shaderOverlay.style.opacity = 0;
       oracleMessage.style.opacity = 0;
+      oracleCircle.style.borderColor = 'var(--gold)';
+      oracleCircle.style.boxShadow = 'var(--glow-c)';
     }
 
-    // Prompt submission
     const cmd = document.getElementById('guest-cmd');
     document.getElementById('send-btn').addEventListener('click', () => {
-      const text = cmd.value.trim();
-      if (text) {
+      if (cmd.value.trim()) {
         fadeOutMessage();
-        setTimeout(() => fadeInMessage(text), 300);
+        setTimeout(() => fadeInMessage(cmd.value.trim()), 400);
         cmd.value = '';
       }
     });
 
-    cmd.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('send-btn').click();
-      }
-    });
+    cmd.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('send-btn').click(); });
   </script>
 </body>
 </html>
