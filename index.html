@@ -22,6 +22,7 @@
       touch-action: manipulation;
     }
 
+    /* Background video – fallback on tap */
     #bg-video {
       position: fixed;
       inset: 0;
@@ -34,13 +35,30 @@
       filter: brightness(1.1) contrast(1.15) drop-shadow(0 0 40px #00f2ff);
     }
 
+    /* Top iframe – your Axiom Hurricane viz */
+    #top-iframe-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 40vh;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    #top-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
     #container {
       height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4vh 6vw;
+      padding: 42vh 6vw 20vh 6vw; /* offset for top iframe */
       position: relative;
     }
 
@@ -272,6 +290,249 @@
 </head>
 <body>
 
+  <!-- Top iframe – your Axiom Ultra Hurricane Audio Sync visualization -->
+  <div id="top-iframe-container">
+    <iframe id="top-iframe" srcdoc='
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom - Ultra Hurricane Audio Sync</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        html, body { margin: 0; overflow: hidden; height: 100%; width: 100%; background-color: #000; }
+        canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
+        
+        #hud {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .axiom-btn {
+            color: #00ffaa;
+            font-family: "Courier New", monospace;
+            text-decoration: none;
+            font-size: 14px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px #00ffaa;
+            padding: 16px 32px;
+            border: 1px solid rgba(0, 255, 170, 0.4);
+            background: rgba(0, 0, 0, 0.85);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            border-left: 6px solid #00ffaa;
+            display: inline-block;
+        }
+
+        .axiom-btn:hover {
+            background: rgba(0, 255, 170, 0.25);
+            box-shadow: 0 0 30px rgba(0, 255, 170, 0.5);
+            color: #fff;
+            transform: translateX(10px);
+        }
+
+        #sync-status {
+            color: #fff;
+            font-family: "Courier New", monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            padding-left: 10px;
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hud">
+        <a href="https://open.spotify.com/playlist/0zSejHQqxofrcKxS4HYbVU?si=Ql5C7c6mQsiaKbDo_13KAw&pt=4bd43683823f4aa25604e743df68579a&pi=AnqMNYktQcWLJ" target="_blank" class="axiom-btn">Contribute</a>
+        
+        <button id="sync-btn" class="axiom-btn">Initiate Audio Sync</button>
+        <div id="sync-status">Atmosphere: Standby</div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, clock = new THREE.Clock();
+        let clouds = [], rain, ocean, hurricaneGroup;
+        let shakeIntensity = 0, lightningFlash = 0;
+        
+        let audioContext, analyser, dataArray, isAudioSetup = false;
+
+        async function setupAudio() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(stream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 512;
+                source.connect(analyser);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                document.getElementById("sync-btn").style.display = "none";
+                document.getElementById("sync-status").innerText = "Atmosphere: Active Device Sync";
+                isAudioSetup = true;
+            } catch (err) {
+                alert("Permission required to sync visuals with your audio device.");
+            }
+        }
+
+        document.getElementById("sync-btn").addEventListener("click", setupAudio);
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000606, 0.004);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 3500);
+            camera.position.set(0, 150, 450);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+            document.body.appendChild(renderer.domElement);
+
+            hurricaneGroup = new THREE.Group();
+            scene.add(hurricaneGroup);
+
+            // --- DEEP OCEAN ---
+            const oceanGeo = new THREE.PlaneGeometry(3500, 3500, 100, 100);
+            const oceanMat = new THREE.MeshStandardMaterial({ 
+                color: 0x001111, metalness: 0.98, roughness: 0.02, flatShading: true 
+            });
+            ocean = new THREE.Mesh(oceanGeo, oceanMat);
+            ocean.rotation.x = -Math.PI / 2;
+            scene.add(ocean);
+
+            // --- VORTEX ---
+            const cloudGeo = new THREE.IcosahedronGeometry(22, 1);
+            for (let i = 0; i < 250; i++) {
+                const cloudMat = new THREE.MeshLambertMaterial({ color: 0x020202, transparent: true, opacity: 0.5 });
+                const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+                const angle = i * 0.16;
+                const dist = 70 + (i * 1.9);
+                cloud.position.set(Math.cos(angle) * dist, 130 + (Math.random() * 90), Math.sin(angle) * dist);
+                cloud.scale.set(Math.random() * 9 + 5, Math.random() * 4 + 1, Math.random() * 9 + 5);
+                hurricaneGroup.add(cloud);
+                clouds.push(cloud);
+            }
+
+            // --- DENSE RAIN ---
+            const rainGeo = new THREE.BufferGeometry();
+            const rainPos = [];
+            for (let i = 0; i < 35000; i++) {
+                rainPos.push((Math.random() - 0.5) * 3000, Math.random() * 1500, (Math.random() - 0.5) * 3000);
+            }
+            rainGeo.setAttribute("position", new THREE.Float32BufferAttribute(rainPos, 3));
+            rain = new THREE.Points(rainGeo, new THREE.PointsMaterial({ color: 0x00ffaa, size: 0.28, transparent: true, opacity: 0.45 }));
+            scene.add(rain);
+
+            scene.add(new THREE.AmbientLight(0x001a1a, 0.45));
+            animate();
+        }
+
+        function triggerLightning() {
+            const colors = [0x00ffaa, 0x00ffff, 0xffffff, 0x4488ff, 0xaa00ff];
+            const col = colors[Math.floor(Math.random() * colors.length)];
+            
+            const x = (Math.random() - 0.5) * 1500;
+            const z = (Math.random() - 0.5) * 1500;
+            const pts = [];
+            let curr = new THREE.Vector3(x, 600, z);
+            
+            for(let i=0; i<18; i++) {
+                pts.push(curr.clone());
+                curr.add(new THREE.Vector3((Math.random()-0.5)*140, -40, (Math.random()-0.5)*140));
+            }
+            
+            const geo = new THREE.BufferGeometry().setFromPoints(pts);
+            const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: col, linewidth: 4 }));
+            const light = new THREE.PointLight(col, 800, 2500);
+            light.position.set(x, 300, z);
+            
+            scene.add(line);
+            scene.add(light);
+            
+            shakeIntensity = 15; 
+            lightningFlash = 3.0;
+            
+            setTimeout(() => { 
+                scene.remove(line); 
+                scene.remove(light); 
+            }, 45 + Math.random() * 55);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            let audioAvg = 0;
+
+            if (isAudioSetup) {
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                audioAvg = sum / dataArray.length;
+
+                // HIGH FREQUENCY LIGHTNING
+                if (Math.random() > 0.97 || (dataArray[5] > 225 && Math.random() > 0.75)) {
+                    triggerLightning();
+                }
+            } else {
+                if (Math.random() > 0.96) triggerLightning();
+            }
+
+            // --- AUDIO REACTION: TSUNAMI ---
+            const waveScale = 35 + (audioAvg * 0.7);
+            const verts = ocean.geometry.attributes.position.array;
+            for (let i = 0; i < verts.length; i += 3) {
+                const x = verts[i], y = verts[i+1];
+                const d = Math.sqrt(x*x + y*y);
+                verts[i+2] = Math.sin(d * 0.015 - time * 5.5) * waveScale + Math.cos(x * 0.09 + time * 4.5) * (waveScale/2);
+            }
+            ocean.geometry.attributes.position.needsUpdate = true;
+
+            hurricaneGroup.rotation.y += 0.018 + (audioAvg * 0.001);
+
+            const rArray = rain.geometry.attributes.position.array;
+            for (let i = 0; i < rArray.length; i += 3) {
+                rArray[i+1] -= (18 + audioAvg * 0.4);
+                if (rArray[i+1] < 0) rArray[i+1] = 1500;
+            }
+            rain.geometry.attributes.position.needsUpdate = true;
+
+            // Camera Motion
+            camera.position.x = (Math.sin(time * 0.08) * 600) + (Math.random() - 0.5) * shakeIntensity;
+            camera.position.z = (Math.cos(time * 0.08) * 600) + (Math.random() - 0.5) * shakeIntensity;
+            camera.lookAt(0, 80, 0);
+
+            if (shakeIntensity > 0) shakeIntensity *= 0.88;
+            if (lightningFlash > 0) {
+                scene.fog.color.setScalar(lightningFlash * 0.4);
+                lightningFlash *= 0.93;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>
+' title="Axiom - Ultra Hurricane Audio Sync"></iframe>
+  </div>
+
   <!-- Background video -->
   <video id="bg-video" autoplay loop muted playsinline preload="auto">
     <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
@@ -293,7 +554,6 @@
 
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Bottom row of icons – all native, no folders -->
     <div id="dock-expanded">
       <div class="app-icon" data-url="https://olympus-lac.vercel.app/" data-holo="true"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
       <div class="app-icon" data-url="https://nexus-symbiote.onrender.com/" data-holo="true"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
@@ -323,6 +583,7 @@
   </div>
 
   <script>
+    // Mobile Autoplay Fix
     window.addEventListener('load', function() {
       const videos = document.querySelectorAll('video');
       videos.forEach(video => {
@@ -357,6 +618,7 @@
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
+    // Prompt submission (typewriter)
     let typingTimer;
 
     function fadeInMessage(text) {
