@@ -8,6 +8,7 @@
     :root {
       --cyan:     #00f2ff;
       --gold:     #d4af37;
+      --purple-shader: rgba(26, 0, 51, 0.78); /* deep purple overlay */
       --glass:    rgba(8, 8, 25, 0.45);
       --border:   rgba(0, 242, 255, 0.35);
       --glow-c:   0 0 40px rgba(0, 242, 255, 0.75);
@@ -21,7 +22,7 @@
       touch-action:manipulation;
     }
 
-    /* === YOUR FULL-SCREEN VIDEO BACKGROUND === */
+    /* Full-screen background video (subtle storm/cricket) */
     #bg-video {
       position: fixed;
       inset: 0;
@@ -32,114 +33,61 @@
       opacity: 0.55;
       pointer-events: none;
       filter: brightness(1.12) contrast(1.18) drop-shadow(0 0 55px #00f2ff);
-      animation: bg-pulse 28s infinite ease-in-out;
     }
 
-    @keyframes bg-pulse {
-      0%, 100% { opacity: 0.48; transform: scale(1.02); }
-      50%      { opacity: 0.68; transform: scale(1.10); }
-    }
-
-    #container {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 4vh 6vw;
-      position: relative;
-    }
-
-    /* Magic 8-Ball with "Read Message" prompt overlay */
-    #artemis-8ball {
+    /* Oracle circle / 8-ball container */
+    #oracle-circle {
       width: 21rem;
       height: 21rem;
-      background: radial-gradient(circle at 35% 35%, #000d1f, #000);
       border-radius: 50%;
-      border: 9px solid var(--gold);
+      border: 9px solid var(--gold); /* starts gold, changes color on prompt */
       box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55);
       position: relative;
       overflow: hidden;
       cursor: pointer;
       margin-bottom: 7vh;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    #ball-liquid {
+    /* Oracle video (no2e76.mp4) fills the circle, centered */
+    #oracle-video {
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, #00008b, #0a001f, #00008b);
-      opacity: 0.92;
-      transform: translateY(100%);
-      transition: transform 1.6s cubic-bezier(0.34,1.56,0.64,1);
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* preserves aspect, centers glowing core */
+      object-position: center;
     }
 
-    #read-prompt {
+    /* Purple shader overlay (appears over video when message shows) */
+    #shader-overlay {
       position: absolute;
-      bottom: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,242,255,0.25);
-      color: #000;
-      font-size: 1.1rem;
+      inset: 0;
+      background: var(--purple-shader);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    /* Message text inside oracle circle */
+    #oracle-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+      font-size: 1.8rem;
       font-weight: bold;
-      padding: 10px 24px;
-      border-radius: 30px;
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--cyan);
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 1.2s, transform 0.4s;
-      box-shadow: 0 0 20px rgba(0,242,255,0.5);
-      pointer-events: none;
-    }
-
-    #read-prompt.visible {
-      opacity: 1;
-      pointer-events: all;
-      transform: translateX(-50%) scale(1.05);
-    }
-
-    /* Thought cloud (appears after clicking "Read Message") */
-    #thought-cloud {
-      position: absolute;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%) scale(0.1);
-      width: 280px;
-      min-height: 120px;
-      background: rgba(255,255,255,0.92);
-      border-radius: 30px 30px 30px 10px;
-      padding: 20px 28px;
-      color: #000;
-      font-size: 1.25rem;
-      font-weight: 500;
       text-align: center;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0,242,255,0.4);
+      padding: 20px;
       opacity: 0;
+      transition: opacity 0.6s ease;
+      text-shadow: 0 0 15px rgba(0,242,255,0.8);
       pointer-events: none;
-      transition: all 0.8s cubic-bezier(0.34,1.56,0.64,1);
     }
 
-    #thought-cloud.visible {
-      transform: translateX(-50%) scale(1);
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    #thought-cloud::after {
-      content: "";
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-top: 30px solid rgba(255,255,255,0.92);
-    }
-
-    /* Prompt area (matches your screenshot) */
+    /* Prompt area */
     #prompt-area {
       width: 100%;
       max-width: 600px;
@@ -179,7 +127,7 @@
       box-shadow: 0 0 90px var(--cyan);
     }
 
-    /* Dock orb – center bottom */
+    /* Dock orb */
     #dock-orb {
       position: fixed;
       bottom: 36px;
@@ -242,7 +190,7 @@
       fill: var(--cyan);
     }
 
-    /* Lightning orb – bottom-right */
+    /* Lightning orb */
     #lightning-orb {
       position: fixed;
       bottom: 36px;
@@ -311,37 +259,36 @@
 </head>
 <body>
 
-  <!-- Your background video – full screen, behind everything -->
+  <!-- Full-screen background video -->
   <video id="bg-video" autoplay loop muted playsinline>
     <source src="https://files.catbox.moe/uuixld.mp4" type="video/mp4">
   </video>
 
   <div id="container">
-    <!-- Magic 8-Ball -->
-    <div id="artemis-8ball">
-      <div id="ball-liquid"></div>
+    <!-- Oracle circle / 8-ball -->
+    <div id="oracle-circle">
+      <!-- Oracle looping video (centered & aligned to glowing core) -->
+      <video id="oracle-video" autoplay loop muted playsinline>
+        <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
+      </video>
 
-      <!-- "Read Message" prompt overlay (like left screenshot) -->
-      <div id="read-prompt" onclick="showThoughtCloud()">Read Message</div>
+      <!-- Deep purple shader overlay -->
+      <div id="shader-overlay"></div>
 
-      <!-- Thought cloud -->
-      <div id="thought-cloud">
-        <div id="cloud-message"></div>
-      </div>
-
-      <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:14rem; color:var(--gold); text-shadow:0 0 70px var(--gold);">8</span>
+      <!-- Message text -->
+      <div id="oracle-message"></div>
     </div>
 
-    <!-- Prompt area (matches your screenshot) -->
+    <!-- Prompt area -->
     <div id="prompt-area">
       <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
       <button id="send-btn">SEND</button>
     </div>
 
-    <!-- Dock orb – center bottom -->
+    <!-- Dock orb -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Expanded dock with 10 icons (as in your screenshot) -->
+    <!-- Expanded dock -->
     <div id="dock-expanded">
       <div class="app-icon" onclick="openApp('https://facebook.com')"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
       <div class="app-icon" onclick="openApp('https://x.com')"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
@@ -356,14 +303,14 @@
     </div>
   </div>
 
-  <!-- Lightning orb – backend access -->
+  <!-- Lightning orb -->
   <div id="lightning-orb" onclick="requestArchitectAccess()">
     <svg viewBox="0 0 24 24" width="46" height="46" fill="var(--gold)">
       <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
     </svg>
   </div>
 
-  <!-- Holo overlay (for sites that allow iframes) -->
+  <!-- Holo overlay -->
   <div id="holo-overlay" style="display:none;">
     <div class="holo-header">
       <span>Artemis View</span>
@@ -373,6 +320,7 @@
   </div>
 
   <script>
+    // === Dock & App Opening ===
     function toggleDock() {
       const orb = document.getElementById('dock-orb');
       const expanded = document.getElementById('dock-expanded');
@@ -389,6 +337,7 @@
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
+    // === Architect Access ===
     function requestArchitectAccess() {
       const k1 = prompt("First Key");
       const k2 = prompt("Second Key");
@@ -400,11 +349,11 @@
       }
     }
 
-    // Magic 8-Ball with "Read Message" prompt
-    const ball = document.getElementById('artemis-8ball');
-    const readPrompt = document.getElementById('read-prompt');
-    const thoughtCloud = document.getElementById('thought-cloud');
-    const cloudMessage = document.getElementById('cloud-message');
+    // === Oracle Circle (8-ball) Logic ===
+    const oracleCircle = document.getElementById('oracle-circle');
+    const shaderOverlay = document.getElementById('shader-overlay');
+    const oracleMessage = document.getElementById('oracle-message');
+    const oracleVideo = document.getElementById('oracle-video');
 
     const fortunes = [
       "Midas touch: Gold flows your way.",
@@ -414,40 +363,58 @@
       "Architect reveals: True gold keys."
     ];
     let idx = 0;
+    let messageTimer = null;
 
-    function shakeReveal() {
-      readPrompt.classList.remove('visible');
-      thoughtCloud.classList.remove('visible');
+    const colorPalette = [
+      '#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff',
+      '#3366ff', '#9933ff', '#ff33cc', '#ff6699', '#ccff33'
+    ];
 
-      ball.classList.add('shaking');
-      setTimeout(() => {
-        ball.classList.remove('shaking');
-        ball.classList.add('revealing');
-        setTimeout(() => {
-          readPrompt.classList.add('visible');
-        }, 800);
-      }, 1000);
+    function getRandomColor() {
+      return colorPalette[Math.floor(Math.random() * colorPalette.length)];
     }
 
-    function showThoughtCloud() {
-      readPrompt.classList.remove('visible');
-      cloudMessage.textContent = fortunes[idx];
-      thoughtCloud.classList.add('visible');
+    function fadeInMessage(text) {
+      // Set new border color
+      oracleCircle.style.borderColor = getRandomColor();
+      oracleCircle.style.boxShadow = `0 0 40px ${oracleCircle.style.borderColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
 
+      // Fade in shader + message
+      shaderOverlay.style.opacity = 0.78;
+      oracleMessage.textContent = text;
+      oracleMessage.style.opacity = 1;
+
+      // Fade warning at 8 seconds (opacity pulse down)
       setTimeout(() => {
-        thoughtCloud.classList.remove('visible');
+        oracleMessage.style.opacity = 0.6;
+        setTimeout(() => oracleMessage.style.opacity = 1, 400);
+        setTimeout(() => oracleMessage.style.opacity = 0.6, 800);
       }, 8000);
 
-      idx = (idx + 1) % fortunes.length;
+      // Auto-fade out after 10 seconds
+      clearTimeout(messageTimer);
+      messageTimer = setTimeout(fadeOutMessage, 10000);
     }
 
-    ball.addEventListener('click', shakeReveal);
+    function fadeOutMessage() {
+      shaderOverlay.style.opacity = 0;
+      oracleMessage.style.opacity = 0;
+    }
 
-    // Prompt + Enter
+    function shakeReveal() {
+      // Quick shake effect on submit
+      oracleCircle.classList.add('shaking');
+      setTimeout(() => oracleCircle.classList.remove('shaking'), 600);
+    }
+
+    // Prompt submission
     const cmd = document.getElementById('guest-cmd');
     document.getElementById('send-btn').addEventListener('click', () => {
-      if (cmd.value.trim()) {
+      const text = cmd.value.trim();
+      if (text) {
         shakeReveal();
+        fadeOutMessage(); // quick fade old message if any
+        setTimeout(() => fadeInMessage(text), 300); // slight delay for clean transition
         cmd.value = '';
       }
     });
