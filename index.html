@@ -11,8 +11,8 @@
             --accent: #d4af37;
             --purple-glow: #9b4dff;
             --err: #ff4d4d;
-            --glass: rgba(255, 255, 255, 0.06);
-            --glass-border: rgba(155, 77, 255, 0.3);
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(155, 77, 255, 0.35);
             --bg: #030303;
         }
 
@@ -23,8 +23,377 @@
             touch-action:manipulation;
         }
 
-        canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; opacity:0.35; }
+        /* Persistent logo background — behind EVERYTHING */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: url('https://i.imgur.com/yourlogo.png') center/contain no-repeat; /* ← PASTE YOUR BASE64 OR URL HERE */
+            opacity: 0.18;
+            pointer-events: none;
+            filter: drop-shadow(0 0 30px var(--purple-glow));
+            animation: logo-breathe 18s infinite ease-in-out;
+        }
 
-        #logo-bg {
-            position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.15;
-            background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fYMoAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAABrVJREFUeJzt3T1uI0EUheG3t5hYgACB4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B
+        @keyframes logo-breathe {
+            0%, 100% { opacity: 0.14; transform: scale(1.02); }
+            50% { opacity: 0.26; transform: scale(1.07); }
+        }
+
+        #guest-terminal {
+            width: 90vw;
+            max-width: 720px;
+            height: 85vh;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 50px rgba(0,0,0,0.75);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin: 5vh auto;
+        }
+
+        /* Magic 8-Ball — Artemis response window */
+        #artemis-8ball {
+            width: 16rem; height: 16rem; margin: 40px auto 30px auto;
+            background: #000;
+            border-radius: 50%;
+            border: 6px solid var(--accent);
+            box-shadow: 0 0 80px var(--accent), inset 0 0 40px var(--purple-glow);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            animation: midas-pulse 7s infinite ease-in-out;
+        }
+
+        #ball-liquid {
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, #00008b, #000033, #00008b);
+            opacity: 0.92;
+            transform: translateY(100%);
+            transition: transform 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        #ball-triangle {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(0deg);
+            width: 0; height: 0;
+            border-left: 80px solid transparent;
+            border-right: 80px solid transparent;
+            border-bottom: 140px solid white;
+            opacity: 0;
+            transition: opacity 1.6s, transform 1.2s;
+        }
+
+        #ball-fortune {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000; font-size: 1.1rem; text-align: center; max-width: 130px;
+            font-weight: bold; opacity: 0;
+            transition: opacity 1.8s;
+        }
+
+        #artemis-8ball.shaking { animation: shake-ball 0.9s ease-in-out; }
+        #artemis-8ball.shaking #ball-liquid { transform: translateY(75%) rotate(4deg); }
+        #artemis-8ball.revealing #ball-liquid { transform: translateY(0); }
+        #artemis-8ball.revealing #ball-triangle { opacity: 1; transform: translate(-50%, -50%) rotate(180deg); }
+        #artemis-8ball.revealing #ball-fortune { opacity: 1; }
+
+        @keyframes shake-ball {
+            0% { transform: rotate(0deg); }
+            20% { transform: rotate(6deg); }
+            40% { transform: rotate(-6deg); }
+            60% { transform: rotate(4deg); }
+            80% { transform: rotate(-4deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes midas-pulse {
+            0%,100% { box-shadow: 0 0 50px var(--accent); }
+            50% { box-shadow: 0 0 110px var(--accent), 0 0 150px var(--purple-glow); }
+        }
+
+        /* Prompt Area */
+        #prompt-area {
+            padding: 0 20px 30px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        #guest-cmd {
+            width: 100%;
+            max-width: 520px;
+            padding: 14px 20px;
+            background: rgba(0,0,0,0.65);
+            border: 1px solid var(--deep-bio);
+            color: var(--bio);
+            font-size: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        #send-btn {
+            padding: 14px 48px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 0 30px var(--accent);
+            transition: 0.3s;
+        }
+
+        #send-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px var(--accent); }
+
+        /* Collapsible Icon Dock */
+        #icon-bar-collapsed {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px; height: 70px;
+            background: rgba(155,77,255,0.35);
+            border-radius: 50%;
+            border: 2px solid var(--purple-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: var(--accent);
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 0 40px var(--purple-glow);
+        }
+
+        #icon-bar-expanded {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 20px 24px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            max-width: 90vw;
+            z-index: 50;
+        }
+
+        .holo-icon {
+            width: 64px; height: 64px;
+            background: rgba(155,77,255,0.25);
+            border-radius: 16px;
+            border: 1px solid var(--purple-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .holo-icon:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 35px var(--purple-glow);
+        }
+
+        .holo-icon svg { width: 32px; height: 32px; fill: var(--bio); }
+
+        /* Holographic Window */
+        .holo-window {
+            position: fixed;
+            inset: 5%;
+            background: var(--glass);
+            border: 1px solid var(--purple-glow);
+            border-radius: 20px;
+            backdrop-filter: blur(24px);
+            box-shadow: 0 0 80px rgba(155,77,255,0.6);
+            display: none;
+            flex-direction: column;
+            z-index: 60;
+        }
+
+        .holo-header {
+            padding: 16px;
+            background: rgba(155,77,255,0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .holo-close {
+            width: 40px; height: 40px;
+            background: var(--err);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #000;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        .holo-iframe { flex: 1; border: none; }
+
+        /* Lightning Bolt */
+        #lightning-access {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 70;
+            width: 70px; height: 70px;
+            background: rgba(212,175,55,0.2);
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 40px var(--accent);
+            animation: pulse-glow 3.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%,100% { box-shadow: 0 0 30px var(--accent); }
+            50% { box-shadow: 0 0 70px var(--accent); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="guest-terminal">
+        <!-- Magic 8-Ball — Artemis response window -->
+        <div id="artemis-8ball">
+            <div id="ball-liquid"></div>
+            <div id="ball-triangle"></div>
+            <div id="ball-fortune"></div>
+            <span>8</span>
+        </div>
+
+        <!-- Prompt + Send -->
+        <div id="prompt-area">
+            <input type="text" id="guest-cmd" placeholder="Ask Artemis..." autocomplete="off">
+            <button id="send-btn">SEND</button>
+        </div>
+
+        <!-- Collapsible Icon Dock -->
+        <div id="icon-bar-collapsed" onclick="toggleIconBar()">+</div>
+        <div id="icon-bar-expanded">
+            <!-- Your 9 icons here -->
+            <div class="holo-icon" title="Facebook" onclick="openHoloWindow('https://facebook.com')">
+                <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </div>
+            <!-- Add X, Instagram, TikTok, Olympus, Nexus, Messenger, Play Store, App Store here (copy pattern) -->
+            <div class="holo-close" onclick="toggleIconBar()">×</div>
+        </div>
+    </div>
+
+    <!-- Holographic Overlay -->
+    <div id="holo-window" class="holo-window">
+        <div class="holo-header">
+            <span>Artemis Holo View</span>
+            <div class="holo-close" onclick="closeHoloWindow()">×</div>
+        </div>
+        <iframe id="holo-iframe" class="holo-iframe"></iframe>
+    </div>
+
+    <!-- Lightning Bolt -->
+    <div id="lightning-access" onclick="requestArchitectAccess()">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="var(--accent)">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+    </div>
+
+    <script>
+        // Icon Bar
+        function toggleIconBar() {
+            const collapsed = document.getElementById('icon-bar-collapsed');
+            const expanded = document.getElementById('icon-bar-expanded');
+            collapsed.style.display = expanded.style.display === 'flex' ? 'flex' : 'none';
+            expanded.style.display = expanded.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Holo Window
+        function openHoloWindow(url) {
+            const win = document.getElementById('holo-window');
+            const iframe = document.getElementById('holo-iframe');
+            iframe.src = url;
+            win.style.display = 'flex';
+        }
+
+        function closeHoloWindow() {
+            document.getElementById('holo-window').style.display = 'none';
+        }
+
+        // Architect Access
+        function requestArchitectAccess() {
+            const p1 = prompt("First Key");
+            const p2 = prompt("Second Key");
+            if (p1 === "Spider" && p2 === "Miles") {
+                alert("Architect Mode Activated");
+                // Add architect content here if needed
+            } else {
+                alert("Access Denied");
+            }
+        }
+
+        // Magic 8-Ball
+        const ball = document.getElementById('artemis-8ball');
+        const fortunes = [
+            "Midas touch: Gold flows your way.",
+            "Golden pivot: 10× awaits.",
+            "Midas candle: Riches align soon.",
+            "Code is Midas lever: Unlock now.",
+            "Architect reveals: True gold keys."
+        ];
+        let idx = 0;
+
+        function shakeAndReveal() {
+            ball.classList.add('shaking');
+            setTimeout(() => {
+                ball.classList.remove('shaking');
+                ball.classList.add('revealing');
+                document.getElementById('ball-fortune').textContent = fortunes[idx];
+                idx = (idx + 1) % fortunes.length;
+            }, 900);
+            setTimeout(() => ball.classList.remove('revealing'), 5500);
+        }
+
+        ball.addEventListener('click', shakeAndReveal);
+
+        // Send logic (button + Enter)
+        const cmdInput = document.getElementById('guest-cmd');
+        const sendBtn = document.getElementById('send-btn');
+
+        function sendMessage() {
+            const text = cmdInput.value.trim();
+            if (!text) return;
+            shakeAndReveal(); // Artemis answers via 8-ball
+            console.log("User → Artemis:", text);
+            cmdInput.value = '';
+            cmdInput.focus();
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        cmdInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Show interface immediately
+        document.getElementById('guest-terminal').style.display = 'flex';
+        cmdInput.focus();
+    </script>
+</body>
+</html>
