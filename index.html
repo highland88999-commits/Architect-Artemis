@@ -21,7 +21,7 @@
       touch-action:manipulation;
     }
 
-    /* === FULL-SCREEN VIDEO BACKGROUND – YOUR CATBOX VIDEO === */
+    /* === YOUR FULL-SCREEN VIDEO BACKGROUND === */
     #bg-video {
       position: fixed;
       inset: 0;
@@ -50,7 +50,7 @@
       position: relative;
     }
 
-    /* Magic 8-Ball with Thought Cloud */
+    /* Magic 8-Ball with "Read Message" prompt overlay */
     #artemis-8ball {
       width: 21rem;
       height: 21rem;
@@ -99,6 +99,7 @@
       transform: translateX(-50%) scale(1.05);
     }
 
+    /* Thought cloud (appears after clicking "Read Message") */
     #thought-cloud {
       position: absolute;
       top: 10%;
@@ -138,7 +139,7 @@
       border-top: 30px solid rgba(255,255,255,0.92);
     }
 
-    /* Prompt area */
+    /* Prompt area (matches your screenshot) */
     #prompt-area {
       width: 100%;
       max-width: 600px;
@@ -241,7 +242,7 @@
       fill: var(--cyan);
     }
 
-    /* Lightning orb – bottom-right – backend access */
+    /* Lightning orb – bottom-right */
     #lightning-orb {
       position: fixed;
       bottom: 36px;
@@ -265,7 +266,7 @@
       50%     { box-shadow: 0 0 95px var(--gold); }
     }
 
-    /* Holo overlay (only used for sites that allow iframes) */
+    /* Holo overlay */
     #holo-overlay {
       display: none;
       position: fixed;
@@ -310,17 +311,17 @@
 </head>
 <body>
 
-  <!-- Full-screen video background -->
+  <!-- Your background video – full screen, behind everything -->
   <video id="bg-video" autoplay loop muted playsinline>
     <source src="https://files.catbox.moe/uuixld.mp4" type="video/mp4">
   </video>
 
   <div id="container">
-    <!-- Magic 8-ball with thought cloud -->
+    <!-- Magic 8-Ball -->
     <div id="artemis-8ball">
       <div id="ball-liquid"></div>
 
-      <!-- Read Message prompt -->
+      <!-- "Read Message" prompt overlay (like left screenshot) -->
       <div id="read-prompt" onclick="showThoughtCloud()">Read Message</div>
 
       <!-- Thought cloud -->
@@ -331,16 +332,16 @@
       <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:14rem; color:var(--gold); text-shadow:0 0 70px var(--gold);">8</span>
     </div>
 
-    <!-- Prompt + Send -->
+    <!-- Prompt area (matches your screenshot) -->
     <div id="prompt-area">
       <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
       <button id="send-btn">SEND</button>
     </div>
 
-    <!-- Dock orb -->
+    <!-- Dock orb – center bottom -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
-    <!-- Expanded dock with 10 icons -->
+    <!-- Expanded dock with 10 icons (as in your screenshot) -->
     <div id="dock-expanded">
       <div class="app-icon" onclick="openApp('https://facebook.com')"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>
       <div class="app-icon" onclick="openApp('https://x.com')"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
@@ -362,7 +363,7 @@
     </svg>
   </div>
 
-  <!-- Holo overlay (only used for sites that allow iframes) -->
+  <!-- Holo overlay (for sites that allow iframes) -->
   <div id="holo-overlay" style="display:none;">
     <div class="holo-header">
       <span>Artemis View</span>
@@ -372,7 +373,6 @@
   </div>
 
   <script>
-    // === Dock & App Opening ===
     function toggleDock() {
       const orb = document.getElementById('dock-orb');
       const expanded = document.getElementById('dock-expanded');
@@ -381,34 +381,26 @@
     }
 
     function openApp(url) {
-      // For sites that block iframes (Facebook, X, Instagram, etc.) open in new tab
-      if (url.includes('facebook') || url.includes('x.com') || url.includes('instagram') || url.includes('tiktok')) {
-        window.open(url, '_blank');
-      } else {
-        // For your own sites (Olympus, Nexus, etc.) try iframe first
-        document.getElementById('holo-iframe').src = url;
-        document.getElementById('holo-overlay').style.display = 'flex';
-      }
-      toggleDock(); // close dock after click
+      window.open(url, '_blank');
+      toggleDock();
     }
 
     function closeHolo() {
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
-    // === Architect Access ===
     function requestArchitectAccess() {
       const k1 = prompt("First Key");
       const k2 = prompt("Second Key");
       if (k1 === "Spider" && k2 === "Miles") {
         alert("Backend / Architect Access Granted");
-        // → Add your real backend loading logic here later
+        // Add your backend logic here
       } else {
         alert("Access Denied");
       }
     }
 
-    // === Magic 8-Ball with Thought Cloud ===
+    // Magic 8-Ball with "Read Message" prompt
     const ball = document.getElementById('artemis-8ball');
     const readPrompt = document.getElementById('read-prompt');
     const thoughtCloud = document.getElementById('thought-cloud');
@@ -451,7 +443,7 @@
 
     ball.addEventListener('click', shakeReveal);
 
-    // Prompt + Enter key
+    // Prompt + Enter
     const cmd = document.getElementById('guest-cmd');
     document.getElementById('send-btn').addEventListener('click', () => {
       if (cmd.value.trim()) {
