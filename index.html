@@ -8,7 +8,7 @@
     :root {
       --cyan:     #00f2ff;
       --gold:     #d4af37;
-      --purple-shader: rgba(26, 0, 51, 0.78); /* deep purple overlay */
+      --purple-shader: rgba(26, 0, 51, 0.82); /* deep purple overlay */
       --glass:    rgba(8, 8, 25, 0.45);
       --border:   rgba(0, 242, 255, 0.35);
       --glow-c:   0 0 40px rgba(0, 242, 255, 0.75);
@@ -22,7 +22,7 @@
       touch-action:manipulation;
     }
 
-    /* Full-screen background video (subtle storm/cricket) */
+    /* Full-screen background video (latest link) */
     #bg-video {
       position: fixed;
       inset: 0;
@@ -35,12 +35,22 @@
       filter: brightness(1.12) contrast(1.18) drop-shadow(0 0 55px #00f2ff);
     }
 
-    /* Oracle circle / 8-ball container */
+    #container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4vh 6vw;
+      position: relative;
+    }
+
+    /* Oracle circle – centered, gold rim, video aligned inside */
     #oracle-circle {
       width: 21rem;
       height: 21rem;
       border-radius: 50%;
-      border: 9px solid var(--gold); /* starts gold, changes color on prompt */
+      border: 9px solid var(--gold); /* changes color on prompt */
       box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55);
       position: relative;
       overflow: hidden;
@@ -49,17 +59,15 @@
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    /* Oracle video (no2e76.mp4) fills the circle, centered */
     #oracle-video {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain; /* preserves aspect, centers glowing core */
-      object-position: center;
+      object-fit: contain;
+      object-position: center center; /* aligns glowing core perfectly */
     }
 
-    /* Purple shader overlay (appears over video when message shows) */
     #shader-overlay {
       position: absolute;
       inset: 0;
@@ -69,7 +77,6 @@
       pointer-events: none;
     }
 
-    /* Message text inside oracle circle */
     #oracle-message {
       position: absolute;
       inset: 0;
@@ -87,7 +94,7 @@
       pointer-events: none;
     }
 
-    /* Prompt area */
+    /* Prompt area – centered */
     #prompt-area {
       width: 100%;
       max-width: 600px;
@@ -127,7 +134,7 @@
       box-shadow: 0 0 90px var(--cyan);
     }
 
-    /* Dock orb */
+    /* Dock orb – centered bottom */
     #dock-orb {
       position: fixed;
       bottom: 36px;
@@ -190,7 +197,7 @@
       fill: var(--cyan);
     }
 
-    /* Lightning orb */
+    /* Lightning orb – bottom-right */
     #lightning-orb {
       position: fixed;
       bottom: 36px;
@@ -261,31 +268,31 @@
 
   <!-- Full-screen background video -->
   <video id="bg-video" autoplay loop muted playsinline>
-    <source src="https://files.catbox.moe/uuixld.mp4" type="video/mp4">
+    <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
   </video>
 
   <div id="container">
-    <!-- Oracle circle / 8-ball -->
+    <!-- Oracle circle / 8-ball – centered -->
     <div id="oracle-circle">
-      <!-- Oracle looping video (centered & aligned to glowing core) -->
+      <!-- Oracle looping video – centered alignment -->
       <video id="oracle-video" autoplay loop muted playsinline>
         <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
       </video>
 
-      <!-- Deep purple shader overlay -->
+      <!-- Purple shader -->
       <div id="shader-overlay"></div>
 
-      <!-- Message text -->
+      <!-- Cyan message text -->
       <div id="oracle-message"></div>
     </div>
 
-    <!-- Prompt area -->
+    <!-- Prompt area – centered -->
     <div id="prompt-area">
       <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
       <button id="send-btn">SEND</button>
     </div>
 
-    <!-- Dock orb -->
+    <!-- Dock orb – centered bottom -->
     <div id="dock-orb" onclick="toggleDock()">+</div>
 
     <!-- Expanded dock -->
@@ -320,7 +327,7 @@
   </div>
 
   <script>
-    // === Dock & App Opening ===
+    // Dock & App Opening
     function toggleDock() {
       const orb = document.getElementById('dock-orb');
       const expanded = document.getElementById('dock-expanded');
@@ -337,23 +344,21 @@
       document.getElementById('holo-overlay').style.display = 'none';
     }
 
-    // === Architect Access ===
+    // Architect Access
     function requestArchitectAccess() {
       const k1 = prompt("First Key");
       const k2 = prompt("Second Key");
       if (k1 === "Spider" && k2 === "Miles") {
         alert("Backend / Architect Access Granted");
-        // Add your backend logic here
       } else {
         alert("Access Denied");
       }
     }
 
-    // === Oracle Circle (8-ball) Logic ===
+    // Oracle Circle Logic
     const oracleCircle = document.getElementById('oracle-circle');
     const shaderOverlay = document.getElementById('shader-overlay');
     const oracleMessage = document.getElementById('oracle-message');
-    const oracleVideo = document.getElementById('oracle-video');
 
     const fortunes = [
       "Midas touch: Gold flows your way.",
@@ -375,23 +380,24 @@
     }
 
     function fadeInMessage(text) {
-      // Set new border color
-      oracleCircle.style.borderColor = getRandomColor();
-      oracleCircle.style.boxShadow = `0 0 40px ${oracleCircle.style.borderColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
+      // Random border glow color
+      const newColor = getRandomColor();
+      oracleCircle.style.borderColor = newColor;
+      oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
 
       // Fade in shader + message
-      shaderOverlay.style.opacity = 0.78;
+      shaderOverlay.style.opacity = 0.82;
       oracleMessage.textContent = text;
       oracleMessage.style.opacity = 1;
 
-      // Fade warning at 8 seconds (opacity pulse down)
+      // Fade warning at 8 seconds
       setTimeout(() => {
         oracleMessage.style.opacity = 0.6;
         setTimeout(() => oracleMessage.style.opacity = 1, 400);
         setTimeout(() => oracleMessage.style.opacity = 0.6, 800);
       }, 8000);
 
-      // Auto-fade out after 10 seconds
+      // Auto fade out after 10 seconds
       clearTimeout(messageTimer);
       messageTimer = setTimeout(fadeOutMessage, 10000);
     }
@@ -401,20 +407,13 @@
       oracleMessage.style.opacity = 0;
     }
 
-    function shakeReveal() {
-      // Quick shake effect on submit
-      oracleCircle.classList.add('shaking');
-      setTimeout(() => oracleCircle.classList.remove('shaking'), 600);
-    }
-
     // Prompt submission
     const cmd = document.getElementById('guest-cmd');
     document.getElementById('send-btn').addEventListener('click', () => {
       const text = cmd.value.trim();
       if (text) {
-        shakeReveal();
-        fadeOutMessage(); // quick fade old message if any
-        setTimeout(() => fadeInMessage(text), 300); // slight delay for clean transition
+        fadeOutMessage(); // quick fade old
+        setTimeout(() => fadeInMessage(text), 300);
         cmd.value = '';
       }
     });
