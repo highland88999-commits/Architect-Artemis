@@ -1,390 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Artemis • Symbiote</title>
-  <style>
-    :root {
-      --cyan:     #00f2ff;
-      --gold:     #d4af37;
-      --purple-shader: rgba(26, 0, 51, 0.82);
-      --glass:    rgba(8, 8, 25, 0.45);
-      --border:   rgba(0, 242, 255, 0.35);
-      --glow-c:   0 0 40px rgba(0, 242, 255, 0.75);
-      --glow-g:   0 0 45px rgba(212, 175, 55, 0.65);
-      --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Vortex - R.E.M. ⚡❤️💎</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background:#000;
+            font-family: 'Orbitron', sans-serif;
+            color:#fff;
+            overflow:hidden;
+            height:100vh;
+            cursor:pointer;
+        }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body, html {
-      width:100%; height:100%; overflow:hidden; background:#000;
-      font-family: 'Courier New', monospace; color:var(--cyan);
-      touch-action: manipulation;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+        /* Landing / Video Fullscreen */
+        #landing {
+            position:fixed;
+            inset:0;
+            z-index:1000;
+            background:#000;
+            display:flex;
+            flex-direction:column;
+            justify-content:flex-end; /* Pushes content toward bottom */
+            align-items:center;
+            padding-bottom:25vh; /* Positions it nicely in lower third */
+            transition:opacity 1.2s ease;
+        }
 
-    #container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      padding: 20px;
-    }
+        #landing.hidden {
+            opacity:0;
+            pointer-events:none;
+        }
 
-    #oracle-circle {
-      width: min(320px, 70vw);
-      height: min(320px, 70vw);
-      border-radius: 50%;
-      border: 9px solid var(--gold);
-      box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 6vh;
-    }
+        #landing video {
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            position:absolute;
+            top:0; left:0;
+        }
 
-    #oracle-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center center;
-    }
+        .enter-group {
+            position:relative;
+            z-index:10;
+            text-align:center;
+            pointer-events:none;
+            margin-bottom:10vh;
+        }
 
-    #shader-overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--purple-shader);
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      pointer-events: none;
-    }
+        #enter-btn {
+            font-size:clamp(4rem, 12vw, 10rem);
+            font-weight:900;
+            letter-spacing:16px;
+            color:#d4af37; /* Gold */
+            background: rgba(26,0,51,0.65); /* Purple shader */
+            padding: 30px 90px;
+            border-radius: 40px;
+            border: 2px solid rgba(212,175,55,0.5);
+            box-shadow: 
+                0 0 30px #d4af37,
+                0 0 60px #d4af37,
+                inset 0 0 30px rgba(212,175,55,0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            cursor:pointer;
+            transition:all 0.4s;
+            animation: goldPulse 4.5s infinite alternate;
+        }
 
-    #oracle-message {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--cyan);
-      font-size: clamp(1.3rem, 4vw, 1.8rem);
-      font-weight: bold;
-      text-align: center;
-      padding: 20px;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      text-shadow: 0 0 15px rgba(0,242,255,0.8);
-      pointer-events: none;
-      letter-spacing: 1px;
-      line-height: 1.4;
-      text-transform: uppercase;
-      animation: textPulse 2s infinite;
-    }
+        #enter-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 80px #d4af37, 0 0 140px #d4af37;
+        }
 
-    @keyframes textPulse {
-      0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); }
-      50% { text-shadow: 0 0 20px rgba(0,242,255,1), 0 0 30px rgba(0,242,255,0.5); }
-    }
+        .mouse-clicker {
+            font-size:7rem;
+            margin-top:40px;
+            color:#00f2ff;
+            animation:bounce 2.8s infinite;
+        }
 
-    #prompt-area {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-      margin-top: 4vh;
-    }
+        @keyframes goldPulse {
+            from { opacity:0.7; box-shadow:0 0 30px #d4af37; }
+            to   { opacity:1;   box-shadow:0 0 80px #d4af37, 0 0 140px #d4af37; }
+        }
 
-    #guest-cmd {
-      width: 100%;
-      padding: 18px 28px;
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: 26px;
-      color: var(--cyan);
-      font-size: 1.35rem;
-      backdrop-filter: blur(18px);
-      box-shadow: inset 0 0 35px rgba(0,242,255,0.22);
-      text-align: center;
-    }
+        @keyframes bounce {
+            0%,100% { transform:translateY(0); }
+            50%     { transform:translateY(-35px); }
+        }
 
-    #send-btn {
-      padding: 16px 68px;
-      background: linear-gradient(90deg, var(--cyan), #00aaff);
-      color: #000;
-      border: none;
-      border-radius: 999px;
-      font-weight: bold;
-      font-size: 1.35rem;
-      cursor: pointer;
-      box-shadow: 0 0 55px var(--cyan);
-      transition: all 0.3s;
-    }
+        /* Main Content (Province Slider) */
+        #main-content {
+            opacity:0;
+            transition:opacity 1.5s ease;
+            height:100vh;
+            overflow-y:auto;
+            -webkit-overflow-scrolling:touch;
+        }
 
-    #send-btn:hover {
-      transform: scale(1.09);
-      box-shadow: 0 0 90px var(--cyan);
-    }
+        #main-content.visible {
+            opacity:1;
+        }
 
-    /* Bottom Dock with Holo Icons */
-    #bottom-dock {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 24px;
-      z-index: 100;
-      background: var(--glass);
-      padding: 16px 32px;
-      border-radius: 60px;
-      border: 1px solid var(--border);
-      backdrop-filter: blur(20px);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    }
+        /* Your existing slider styles (copy-pasted from before, unchanged) */
+        .slider {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 120px;
+        }
 
-    .dock-icon {
-      width: 70px;
-      height: 70px;
-      background: rgba(0,242,255,0.15);
-      border-radius: 20px;
-      border: 1px solid var(--cyan);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+        .card {
+            width: 100%;
+            max-width: 700px;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
 
-    .dock-icon:hover {
-      transform: scale(1.15) translateY(-8px);
-      box-shadow: var(--glow-c);
-      background: rgba(0,242,255,0.3);
-    }
+        .card:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 60px rgba(0,255,255,0.3);
+        }
 
-    .dock-icon svg {
-      width: 38px;
-      height: 38px;
-      fill: var(--cyan);
-    }
+        .card img {
+            width: 100%;
+            height: auto;
+            border-radius: 25px;
+            box-shadow: 0 0 40px #0ff, 0 0 60px #f0f;
+            border: 2px solid #333;
+        }
 
-    /* Holo Glass Overlay */
-    #holo-overlay {
-      display: none;
-      position: fixed;
-      inset: 5%;
-      background: var(--glass);
-      border: 3px solid var(--cyan);
-      border-radius: 36px;
-      backdrop-filter: blur(30px);
-      box-shadow: var(--neon-glow);
-      z-index: 200;
-      flex-direction: column;
-      overflow: hidden;
-      animation: neon-pulse 4s infinite alternate;
-    }
+        .card button {
+            margin-top: 35px;
+            background: #f0f;
+            color: #000;
+            border: none;
+            padding: 20px 10px;
+            font-size: clamp(1.3em, 6vw, 2em);
+            font-weight: 900;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 35px #f0f;
+            transition: 0.4s ease;
+            width: 90%;
+            max-width: 500px;
+            text-transform: uppercase;
+        }
 
-    @keyframes neon-pulse {
-      0%   { box-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan); }
-      100% { box-shadow: 0 0 60px var(--cyan), 0 0 120px var(--cyan); }
-    }
+        .card button:hover {
+            background: #0ff;
+            box-shadow: 0 0 55px #0ff;
+            color: #000;
+        }
 
-    .holo-header {
-      padding: 18px 24px;
-      background: rgba(0,242,255,0.18);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-    }
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            z-index: 1000;
+        }
 
-    .holo-title {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: var(--cyan);
-      text-shadow: 0 0 10px var(--cyan);
-    }
+        .nav-button {
+            background: linear-gradient(45deg, #f0f, #ff00ff);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 40px #f0f;
+            transition: 0.4s ease;
+        }
 
-    .holo-close {
-      width: 44px;
-      height: 44px;
-      background: #ff3366;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: white;
-      font-size: 1.6rem;
-      font-weight: bold;
-      box-shadow: 0 0 20px #ff3366;
-      transition: all 0.2s;
-    }
+        .nav-button:hover {
+            background: linear-gradient(45deg, #0ff, #00ffff);
+            box-shadow: 0 0 60px #0ff;
+            transform: scale(1.1);
+        }
 
-    .holo-close:hover {
-      transform: scale(1.1);
-      box-shadow: 0 0 40px #ff3366;
-    }
-
-    #holo-iframe {
-      flex: 1;
-      border: none;
-      width: 100%;
-      height: 100%;
-    }
-  </style>
+        @media (max-width:768px) {
+            .slider { gap:80px; padding:40px 10px; }
+            .card button { font-size:1.6em; padding:18px 8px; }
+        }
+    </style>
 </head>
 <body>
 
-  <div id="container">
-    <div id="oracle-circle">
-      <video id="oracle-video" autoplay loop muted playsinline>
-        <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
-      </video>
-      <div id="shader-overlay"></div>
-      <div id="oracle-message"></div>
+    <!-- Landing Video + ENTER Button + Mouse Icon -->
+    <div id="landing">
+        <video autoplay muted loop playsinline>
+            <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
+        </video>
+
+        <div class="enter-group">
+            <button id="enter-btn">ENTER</button>
+            <div class="mouse-clicker">🖱️</div>
+        </div>
     </div>
 
-    <div id="prompt-area">
-      <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
-      <button id="send-btn">SEND</button>
-    </div>
-  </div>
+    <!-- Main Province Slider (hidden until click) -->
+    <div id="main-content">
+        <div class="slider">
+            <!-- Alberta -->
+            <div class="card">
+                <img src="https://dl.dropboxusercontent.com/scl/fi/azyu3fs053a5afuijs41d/1000028568.jpg?rlkey=1z34pl8wm8cd63d6e6nkmg1ei&raw=1" alt="Alberta">
+                <button onclick="window.location.href='alberta.html'">Alberta</button>
+            </div>
 
-  <!-- Bottom Dock with 5 Holo Icons -->
-  <div id="bottom-dock">
-    <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" title="R.E.M. Provinces">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" title="Mega City">
-      <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" title="Axiom Repository">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://grief-gully.vercel.app/" title="Grief Gully">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" title="Olympian Finances">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
-    </div>
-  </div>
+            <!-- British Columbia -->
+            <div class="card">
+                <img src="https://dl.dropboxusercontent.com/scl/fi/h3l70ei4h25ie7dcnoqfh/1000027303.jpg?rlkey=x3tl9ban0u3epbc8s2u9pcs82&raw=1" alt="British Columbia">
+                <button onclick="window.location.href='british-columbia.html'">British Columbia</button>
+            </div>
 
-  <!-- Holo Glass Overlay -->
-  <div id="holo-overlay">
-    <div class="holo-header">
-      <span class="holo-title">Artemis View</span>
-      <div class="holo-close" onclick="closeHolo()">×</div>
-    </div>
-    <iframe id="holo-iframe"></iframe>
-  </div>
+            <!-- ... your other province cards here ... -->
 
-  <script>
-    // Mobile Autoplay Fix for oracle video
-    window.addEventListener('load', function() {
-      const oracleVideo = document.getElementById('oracle-video');
-      const playPromise = oracleVideo.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          document.body.addEventListener('touchstart', () => oracleVideo.play(), { once: true });
+            <!-- Yukon -->
+            <div class="card">
+                <img src="https://www.dropbox.com/scl/fi/yfh5com11c4s70d42j1vr/1000027317.jpg?rlkey=x0ih9kxb2i11fyf12tp6r6d2m&dl=1" alt="Yukon">
+                <button onclick="window.location.href='yukon.html'">Yukon</button>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-button" onclick="window.history.back()">← Back</button>
+            <button class="nav-button" onclick="window.history.forward()">Forward →</button>
+        </div>
+    </div>
+
+    <script>
+        const landing = document.getElementById('landing');
+        const mainContent = document.getElementById('main-content');
+
+        // Click ANYWHERE → proceed to main content
+        landing.addEventListener('click', () => {
+            landing.classList.add('hidden');
+            setTimeout(() => {
+                mainContent.classList.add('visible');
+            }, 800);
         });
-      }
-    });
-
-    // Prompt submission with fade-in/out
-    let typingTimer;
-
-    function fadeInMessage(text) {
-      const newColor = getRandomColor();
-      const oracleCircle = document.getElementById('oracle-circle');
-      const shaderOverlay = document.getElementById('shader-overlay');
-      const oracleMessage = document.getElementById('oracle-message');
-
-      clearTimeout(typingTimer);
-      oracleMessage.textContent = '';
-
-      oracleCircle.style.borderColor = newColor;
-      oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
-      shaderOverlay.style.opacity = 0.82;
-      oracleMessage.style.opacity = 1;
-
-      let i = 0;
-      function type() {
-        if (i < text.length) {
-          oracleMessage.textContent += text.charAt(i);
-          i++;
-          typingTimer = setTimeout(type, 50);
-        } else {
-          setTimeout(fadeOutMessage, 8000);
-        }
-      }
-
-      setTimeout(type, 300);
-    }
-
-    function fadeOutMessage() {
-      const shaderOverlay = document.getElementById('shader-overlay');
-      const oracleMessage = document.getElementById('oracle-message');
-      const oracleCircle = document.getElementById('oracle-circle');
-
-      shaderOverlay.style.opacity = 0;
-      oracleMessage.style.opacity = 0;
-
-      setTimeout(() => {
-        oracleCircle.style.borderColor = 'var(--gold)';
-        oracleCircle.style.boxShadow = 'var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55)';
-      }, 500);
-    }
-
-    function getRandomColor() {
-      const colorPalette = ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc', '#ff6699', '#ccff33'];
-      return colorPalette[Math.floor(Math.random() * colorPalette.length)];
-    }
-
-    const cmd = document.getElementById('guest-cmd');
-    document.getElementById('send-btn').addEventListener('click', () => {
-      const text = cmd.value.trim();
-      if (text) {
-        fadeOutMessage();
-        setTimeout(() => fadeInMessage(text), 300);
-        cmd.value = '';
-      }
-    });
-
-    cmd.addEventListener('keypress', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('send-btn').click();
-      }
-    });
-
-    // Holo Overlay Controls
-    const holoOverlay = document.getElementById('holo-overlay');
-    const holoIframe = document.getElementById('holo-iframe');
-
-    function openHolo(url) {
-      holoIframe.src = url;
-      holoOverlay.style.display = 'flex';
-    }
-
-    function closeHolo() {
-      holoOverlay.style.display = 'none';
-      holoIframe.src = ''; // Clear iframe to stop loading
-    }
-
-    // Open links in holo overlay when clicking dock icons
-    document.querySelectorAll('.dock-icon').forEach(icon => {
-      icon.addEventListener('click', () => {
-        const url = icon.getAttribute('data-url');
-        if (url) openHolo(url);
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>
