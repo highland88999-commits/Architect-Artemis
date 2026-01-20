@@ -36,7 +36,7 @@
 
     #enter-prompt {
       position: absolute;
-      bottom: 22vh;
+      bottom: 18vh;
       left: 50%;
       transform: translateX(-50%);
       z-index: 100;
@@ -44,53 +44,54 @@
       pointer-events: none;
     }
 
-    #enter-btn {
-      font-size: clamp(4.5rem, 14vw, 12rem);
+    #enter-text {
+      font-size: clamp(5rem, 15vw, 14rem);
       font-weight: 900;
-      letter-spacing: 18px;
+      letter-spacing: 20px;
       color: var(--gold);
       background: var(--purple-shader);
-      padding: 30px 100px;
-      border-radius: 40px;
-      border: 2px solid rgba(212,175,55,0.5);
-      box-shadow: 0 0 60px rgba(212,175,55,0.8), inset 0 0 30px rgba(212,175,55,0.4);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      padding: 40px 120px;
+      border-radius: 50px;
+      border: 3px solid rgba(212,175,55,0.5);
+      box-shadow: 0 0 70px var(--gold), inset 0 0 40px rgba(212,175,55,0.5);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       animation: goldPulse 5s infinite alternate;
     }
 
     .mouse-clicker {
-      font-size: 8rem;
-      margin-top: 40px;
+      font-size: 9rem;
+      margin-top: 50px;
       color: var(--cyan);
       animation: bounce 3s infinite;
     }
 
     @keyframes goldPulse {
-      from { opacity: 0.7; box-shadow: 0 0 40px var(--gold); }
-      to   { opacity: 1;   box-shadow: 0 0 100px var(--gold), 0 0 160px var(--gold); }
+      from { opacity: 0.65; box-shadow: 0 0 50px var(--gold); }
+      to   { opacity: 1;   box-shadow: 0 0 120px var(--gold), 0 0 200px var(--gold); }
     }
 
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-40px); }
+      50%      { transform: translateY(-50px); }
     }
 
-    /* Rain effect */
+    /* Rain effect (main screen after enter) */
     #rain {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: -10;
-      opacity: 0.35;
+      opacity: 0.4;
+      display: none;
     }
 
     .rain-drop {
       position: absolute;
       width: 2px;
-      height: 80px;
+      height: 100px;
       background: linear-gradient(transparent, #00f2ff);
-      opacity: 0.6;
+      opacity: 0.7;
       animation: fall linear infinite;
     }
 
@@ -98,21 +99,24 @@
       to { transform: translateY(120vh); }
     }
 
-    /* Bottom dock with holo icons */
+    /* Bottom dock with your 5 links */
     #bottom-dock {
       position: fixed;
       bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 28px;
       z-index: 100;
       background: var(--glass);
-      padding: 18px 40px;
-      border-radius: 70px;
+      padding: 20px 40px;
+      border-radius: 80px;
       border: 1px solid var(--border);
-      backdrop-filter: blur(22px);
-      box-shadow: 0 10px 50px rgba(0,0,0,0.7);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 10px 60px rgba(0,0,0,0.7);
+      max-width: 90vw;
     }
 
     .dock-icon {
@@ -129,7 +133,7 @@
     }
 
     .dock-icon:hover {
-      transform: scale(1.18) translateY(-10px);
+      transform: scale(1.2) translateY(-12px);
       box-shadow: var(--glow-c);
       background: rgba(0,242,255,0.35);
     }
@@ -208,21 +212,21 @@
 </head>
 <body>
 
-  <!-- Full-screen landing video -->
+  <!-- Landing Video -->
   <video id="bg-video" autoplay muted loop playsinline>
     <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
   </video>
 
-  <!-- ENTER prompt – bottom centered -->
+  <!-- ENTER Prompt (bottom) -->
   <div id="enter-prompt">
-    <button id="enter-btn">ENTER</button>
+    <div id="enter-text">ENTER</div>
     <div class="mouse-clicker">🖱️</div>
   </div>
 
   <!-- Rain effect layer -->
   <div id="rain"></div>
 
-  <!-- Bottom dock with your 5 sites -->
+  <!-- Bottom Dock with your 5 links -->
   <div id="bottom-dock">
     <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" title="R.E.M. Provinces">
       <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -260,30 +264,27 @@
       });
     });
 
-    // Rain effect
+    // Rain effect (starts after enter)
     function createRain() {
       const rainContainer = document.getElementById('rain');
-      for(let i = 0; i < 120; i++) {
+      for(let i = 0; i < 140; i++) {
         const drop = document.createElement('div');
         drop.className = 'rain-drop';
         drop.style.left = Math.random() * 100 + 'vw';
-        drop.style.animationDuration = (0.5 + Math.random() * 1.2) + 's';
-        drop.style.animationDelay = Math.random() * 5 + 's';
-        drop.style.opacity = Math.random() * 0.4 + 0.3;
+        drop.style.animationDuration = (0.6 + Math.random() * 1.4) + 's';
+        drop.style.animationDelay = Math.random() * 6 + 's';
+        drop.style.opacity = Math.random() * 0.5 + 0.3;
         rainContainer.appendChild(drop);
       }
     }
-    createRain();
 
-    // ENTER click → proceed
-    document.getElementById('enter-prompt').addEventListener('click', () => {
+    // ENTER click → reveal everything
+    document.body.addEventListener('click', function handler() {
       document.getElementById('enter-prompt').style.display = 'none';
-    });
-    document.body.addEventListener('click', function handler(e) {
-      if (e.target.id !== 'enter-prompt' && e.target.closest('#enter-prompt') === null) {
-        document.getElementById('enter-prompt').style.display = 'none';
-        document.body.removeEventListener('click', handler);
-      }
+      document.getElementById('bottom-dock').style.display = 'flex';
+      document.getElementById('rain').style.display = 'block';
+      createRain();
+      document.body.removeEventListener('click', handler);
     });
 
     // Holo Overlay Controls
@@ -297,10 +298,10 @@
 
     function closeHolo() {
       holoOverlay.style.display = 'none';
-      holoIframe.src = ''; // Clear to stop loading
+      holoIframe.src = '';
     }
 
-    // Dock icons open in holo overlay
+    // Dock icons → open in holo overlay
     document.querySelectorAll('.dock-icon').forEach(icon => {
       icon.addEventListener('click', () => {
         const url = icon.getAttribute('data-url');
