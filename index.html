@@ -26,9 +26,49 @@
             font-family: 'Courier New', monospace; 
             color:var(--cyan); 
             touch-action: manipulation; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        }
+
+        /* --- Landing Page Styles --- */
+        #landing-page {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease-in;
+        }
+
+        #landing-video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #landing-prompt {
+            position: relative;
+            z-index: 1001;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--cyan);
+            animation: pulseFade 3s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulseFade {
+            0%, 100% { opacity: 0.3; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .dissolve-effect {
+            opacity: 0 !important;
+            transform: scale(1.5);
+            filter: brightness(2) blur(20px);
+            pointer-events: none;
         }
 
         /* --- Rain Storm Effect --- */
@@ -38,7 +78,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1; /* Behind UI elements */
+            z-index: 1;
             pointer-events: none;
         }
 
@@ -52,19 +92,17 @@
             opacity: 0.3;
         }
 
-        @keyframes fall {
-            to { transform: translateY(110vh); }
-        }
+        @keyframes fall { to { transform: translateY(110vh); } }
 
         /* --- Content Container --- */
         #container { 
             position: relative;
-            z-index: 10; /* Above rain */
+            z-index: 10;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
-            height: 100%; 
+            height: 100vh; 
             text-align: center; 
             padding: 20px; 
         }
@@ -86,7 +124,6 @@
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            object-position: center center; 
         }
 
         #shader-overlay { 
@@ -105,7 +142,7 @@
             align-items: center; 
             justify-content: center; 
             color: var(--cyan); 
-            font-size: clamp(1.3rem, 4vw, 1.8rem); 
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem); 
             font-weight: bold; 
             text-align: center; 
             padding: 20px; 
@@ -121,7 +158,7 @@
 
         @keyframes textPulse { 
             0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); } 
-            50% { text-shadow: 0 0 20px rgba(0,242,255,1), 0 0 30px rgba(0,242,255,0.5); } 
+            50% { text-shadow: 0 0 20px rgba(0,242,255,1); } 
         }
 
         #prompt-area { 
@@ -131,7 +168,6 @@
             flex-direction: column; 
             align-items: center; 
             gap: 18px; 
-            margin-top: 4vh; 
         }
 
         #guest-cmd { 
@@ -141,69 +177,57 @@
             border: 1px solid var(--border); 
             border-radius: 26px; 
             color: var(--cyan); 
-            font-size: 1.35rem; 
+            font-size: 1.2rem; 
             backdrop-filter: blur(18px); 
-            box-shadow: inset 0 0 35px rgba(0,242,255,0.22); 
             text-align: center; 
         }
 
         #send-btn { 
-            padding: 16px 68px; 
+            padding: 14px 60px; 
             background: linear-gradient(90deg, var(--cyan), #00aaff); 
             color: #000; 
             border: none; 
             border-radius: 999px; 
             font-weight: bold; 
-            font-size: 1.35rem; 
             cursor: pointer; 
-            box-shadow: 0 0 55px var(--cyan); 
-            transition: all 0.3s; 
+            box-shadow: 0 0 30px var(--cyan); 
+            transition: 0.3s; 
         }
 
-        #send-btn:hover { transform: scale(1.09); box-shadow: 0 0 90px var(--cyan); }
-
-        /* Bottom Dock */
         #bottom-dock { 
             position: fixed; 
             bottom: 30px; 
             left: 50%; 
             transform: translateX(-50%); 
             display: flex; 
-            gap: 14px; 
+            gap: 12px; 
             z-index: 100; 
             background: var(--glass); 
-            padding: 12px 24px; 
+            padding: 12px 20px; 
             border-radius: 60px; 
             border: 1px solid var(--border); 
             backdrop-filter: blur(20px); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
             max-width: 95vw;
             overflow-x: auto;
         }
 
         .dock-icon { 
             flex-shrink: 0;
-            width: 60px; 
-            height: 60px; 
-            background: rgba(0,242,255,0.15); 
-            border-radius: 18px; 
+            width: 50px; 
+            height: 50px; 
+            background: rgba(0,242,255,0.1); 
+            border-radius: 15px; 
             border: 1px solid var(--cyan); 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             cursor: pointer; 
-            transition: all 0.3s ease; 
+            transition: 0.3s; 
         }
 
-        .dock-icon:hover { 
-            transform: scale(1.15) translateY(-8px); 
-            box-shadow: var(--glow-c); 
-            background: rgba(0,242,255,0.3); 
-        }
+        .dock-icon:hover { transform: scale(1.1) translateY(-5px); box-shadow: var(--glow-c); }
+        .dock-icon svg { width: 26px; height: 26px; fill: var(--cyan); }
 
-        .dock-icon svg { width: 32px; height: 32px; fill: var(--cyan); }
-
-        /* Holo Glass Overlay */
         #holo-overlay { 
             display: none; 
             position: fixed; 
@@ -212,46 +236,30 @@
             border: 3px solid var(--cyan); 
             border-radius: 36px; 
             backdrop-filter: blur(30px); 
-            box-shadow: var(--neon-glow); 
-            z-index: 200; 
+            z-index: 2000; 
             flex-direction: column; 
             overflow: hidden; 
-            animation: neon-pulse 4s infinite alternate; 
         }
 
-        @keyframes neon-pulse { 
-            0% { box-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan); } 
-            100% { box-shadow: 0 0 60px var(--cyan), 0 0 120px var(--cyan); } 
-        }
-
-        .holo-header { 
-            padding: 18px 24px; 
-            background: rgba(0,242,255,0.18); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--border); 
-        }
-
-        .holo-title { font-size: 1.4rem; font-weight: bold; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
-
-        .holo-close { 
-            width: 44px; height: 44px; background: #ff3366; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; color: white; font-size: 1.6rem; font-weight: bold; 
-            box-shadow: 0 0 20px #ff3366; transition: all 0.2s; 
-        }
-
-        #holo-iframe { flex: 1; border: none; width: 100%; height: 100%; }
+        .holo-header { padding: 15px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .holo-close { width: 40px; height: 40px; background: #ff3366; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-weight: bold; }
+        #holo-iframe { flex: 1; border: none; }
     </style>
 </head>
 <body>
+
+    <div id="landing-page" onclick="enterNexus()">
+        <video id="landing-video" autoplay loop muted playsinline>
+            <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
+        </video>
+        <div id="landing-prompt">Click anywhere to enter</div>
+    </div>
 
     <div id="rain-container"></div>
 
     <div id="container">
         <div id="oracle-circle">
-            <video id="oracle-video" autoplay loop muted playsinline>
+            <video id="oracle-video" loop muted playsinline>
                 <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
             </video>
             <div id="shader-overlay"></div>
@@ -280,11 +288,9 @@
         <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" title="Olympian Finances">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
         </div>
-        
         <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" title="Olympus">
             <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2zM7 5h10v2H7V5zm12 14H5v-2h14v2z"/></svg>
         </div>
-        
         <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" title="Nexus Symbiote">
             <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
         </div>
@@ -299,9 +305,24 @@
     </div>
 
     <script>
+        // Landing Page Transition
+        function enterNexus() {
+            const landing = document.getElementById('landing-page');
+            landing.classList.add('dissolve-effect');
+            
+            // Start the main video and rain only after interaction
+            document.getElementById('oracle-video').play();
+            createRain();
+            
+            setTimeout(() => {
+                landing.style.display = 'none';
+            }, 1500);
+        }
+
         // Rain Generation
         function createRain() {
             const container = document.getElementById('rain-container');
+            if (container.children.length > 0) return;
             const dropCount = 60;
             for(let i=0; i<dropCount; i++) {
                 const drop = document.createElement('div');
@@ -312,18 +333,6 @@
                 container.appendChild(drop);
             }
         }
-        createRain();
-
-        // Mobile Autoplay Fix
-        window.addEventListener('load', function() {
-            const oracleVideo = document.getElementById('oracle-video');
-            const playPromise = oracleVideo.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    document.body.addEventListener('touchstart', () => oracleVideo.play(), { once: true });
-                });
-            }
-        });
 
         // Oracle Messaging Logic
         let typingTimer;
@@ -382,18 +391,15 @@
 
         cmd.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('send-btn').click(); });
 
-        // Holo Overlay Controls
-        const holoOverlay = document.getElementById('holo-overlay');
-        const holoIframe = document.getElementById('holo-iframe');
-
         function openHolo(url) {
-            holoIframe.src = url;
-            holoOverlay.style.display = 'flex';
+            const iframe = document.getElementById('holo-iframe');
+            iframe.src = url;
+            document.getElementById('holo-overlay').style.display = 'flex';
         }
 
         function closeHolo() {
-            holoOverlay.style.display = 'none';
-            holoIframe.src = '';
+            document.getElementById('holo-overlay').style.display = 'none';
+            document.getElementById('holo-iframe').src = '';
         }
 
         document.querySelectorAll('.dock-icon').forEach(icon => {
