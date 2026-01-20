@@ -379,17 +379,59 @@
             return colorPalette[Math.floor(Math.random() * colorPalette.length)];
         }
 
+        // ────────────────────────────────────────────────
+        // CONNECTED PROMPT LOGIC – talks to your /api/transmit endpoint
         const cmd = document.getElementById('guest-cmd');
-        document.getElementById('send-btn').addEventListener('click', () => {
-            const text = cmd.value.trim();
-            if (text) {
-                fadeOutMessage();
-                setTimeout(() => fadeInMessage(text), 300);
-                cmd.value = '';
+        const sendBtn = document.getElementById('send-btn');
+
+        sendBtn.addEventListener('click', sendToArtemis);
+        cmd.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendToArtemis();
             }
         });
 
-        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('send-btn').click(); });
+        async function sendToArtemis() {
+            const promptText = cmd.value.trim();
+            if (!promptText) return;
+
+            // Show thinking state in oracle
+            const oracleMsg = document.getElementById('oracle-message');
+            oracleMsg.textContent = 'Artemis is awakening the council...';
+            oracleMsg.style.opacity = 1;
+
+            cmd.value = ''; // clear input
+
+            try {
+                const response = await fetch('/api/transmit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: promptText,
+                        handshake: 'CONNECTED',   // Change to 'dad' if you want full Architect mode
+                        mode: 'council'           // Matches your repo default
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Council failed to respond');
+                }
+
+                // Extract the real AI response/verdict from your transmit.js
+                const aiReply = data.verdict || data.response || data.text || data.output || 'The council has spoken, but the message is veiled...';
+
+                fadeOutMessage();
+                setTimeout(() => fadeInMessage(aiReply), 600);
+
+            } catch (err) {
+                console.error('Artemis connection error:', err);
+                fadeOutMessage();
+                setTimeout(() => fadeInMessage('Synaptic link unstable. The council retreats... try again.'), 600);
+            }
+        }
 
         function openHolo(url) {
             const iframe = document.getElementById('holo-iframe');
