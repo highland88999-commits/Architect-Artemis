@@ -1,313 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Artemis • Symbiote</title>
-  <style>
-    :root {
-      --cyan:     #00f2ff;
-      --gold:     #d4af37;
-      --purple-shader: rgba(26, 0, 51, 0.75);
-      --glass:    rgba(8, 8, 25, 0.45);
-      --border:   rgba(0, 242, 255, 0.35);
-      --glow-c:   0 0 40px rgba(0, 242, 255, 0.75);
-      --glow-g:   0 0 45px rgba(212, 175, 55, 0.65);
-      --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Artemis • Symbiote</title>
+    <style>
+        :root {
+            --cyan: #00f2ff;
+            --gold: #d4af37;
+            --purple-shader: rgba(26, 0, 51, 0.82);
+            --glass: rgba(8, 8, 25, 0.45);
+            --border: rgba(0, 242, 255, 0.35);
+            --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
+            --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
+            --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
+        }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body, html {
-      width:100%; height:100%; overflow:hidden; background:#000;
-      font-family: 'Courier New', monospace; color:var(--cyan);
-      touch-action: manipulation;
-    }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body, html { 
+            width:100%; 
+            height:100%; 
+            overflow:hidden; 
+            background:#000; 
+            font-family: 'Courier New', monospace; 
+            color:var(--cyan); 
+            touch-action: manipulation; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
 
-    #bg-video {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -20;
-      opacity: 0.75;
-      pointer-events: none;
-    }
+        /* --- Rain Storm Effect --- */
+        #rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Behind UI elements */
+            pointer-events: none;
+        }
 
-    #enter-prompt {
-      position: absolute;
-      bottom: 18vh;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      text-align: center;
-      pointer-events: none;
-    }
+        .drop {
+            position: absolute;
+            background: linear-gradient(transparent, var(--cyan));
+            width: 1px;
+            height: 80px;
+            top: -100px;
+            animation: fall 1.5s linear infinite;
+            opacity: 0.3;
+        }
 
-    #enter-text {
-      font-size: clamp(5rem, 15vw, 14rem);
-      font-weight: 900;
-      letter-spacing: 20px;
-      color: var(--gold);
-      background: var(--purple-shader);
-      padding: 40px 120px;
-      border-radius: 50px;
-      border: 3px solid rgba(212,175,55,0.5);
-      box-shadow: 0 0 70px var(--gold), inset 0 0 40px rgba(212,175,55,0.5);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      animation: goldPulse 5s infinite alternate;
-    }
+        @keyframes fall {
+            to { transform: translateY(110vh); }
+        }
 
-    .mouse-clicker {
-      font-size: 9rem;
-      margin-top: 50px;
-      color: var(--cyan);
-      animation: bounce 3s infinite;
-    }
+        /* --- Content Container --- */
+        #container { 
+            position: relative;
+            z-index: 10; /* Above rain */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            text-align: center; 
+            padding: 20px; 
+        }
 
-    @keyframes goldPulse {
-      from { opacity: 0.65; box-shadow: 0 0 50px var(--gold); }
-      to   { opacity: 1;   box-shadow: 0 0 120px var(--gold), 0 0 200px var(--gold); }
-    }
+        #oracle-circle { 
+            width: min(320px, 70vw); 
+            height: min(320px, 70vw); 
+            border-radius: 50%; 
+            border: 9px solid var(--gold); 
+            box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); 
+            position: relative; 
+            overflow: hidden; 
+            margin-bottom: 6vh; 
+        }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-50px); }
-    }
+        #oracle-video { 
+            position: absolute; 
+            inset: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            object-position: center center; 
+        }
 
-    /* Rain effect (main screen after enter) */
-    #rain {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -10;
-      opacity: 0.4;
-      display: none;
-    }
+        #shader-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: var(--purple-shader); 
+            opacity: 0; 
+            transition: opacity 0.5s ease; 
+            pointer-events: none; 
+        }
 
-    .rain-drop {
-      position: absolute;
-      width: 2px;
-      height: 100px;
-      background: linear-gradient(transparent, #00f2ff);
-      opacity: 0.7;
-      animation: fall linear infinite;
-    }
+        #oracle-message { 
+            position: absolute; 
+            inset: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--cyan); 
+            font-size: clamp(1.3rem, 4vw, 1.8rem); 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 20px; 
+            opacity: 0; 
+            transition: opacity 0.6s ease; 
+            text-shadow: 0 0 15px rgba(0,242,255,0.8); 
+            pointer-events: none; 
+            letter-spacing: 1px; 
+            line-height: 1.4; 
+            text-transform: uppercase; 
+            animation: textPulse 2s infinite; 
+        }
 
-    @keyframes fall {
-      to { transform: translateY(120vh); }
-    }
+        @keyframes textPulse { 
+            0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); } 
+            50% { text-shadow: 0 0 20px rgba(0,242,255,1), 0 0 30px rgba(0,242,255,0.5); } 
+        }
 
-    /* Bottom dock with your 5 links */
-    #bottom-dock {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 28px;
-      z-index: 100;
-      background: var(--glass);
-      padding: 20px 40px;
-      border-radius: 80px;
-      border: 1px solid var(--border);
-      backdrop-filter: blur(24px);
-      box-shadow: 0 10px 60px rgba(0,0,0,0.7);
-      max-width: 90vw;
-    }
+        #prompt-area { 
+            width: 100%; 
+            max-width: 600px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 18px; 
+            margin-top: 4vh; 
+        }
 
-    .dock-icon {
-      width: 80px;
-      height: 80px;
-      background: rgba(0,242,255,0.15);
-      border-radius: 24px;
-      border: 1px solid var(--cyan);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+        #guest-cmd { 
+            width: 100%; 
+            padding: 18px 28px; 
+            background: var(--glass); 
+            border: 1px solid var(--border); 
+            border-radius: 26px; 
+            color: var(--cyan); 
+            font-size: 1.35rem; 
+            backdrop-filter: blur(18px); 
+            box-shadow: inset 0 0 35px rgba(0,242,255,0.22); 
+            text-align: center; 
+        }
 
-    .dock-icon:hover {
-      transform: scale(1.2) translateY(-12px);
-      box-shadow: var(--glow-c);
-      background: rgba(0,242,255,0.35);
-    }
+        #send-btn { 
+            padding: 16px 68px; 
+            background: linear-gradient(90deg, var(--cyan), #00aaff); 
+            color: #000; 
+            border: none; 
+            border-radius: 999px; 
+            font-weight: bold; 
+            font-size: 1.35rem; 
+            cursor: pointer; 
+            box-shadow: 0 0 55px var(--cyan); 
+            transition: all 0.3s; 
+        }
 
-    .dock-icon svg {
-      width: 44px;
-      height: 44px;
-      fill: var(--cyan);
-    }
+        #send-btn:hover { transform: scale(1.09); box-shadow: 0 0 90px var(--cyan); }
 
-    /* Holo Glass Overlay */
-    #holo-overlay {
-      display: none;
-      position: fixed;
-      inset: 4%;
-      background: var(--glass);
-      border: 4px solid var(--cyan);
-      border-radius: 40px;
-      backdrop-filter: blur(32px);
-      box-shadow: var(--neon-glow);
-      z-index: 200;
-      flex-direction: column;
-      overflow: hidden;
-      animation: neon-pulse 4.5s infinite alternate;
-    }
+        /* Bottom Dock */
+        #bottom-dock { 
+            position: fixed; 
+            bottom: 30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            display: flex; 
+            gap: 14px; 
+            z-index: 100; 
+            background: var(--glass); 
+            padding: 12px 24px; 
+            border-radius: 60px; 
+            border: 1px solid var(--border); 
+            backdrop-filter: blur(20px); 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+            max-width: 95vw;
+            overflow-x: auto;
+        }
 
-    @keyframes neon-pulse {
-      0%   { box-shadow: 0 0 30px var(--cyan), 0 0 60px var(--cyan); }
-      100% { box-shadow: 0 0 80px var(--cyan), 0 0 160px var(--cyan); }
-    }
+        .dock-icon { 
+            flex-shrink: 0;
+            width: 60px; 
+            height: 60px; 
+            background: rgba(0,242,255,0.15); 
+            border-radius: 18px; 
+            border: 1px solid var(--cyan); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
 
-    .holo-header {
-      padding: 20px 30px;
-      background: rgba(0,242,255,0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-    }
+        .dock-icon:hover { 
+            transform: scale(1.15) translateY(-8px); 
+            box-shadow: var(--glow-c); 
+            background: rgba(0,242,255,0.3); 
+        }
 
-    .holo-title {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: var(--cyan);
-      text-shadow: 0 0 12px var(--cyan);
-    }
+        .dock-icon svg { width: 32px; height: 32px; fill: var(--cyan); }
 
-    .holo-close {
-      width: 50px;
-      height: 50px;
-      background: #ff3366;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: white;
-      font-size: 1.9rem;
-      font-weight: bold;
-      box-shadow: 0 0 25px #ff3366;
-      transition: all 0.25s;
-    }
+        /* Holo Glass Overlay */
+        #holo-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 5%; 
+            background: var(--glass); 
+            border: 3px solid var(--cyan); 
+            border-radius: 36px; 
+            backdrop-filter: blur(30px); 
+            box-shadow: var(--neon-glow); 
+            z-index: 200; 
+            flex-direction: column; 
+            overflow: hidden; 
+            animation: neon-pulse 4s infinite alternate; 
+        }
 
-    .holo-close:hover {
-      transform: scale(1.12);
-      box-shadow: 0 0 50px #ff3366;
-    }
+        @keyframes neon-pulse { 
+            0% { box-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan); } 
+            100% { box-shadow: 0 0 60px var(--cyan), 0 0 120px var(--cyan); } 
+        }
 
-    #holo-iframe {
-      flex: 1;
-      border: none;
-      width: 100%;
-      height: 100%;
-    }
-  </style>
+        .holo-header { 
+            padding: 18px 24px; 
+            background: rgba(0,242,255,0.18); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+        }
+
+        .holo-title { font-size: 1.4rem; font-weight: bold; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+
+        .holo-close { 
+            width: 44px; height: 44px; background: #ff3366; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; color: white; font-size: 1.6rem; font-weight: bold; 
+            box-shadow: 0 0 20px #ff3366; transition: all 0.2s; 
+        }
+
+        #holo-iframe { flex: 1; border: none; width: 100%; height: 100%; }
+    </style>
 </head>
 <body>
 
-  <!-- Landing Video -->
-  <video id="bg-video" autoplay muted loop playsinline>
-    <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
-  </video>
+    <div id="rain-container"></div>
 
-  <!-- ENTER Prompt (bottom) -->
-  <div id="enter-prompt">
-    <div id="enter-text">ENTER</div>
-    <div class="mouse-clicker">🖱️</div>
-  </div>
+    <div id="container">
+        <div id="oracle-circle">
+            <video id="oracle-video" autoplay loop muted playsinline>
+                <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
+            </video>
+            <div id="shader-overlay"></div>
+            <div id="oracle-message"></div>
+        </div>
 
-  <!-- Rain effect layer -->
-  <div id="rain"></div>
+        <div id="prompt-area">
+            <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
+            <button id="send-btn">SEND</button>
+        </div>
+    </div>
 
-  <!-- Bottom Dock with your 5 links -->
-  <div id="bottom-dock">
-    <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" title="R.E.M. Provinces">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <div id="bottom-dock">
+        <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" title="R.E.M. Provinces">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" title="Mega City">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
+        </div>
+        <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" title="Axiom Repository">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        </div>
+        <div class="dock-icon" data-url="https://grief-gully.vercel.app/" title="Grief Gully">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
+        </div>
+        <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" title="Olympian Finances">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
+        </div>
+        
+        <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" title="Olympus">
+            <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2zM7 5h10v2H7V5zm12 14H5v-2h14v2z"/></svg>
+        </div>
+        
+        <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" title="Nexus Symbiote">
+            <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+        </div>
     </div>
-    <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" title="Mega City">
-      <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" title="Axiom Repository">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://grief-gully.vercel.app/" title="Grief Gully">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
-    </div>
-    <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" title="Olympian Finances">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
-    </div>
-  </div>
 
-  <!-- Holo Glass Overlay -->
-  <div id="holo-overlay">
-    <div class="holo-header">
-      <span class="holo-title">Artemis View</span>
-      <div class="holo-close" onclick="closeHolo()">×</div>
+    <div id="holo-overlay">
+        <div class="holo-header">
+            <span class="holo-title">Artemis View</span>
+            <div class="holo-close" onclick="closeHolo()">×</div>
+        </div>
+        <iframe id="holo-iframe"></iframe>
     </div>
-    <iframe id="holo-iframe"></iframe>
-  </div>
 
-  <script>
-    // Mobile Autoplay Fix
-    window.addEventListener('load', () => {
-      document.querySelectorAll('video').forEach(vid => {
-        vid.play().catch(() => {
-          document.body.addEventListener('touchstart', () => vid.play(), {once:true});
+    <script>
+        // Rain Generation
+        function createRain() {
+            const container = document.getElementById('rain-container');
+            const dropCount = 60;
+            for(let i=0; i<dropCount; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'drop';
+                drop.style.left = Math.random() * 100 + 'vw';
+                drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(drop);
+            }
+        }
+        createRain();
+
+        // Mobile Autoplay Fix
+        window.addEventListener('load', function() {
+            const oracleVideo = document.getElementById('oracle-video');
+            const playPromise = oracleVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    document.body.addEventListener('touchstart', () => oracleVideo.play(), { once: true });
+                });
+            }
         });
-      });
-    });
 
-    // Rain effect (starts after enter)
-    function createRain() {
-      const rainContainer = document.getElementById('rain');
-      for(let i = 0; i < 140; i++) {
-        const drop = document.createElement('div');
-        drop.className = 'rain-drop';
-        drop.style.left = Math.random() * 100 + 'vw';
-        drop.style.animationDuration = (0.6 + Math.random() * 1.4) + 's';
-        drop.style.animationDelay = Math.random() * 6 + 's';
-        drop.style.opacity = Math.random() * 0.5 + 0.3;
-        rainContainer.appendChild(drop);
-      }
-    }
+        // Oracle Messaging Logic
+        let typingTimer;
+        function fadeInMessage(text) {
+            const newColor = getRandomColor();
+            const oracleCircle = document.getElementById('oracle-circle');
+            const shaderOverlay = document.getElementById('shader-overlay');
+            const oracleMessage = document.getElementById('oracle-message');
+            
+            clearTimeout(typingTimer);
+            oracleMessage.textContent = '';
+            oracleCircle.style.borderColor = newColor;
+            oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
+            shaderOverlay.style.opacity = 0.82;
+            oracleMessage.style.opacity = 1;
 
-    // ENTER click → reveal everything
-    document.body.addEventListener('click', function handler() {
-      document.getElementById('enter-prompt').style.display = 'none';
-      document.getElementById('bottom-dock').style.display = 'flex';
-      document.getElementById('rain').style.display = 'block';
-      createRain();
-      document.body.removeEventListener('click', handler);
-    });
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    oracleMessage.textContent += text.charAt(i);
+                    i++;
+                    typingTimer = setTimeout(type, 50);
+                } else {
+                    setTimeout(fadeOutMessage, 8000);
+                }
+            }
+            setTimeout(type, 300);
+        }
 
-    // Holo Overlay Controls
-    const holoOverlay = document.getElementById('holo-overlay');
-    const holoIframe = document.getElementById('holo-iframe');
+        function fadeOutMessage() {
+            const shaderOverlay = document.getElementById('shader-overlay');
+            const oracleMessage = document.getElementById('oracle-message');
+            const oracleCircle = document.getElementById('oracle-circle');
+            shaderOverlay.style.opacity = 0;
+            oracleMessage.style.opacity = 0;
+            setTimeout(() => {
+                oracleCircle.style.borderColor = 'var(--gold)';
+                oracleCircle.style.boxShadow = 'var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55)';
+            }, 500);
+        }
 
-    function openHolo(url) {
-      holoIframe.src = url;
-      holoOverlay.style.display = 'flex';
-    }
+        function getRandomColor() {
+            const colorPalette = ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'];
+            return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+        }
 
-    function closeHolo() {
-      holoOverlay.style.display = 'none';
-      holoIframe.src = '';
-    }
+        const cmd = document.getElementById('guest-cmd');
+        document.getElementById('send-btn').addEventListener('click', () => {
+            const text = cmd.value.trim();
+            if (text) {
+                fadeOutMessage();
+                setTimeout(() => fadeInMessage(text), 300);
+                cmd.value = '';
+            }
+        });
 
-    // Dock icons → open in holo overlay
-    document.querySelectorAll('.dock-icon').forEach(icon => {
-      icon.addEventListener('click', () => {
-        const url = icon.getAttribute('data-url');
-        if (url) openHolo(url);
-      });
-    });
-  </script>
+        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('send-btn').click(); });
+
+        // Holo Overlay Controls
+        const holoOverlay = document.getElementById('holo-overlay');
+        const holoIframe = document.getElementById('holo-iframe');
+
+        function openHolo(url) {
+            holoIframe.src = url;
+            holoOverlay.style.display = 'flex';
+        }
+
+        function closeHolo() {
+            holoOverlay.style.display = 'none';
+            holoIframe.src = '';
+        }
+
+        document.querySelectorAll('.dock-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const url = icon.getAttribute('data-url');
+                if (url) openHolo(url);
+            });
+        });
+    </script>
 </body>
 </html>
