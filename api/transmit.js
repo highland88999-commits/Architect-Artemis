@@ -1,16 +1,3 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // ... rest of your code
-}
-
-
 /**
  * ARCHITECT ARTEMIS | VERCEL BRIDGE
  * Purpose: Routing frontend commands to the Consensus Engine.
@@ -19,6 +6,17 @@ export default async function handler(req, res) {
 const architect = require('../core/architect');
 
 export default async function handler(req, res) {
+  // CORS headers - allow all origins (for development; tighten in production if needed)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight OPTIONS request from browser
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Only accept POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
