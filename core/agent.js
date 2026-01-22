@@ -26,6 +26,15 @@ const model = genAI.getGenerativeModel({
           name: 'executeCode',
           description: 'Execute Python code for complex computations',
           parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
+
+          const { generateImage, generateVideo } = require('../tools/media');
+
+
+
+          const { executeCode } = require('../tools/compute')
+
+
+          
         },
         // Add more: e.g., webSearch, dbQuery
       ]
