@@ -63,3 +63,19 @@ export const config = {
     }
   }
 };
+
+
+// api/transmit.js (excerpt)
+const { agentLoop } = require('../core/agent');
+
+module.exports = async (req, res) => {
+  const { prompt, handshake } = req.body;
+  try {
+    const result = await agentLoop(prompt, handshake);
+    res.json({ verdict: result });
+  } catch (err) {
+    // Code 13 fallback to sequential
+    const fallback = await speakSequentially(prompt);
+    res.json({ verdict: fallback });
+  }
+};
