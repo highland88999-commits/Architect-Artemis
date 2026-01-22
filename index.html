@@ -1,342 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>Artemis • Symbiote</title>
-    <style>
-        :root {
-            --cyan: #00f2ff;
-            --gold: #d4af37;
-            --purple-shader: rgba(26, 0, 51, 0.82);
-            --glass: rgba(8, 8, 25, 0.45);
-            --border: rgba(0, 242, 255, 0.35);
-            --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
-            --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
-            --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
-            
-            --c-maps: #00D2FF;
-            --c-city: #A259FF;
-            --c-pearl: #FFF5E1;
-            --c-gully: #FF4B2B;
-            --c-finance: #00FF87;
-            --c-hoodie: #FF8C00;
-            --c-symbiote: #00FFFF;
-            --c-starblood: #ff3333;
-        }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Artemis • Symbiote</title>
+    <style>
+        :root {
+            --cyan: #00f2ff;
+            --gold: #d4af37;
+            --purple-shader: rgba(26, 0, 51, 0.82);
+            --glass: rgba(8, 8, 25, 0.45);
+            --border: rgba(0, 242, 255, 0.35);
+            --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
+            --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
+            --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
+            
+            /* Label Colors */
+            --c-maps: #00D2FF;
+            --c-city: #A259FF;
+            --c-pearl: #FFF5E1;
+            --c-gully: #FF4B2B;
+            --c-finance: #00FF87;
+            --c-hoodie: #FF8C00;
+            --c-symbiote: #00FFFF;
+            --c-starblood: #ff3333;
+        }
 
-        * { margin:0; padding:0; box-sizing:border-box; }
-        
-        body, html { 
-            width:100%; 
-            height:100%; 
-            overflow:hidden; 
-            background:#000; 
-            font-family: 'Courier New', monospace; 
-            color:var(--cyan); 
-            touch-action: manipulation; 
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
+        body, html { 
+            width:100%; 
+            height:100%; 
+            overflow:hidden; 
+            background:#000; 
+            font-family: 'Courier New', monospace; 
+            color:var(--cyan); 
+            touch-action: manipulation; 
+        }
 
-        /* --- Landing Page --- */
-        #landing-page {
-            position: fixed; inset: 0; z-index: 1000; background: #000;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease-in;
-        }
-        #landing-video { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-        #landing-prompt {
-            position: relative; z-index: 1001; font-size: 1.2rem; letter-spacing: 4px;
-            text-transform: uppercase; text-shadow: 0 0 20px var(--cyan);
-            animation: pulseFade 3s infinite; pointer-events: none;
-        }
-        @keyframes pulseFade {
-            0%, 100% { opacity: 0.3; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1); }
-        }
-        .dissolve-effect { opacity: 0 !important; transform: scale(1.5); filter: brightness(2) blur(20px); pointer-events: none; }
+        /* --- Landing Page --- */
+        #landing-page {
+            position: fixed; inset: 0; z-index: 1000; background: #000;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease-in;
+        }
+        #landing-video { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+        #landing-prompt {
+            position: relative; z-index: 1001; font-size: 1.2rem; letter-spacing: 4px;
+            text-transform: uppercase; text-shadow: 0 0 20px var(--cyan);
+            animation: pulseFade 3s infinite; pointer-events: none;
+        }
+        @keyframes pulseFade {
+            0%, 100% { opacity: 0.3; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        .dissolve-effect { opacity: 0 !important; transform: scale(1.5); filter: brightness(2) blur(20px); pointer-events: none; }
 
-        /* --- Rain Storm --- */
-        #rain-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        .drop {
-            position: absolute; background: linear-gradient(transparent, var(--cyan));
-            width: 1px; height: 80px; top: -100px;
-            animation: fall 1.5s linear infinite; opacity: 0.3;
-        }
-        @keyframes fall { to { transform: translateY(110vh); } }
+        /* --- Rain Effect --- */
+        #rain-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        .drop {
+            position: absolute; background: linear-gradient(transparent, var(--cyan));
+            width: 1px; height: 80px; top: -100px;
+            animation: fall 1.5s linear infinite; opacity: 0.3;
+        }
+        @keyframes fall { to { transform: translateY(110vh); } }
 
-        /* --- Content Container --- */
-        #container { 
-            position: relative; z-index: 10; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; height: 100vh; 
-            text-align: center; padding: 20px; 
-        }
+        /* --- Main UI --- */
+        #container { 
+            position: relative; z-index: 10; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; height: 100vh; 
+            text-align: center; padding: 20px; 
+        }
 
-        #oracle-circle { 
-            width: min(320px, 70vw); height: min(320px, 70vw); border-radius: 50%; 
-            border: 9px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); 
-            position: relative; overflow: hidden; margin-bottom: 2vh; 
-        }
-        #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-        #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        #oracle-message { 
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
-            color: var(--cyan); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: bold; 
-            text-align: center; padding: 20px; opacity: 0; transition: opacity 0.6s ease; 
-            text-shadow: 0 0 15px rgba(0,242,255,0.8); pointer-events: none; 
-            letter-spacing: 1px; line-height: 1.4; text-transform: uppercase; 
-            animation: textPulse 2s infinite; 
-        }
-        @keyframes textPulse { 0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); } 50% { text-shadow: 0 0 20px rgba(0,242,255,1); } }
+        #oracle-circle { 
+            width: min(320px, 70vw); height: min(320px, 70vw); border-radius: 50%; 
+            border: 9px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); 
+            position: relative; overflow: hidden; margin-bottom: 2vh; 
+        }
+        #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+        #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+        #oracle-message { 
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
+            color: var(--cyan); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: bold; 
+            text-align: center; padding: 20px; opacity: 0; transition: opacity 0.6s ease; 
+            text-shadow: 0 0 15px rgba(0,242,255,0.8); pointer-events: none; 
+            letter-spacing: 1px; line-height: 1.4; text-transform: uppercase; 
+            animation: textPulse 2s infinite; 
+        }
+        @keyframes textPulse { 0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); } 50% { text-shadow: 0 0 20px rgba(0,242,255,1); } }
 
-        /* --- Council UI --- */
-        #council-pips { display: flex; gap: 8px; margin-bottom: 8px; }
-        .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--pip-color); box-shadow: 0 0 10px var(--pip-color); animation: pipPulse 1.5s infinite ease-in-out; }
-        .pip:nth-child(1) { --pip-color: #00f2ff; animation-delay: 0s; }
-        .pip:nth-child(2) { --pip-color: #ff3366; animation-delay: 0.2s; }
-        .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
-        @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
+        #council-pips { display: flex; gap: 8px; margin-bottom: 8px; }
+        .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--pip-color); box-shadow: 0 0 10px var(--pip-color); animation: pipPulse 1.5s infinite ease-in-out; }
+        .pip:nth-child(1) { --pip-color: #00f2ff; animation-delay: 0s; }
+        .pip:nth-child(2) { --pip-color: #ff3366; animation-delay: 0.2s; }
+        .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
+        @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
 
-        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-        #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; }
-        #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; }
+        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+        #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; }
+        #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; }
 
-        /* --- Surgical Dock Update --- */
-        #bottom-dock { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            display: flex; gap: 10px; z-index: 100; background: var(--glass); 
-            padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); 
-            backdrop-filter: blur(20px); width: fit-content; max-width: 95vw;
-            overflow-x: auto; scrollbar-width: none;
-        }
-        #bottom-dock::-webkit-scrollbar { display: none; }
+        /* --- Dock --- */
+        #bottom-dock { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            display: flex; gap: 10px; z-index: 100; background: var(--glass); 
+            padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); 
+            backdrop-filter: blur(20px); width: fit-content; max-width: 95vw;
+            overflow-x: auto; scrollbar-width: none;
+        }
+        #bottom-dock::-webkit-scrollbar { display: none; }
 
-        .dock-icon { flex-shrink: 0; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; padding-top: 5px; }
-        .dock-icon:hover { transform: scale(1.1) translateY(-5px); }
-        .dock-icon svg { width: 22px; height: 22px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
+        .dock-icon { flex-shrink: 0; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; padding-top: 5px; }
+        .dock-icon:hover { transform: scale(1.1) translateY(-5px); }
+        .dock-icon svg { width: 22px; height: 22px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
 
-        .guide-text {
-            display: block; font-size: 8px; margin-top: 6px; text-align: center;
-            white-space: nowrap; text-transform: lowercase; opacity: 0;
-            animation: breatheLabel 3s infinite ease-in-out;
-            color: var(--label-color); text-shadow: 0 0 5px var(--label-color); pointer-events: none;
-        }
-        .guide-text::first-letter { text-transform: uppercase; }
+        .guide-text {
+            display: block; font-size: 8px; margin-top: 6px; text-align: center;
+            white-space: nowrap; text-transform: lowercase; opacity: 0;
+            animation: breatheLabel 3s infinite ease-in-out;
+            color: var(--label-color); text-shadow: 0 0 5px var(--label-color); pointer-events: none;
+        }
+        .guide-text::first-letter { text-transform: uppercase; }
 
-        @keyframes breatheLabel {
-            0%, 100% { opacity: 0; transform: translateY(2px); }
-            50% { opacity: 1; transform: translateY(0px); }
-        }
+        @keyframes breatheLabel {
+            0%, 100% { opacity: 0; transform: translateY(2px); }
+            50% { opacity: 1; transform: translateY(0px); }
+        }
 
-        /* Staggered text delays for 8 icons */
-        .dock-icon:nth-child(1) .guide-text { animation-delay: 0.0s; }
-        .dock-icon:nth-child(2) .guide-text { animation-delay: 0.2s; }
-        .dock-icon:nth-child(3) .guide-text { animation-delay: 0.4s; }
-        .dock-icon:nth-child(4) .guide-text { animation-delay: 0.6s; }
-        .dock-icon:nth-child(5) .guide-text { animation-delay: 0.8s; }
-        .dock-icon:nth-child(6) .guide-text { animation-delay: 1.0s; }
-        .dock-icon:nth-child(7) .guide-text { animation-delay: 1.2s; }
-        .dock-icon:nth-child(8) .guide-text { animation-delay: 1.4s; }
+        /* Staggered text delays */
+        .dock-icon:nth-child(1) .guide-text { animation-delay: 0.0s; }
+        .dock-icon:nth-child(2) .guide-text { animation-delay: 0.2s; }
+        .dock-icon:nth-child(3) .guide-text { animation-delay: 0.4s; }
+        .dock-icon:nth-child(4) .guide-text { animation-delay: 0.6s; }
+        .dock-icon:nth-child(5) .guide-text { animation-delay: 0.8s; }
+        .dock-icon:nth-child(6) .guide-text { animation-delay: 1.0s; }
+        .dock-icon:nth-child(7) .guide-text { animation-delay: 1.2s; }
+        .dock-icon:nth-child(8) .guide-text { animation-delay: 1.4s; }
 
-        #holo-overlay { 
-            display: none; position: fixed; inset: 5%; background: var(--glass); 
-            border: 3px solid var(--cyan); border-radius: 36px; backdrop-filter: blur(30px); 
-            z-index: 2000; flex-direction: column; overflow: hidden; 
-        }
-        .holo-header { padding: 15px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .holo-close { width: 40px; height: 40px; background: #ff3366; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-weight: bold; }
-        #holo-iframe { flex: 1; border: none; }
-    </style>
+        #holo-overlay { 
+            display: none; position: fixed; inset: 5%; background: var(--glass); 
+            border: 3px solid var(--cyan); border-radius: 36px; backdrop-filter: blur(30px); 
+            z-index: 2000; flex-direction: column; overflow: hidden; 
+        }
+        .holo-header { padding: 15px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .holo-close { width: 40px; height: 40px; background: #ff3366; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-weight: bold; }
+        #holo-iframe { flex: 1; border: none; }
+    </style>
 </head>
 <body>
 
-    <div id="landing-page" onclick="enterNexus()">
-        <video id="landing-video" autoplay loop muted playsinline>
-            <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
-        </video>
-        <div id="landing-prompt">Click anywhere to enter</div>
-    </div>
+    <div id="landing-page" onclick="enterNexus()">
+        <video id="landing-video" autoplay loop muted playsinline>
+            <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
+        </video>
+        <div id="landing-prompt">Click anywhere to enter</div>
+    </div>
 
-    <div id="rain-container"></div>
+    <div id="rain-container"></div>
 
-    <div id="container">
-        <div id="oracle-circle">
-            <video id="oracle-video" loop muted playsinline>
-                <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
-            </video>
-            <div id="shader-overlay"></div>
-            <div id="oracle-message"></div>
-        </div>
+    <div id="container">
+        <div id="oracle-circle">
+            <video id="oracle-video" loop muted playsinline>
+                <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
+            </video>
+            <div id="shader-overlay"></div>
+            <div id="oracle-message"></div>
+        </div>
 
-        <div id="council-header" style="display: flex; flex-direction: column; align-items: center;">
-            <div id="council-pips">
-                <div class="pip"></div><div class="pip"></div><div class="pip"></div>
-            </div>
-            <div id="council-status" style="font-size: 9px; color: var(--cyan); margin-bottom: 10px; opacity: 0.6; letter-spacing: 2px;">
-                [COUNCIL: ACTIVE] <span id="harvest-stats">[OPTIMIZING_NODES...]</span>
-            </div>
-        </div>
+        <div id="council-header" style="display: flex; flex-direction: column; align-items: center;">
+            <div id="council-pips">
+                <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+            </div>
+            <div id="council-status" style="font-size: 9px; color: var(--cyan); margin-bottom: 10px; opacity: 0.6; letter-spacing: 2px;">
+                [COUNCIL: ACTIVE] <span id="harvest-stats">[OPTIMIZING_NODES...]</span>
+            </div>
+        </div>
 
-        <div id="prompt-area">
-            <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
-            <button id="send-btn">SEND</button>
-        </div>
-    </div>
+        <div id="prompt-area">
+            <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
+            <button id="send-btn">SEND</button>
+        </div>
+    </div>
 
-    <div id="bottom-dock">
-        <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span class="guide-text">Maps</span>
-        </div>
-        <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" style="--label-color: var(--c-city)">
-            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
-            <span class="guide-text">Megacity</span>
-        </div>
-        <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" style="--label-color: var(--c-pearl)">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-            <span class="guide-text">The pearl</span>
-        </div>
-        <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)">
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
-            <span class="guide-text">Grief gully</span>
-        </div>
-        <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
-            <span class="guide-text">Finances</span>
-        </div>
-        <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
-            <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2zM7 5h10v2H7V5zm12 14H5v-2h14v2z"/></svg>
-            <span class="guide-text">Hoodies</span>
-        </div>
-        <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
-            <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
-            <span class="guide-text">Symbiote tool</span>
-        </div>
-        <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
-            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <span class="guide-text">Starblood</span>
-        </div>
-    </div>
+    <div id="bottom-dock">
+        <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span class="guide-text">Maps</span>
+        </div>
+        <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" style="--label-color: var(--c-city)">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
+            <span class="guide-text">Megacity</span>
+        </div>
+        <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" style="--label-color: var(--c-pearl)">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            <span class="guide-text">The pearl</span>
+        </div>
+        <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
+            <span class="guide-text">Grief gully</span>
+        </div>
+        <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
+            <span class="guide-text">Finances</span>
+        </div>
+        <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
+            <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2zM7 5h10v2H7V5zm12 14H5v-2h14v2z"/></svg>
+            <span class="guide-text">Hoodies</span>
+        </div>
+        <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
+            <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+            <span class="guide-text">Symbiote Creator</span>
+        </div>
+        <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span class="guide-text">Starblood</span>
+        </div>
+    </div>
 
-    <div id="holo-overlay">
-        <div class="holo-header">
-            <span class="holo-title">Artemis View</span>
-            <div class="holo-close" onclick="closeHolo()">×</div>
-        </div>
-        <iframe id="holo-iframe"></iframe>
-    </div>
+    <div id="holo-overlay">
+        <div class="holo-header">
+            <span class="holo-title">Artemis View</span>
+            <div class="holo-close" onclick="closeHolo()">×</div>
+        </div>
+        <iframe id="holo-iframe"></iframe>
+    </div>
 
-    <script>
-        function enterNexus() {
-            const landing = document.getElementById('landing-page');
-            landing.classList.add('dissolve-effect');
-            document.getElementById('oracle-video').play();
-            createRain();
-            setTimeout(() => { landing.style.display = 'none'; }, 1500);
-        }
+    <script>
+        function enterNexus() {
+            const landing = document.getElementById('landing-page');
+            landing.classList.add('dissolve-effect');
+            document.getElementById('oracle-video').play();
+            createRain();
+            setTimeout(() => { landing.style.display = 'none'; }, 1500);
+        }
 
-        function createRain() {
-            const container = document.getElementById('rain-container');
-            if (container.children.length > 0) return;
-            for(let i=0; i<60; i++) {
-                const drop = document.createElement('div');
-                drop.className = 'drop';
-                drop.style.left = Math.random() * 100 + 'vw';
-                drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
-                drop.style.animationDelay = Math.random() * 2 + 's';
-                container.appendChild(drop);
-            }
-        }
+        function createRain() {
+            const container = document.getElementById('rain-container');
+            if (container.children.length > 0) return;
+            for(let i=0; i<60; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'drop';
+                drop.style.left = Math.random() * 100 + 'vw';
+                drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(drop);
+            }
+        }
 
-        function updateHarvester() {
-            const stats = document.getElementById('harvest-stats');
-            const minutes = new Date().getMinutes();
-            if (minutes % 20 < 5) {
-                stats.textContent = `[SYSTEM_BREAK: COOLING]`;
-                stats.style.color = '#ff3366';
-            } else {
-                stats.textContent = `[HARVESTING: ${Math.floor(Math.random()*5)+15}/20 URLS]`;
-                stats.style.color = 'var(--cyan)';
-            }
-        }
-        setInterval(updateHarvester, 5000); updateHarvester();
+        function updateHarvester() {
+            const stats = document.getElementById('harvest-stats');
+            const minutes = new Date().getMinutes();
+            if (minutes % 20 < 5) {
+                stats.textContent = `[SYSTEM_BREAK: COOLING]`;
+                stats.style.color = '#ff3366';
+            } else {
+                stats.textContent = `[HARVESTING: ${Math.floor(Math.random()*5)+15}/20 URLS]`;
+                stats.style.color = 'var(--cyan)';
+            }
+        }
+        setInterval(updateHarvester, 5000); updateHarvester();
 
-        let typingTimer;
-        function fadeInMessage(text) {
-            const newColor = getRandomColor();
-            const oracleCircle = document.getElementById('oracle-circle');
-            const shaderOverlay = document.getElementById('shader-overlay');
-            const oracleMessage = document.getElementById('oracle-message');
-            clearTimeout(typingTimer);
-            oracleMessage.textContent = '';
-            oracleCircle.style.borderColor = newColor;
-            oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
-            shaderOverlay.style.opacity = 0.82;
-            oracleMessage.style.opacity = 1;
-            let i = 0;
-            function type() {
-                if (i < text.length) {
-                    oracleMessage.textContent += text.charAt(i); i++;
-                    typingTimer = setTimeout(type, 50);
-                } else { setTimeout(fadeOutMessage, 8000); }
-            }
-            setTimeout(type, 300);
-        }
+        let typingTimer;
+        function fadeInMessage(text) {
+            const newColor = getRandomColor();
+            const oracleCircle = document.getElementById('oracle-circle');
+            const shaderOverlay = document.getElementById('shader-overlay');
+            const oracleMessage = document.getElementById('oracle-message');
+            clearTimeout(typingTimer);
+            oracleMessage.textContent = '';
+            oracleCircle.style.borderColor = newColor;
+            oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
+            shaderOverlay.style.opacity = 0.82;
+            oracleMessage.style.opacity = 1;
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    oracleMessage.textContent += text.charAt(i); i++;
+                    typingTimer = setTimeout(type, 50);
+                } else { setTimeout(fadeOutMessage, 8000); }
+            }
+            setTimeout(type, 300);
+        }
 
-        function fadeOutMessage() {
-            const shaderOverlay = document.getElementById('shader-overlay');
-            const oracleMessage = document.getElementById('oracle-message');
-            const oracleCircle = document.getElementById('oracle-circle');
-            shaderOverlay.style.opacity = 0; oracleMessage.style.opacity = 0;
-            setTimeout(() => {
-                oracleCircle.style.borderColor = 'var(--gold)';
-                oracleCircle.style.boxShadow = 'var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55)';
-            }, 500);
-        }
+        function fadeOutMessage() {
+            const shaderOverlay = document.getElementById('shader-overlay');
+            const oracleMessage = document.getElementById('oracle-message');
+            const oracleCircle = document.getElementById('oracle-circle');
+            shaderOverlay.style.opacity = 0; oracleMessage.style.opacity = 0;
+            setTimeout(() => {
+                oracleCircle.style.borderColor = 'var(--gold)';
+                oracleCircle.style.boxShadow = 'var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55)';
+            }, 500);
+        }
 
-        function getRandomColor() {
-            return ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'][Math.floor(Math.random() * 8)];
-        }
+        function getRandomColor() {
+            return ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'][Math.floor(Math.random() * 8)];
+        }
 
-        const cmd = document.getElementById('guest-cmd');
-        const sendBtn = document.getElementById('send-btn');
-        sendBtn.addEventListener('click', sendToArtemis);
-        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); sendToArtemis(); } });
+        const cmd = document.getElementById('guest-cmd');
+        const sendBtn = document.getElementById('send-btn');
+        sendBtn.addEventListener('click', sendToArtemis);
+        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); sendToArtemis(); } });
 
-        async function sendToArtemis() {
-            const promptText = cmd.value.trim(); if (!promptText) return;
-            document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '0.3s');
-            const oracleMsg = document.getElementById('oracle-message');
-            oracleMsg.textContent = 'Artemis is awakening the council...';
-            oracleMsg.style.opacity = 1; cmd.value = '';
-            try {
-                const response = await fetch('/api/transmit', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: promptText, handshake: 'CONNECTED', mode: 'council' })
-                });
-                const data = await response.json();
-                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
-                const aiReply = data.verdict || data.response || 'The council has spoken...';
-                fadeOutMessage(); setTimeout(() => fadeInMessage(aiReply), 600);
-            } catch (err) {
-                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
-                fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
-            }
-        }
+        async function sendToArtemis() {
+            const promptText = cmd.value.trim(); if (!promptText) return;
+            document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '0.3s');
+            const oracleMsg = document.getElementById('oracle-message');
+            oracleMsg.textContent = 'Artemis is awakening the council...';
+            oracleMsg.style.opacity = 1; cmd.value = '';
+            try {
+                const response = await fetch('/api/transmit', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText, handshake: 'CONNECTED', mode: 'council' })
+                });
+                const data = await response.json();
+                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
+                const aiReply = data.verdict || data.response || 'The council has spoken...';
+                fadeOutMessage(); setTimeout(() => fadeInMessage(aiReply), 600);
+            } catch (err) {
+                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
+                fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
+            }
+        }
 
-        function openHolo(url) {
-            document.getElementById('holo-iframe').src = url;
-            document.getElementById('holo-overlay').style.display = 'flex';
-        }
-        function closeHolo() {
-            document.getElementById('holo-overlay').style.display = 'none';
-            document.getElementById('holo-iframe').src = '';
-        }
-        document.querySelectorAll('.dock-icon').forEach(icon => {
-            icon.addEventListener('click', () => {
-                const url = icon.getAttribute('data-url');
-                if (url) openHolo(url);
-            });
-        });
-    </script>
+        function openHolo(url) {
+            document.getElementById('holo-iframe').src = url;
+            document.getElementById('holo-overlay').style.display = 'flex';
+        }
+        function closeHolo() {
+            document.getElementById('holo-overlay').style.display = 'none';
+            document.getElementById('holo-iframe').src = '';
+        }
+        document.querySelectorAll('.dock-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const url = icon.getAttribute('data-url');
+                if (url) openHolo(url);
+            });
+        });
+    </script>
 </body>
 </html>
