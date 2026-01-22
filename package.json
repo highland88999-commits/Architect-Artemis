@@ -40,4 +40,7 @@
   "axios": "^1.7.2"  // For API calls
 }
 
+"test:agent": "node core/agent.js 'Test query: Compute 2+2 and generate an image of a cat'"
+
+
 
