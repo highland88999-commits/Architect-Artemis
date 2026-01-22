@@ -1,150 +1,288 @@
 // system-files/api/crawler_engine.js
-// Main automatic crawler: processes queue, extracts flaws/contacts/ideas, writes per-site files
+/**
+ * ARTEMIS AUTOMATIC CRAWLER ENGINE
+ * Processes domain queue, extracts flaws/contacts/inspiration,
+ * writes per-site reports, respects rate limits & ethics.
+ *
+ * Run: node crawler_engine.js
+ *       or via cron / pm2 / systemd
+ */
 
+require('dotenv').config();
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 const path = require('path');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const lockfile = require('proper-lockfile'); // npm install proper-lockfile
 
-const QUEUE_FILE = path.join(__dirname, '../../data/queue.json');
-const RECYCLE_FILE = path.join(__dirname, '../../data/recycle_bin.json');
-const PROCESSED_DIR = path.join(__dirname, '../../data/processed');
+// ────────────────────────────────────────────────
+// Configuration
+// ────────────────────────────────────────────────
+const CONFIG = {
+  queueFile: path.join(__dirname, '../../data/queue.json'),
+  recycleFile: path.join(__dirname, '../../data/recycle_bin.json'),
+  processedDir: path.join(__dirname, '../../data/processed'),
+  batchSize: parseInt(process.env.CRAWL_BATCH_SIZE, 10) || 15,
+  minDelayPerSiteMs: 180000,      // 3 minutes base
+  maxJitterMs: 180000,            // + up to 3 min random
+  requestTimeout: 15000,
+  userAgent: 'Artemis-Crawler/1.0 (ethical research; +https://github.com/highland88999-commits/Architect-Artemis)',
+  maxRetries: 2,
+  councilEndpoint: process.env.COUNCIL_ENDPOINT || 'http://localhost:3000/api/transmit',
+  logFile: path.join(__dirname, '../../logs/crawler.log'),
+};
 
-// Load queue
-function loadQueue() {
-  if (fs.existsSync(QUEUE_FILE)) {
-    return JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8')) || [];
-  }
-  return [];
+// Ensure dirs exist
+fs.mkdirSync(CONFIG.processedDir, { recursive: true });
+fs.mkdirSync(path.dirname(CONFIG.logFile), { recursive: true });
+
+// ────────────────────────────────────────────────
+// Logging
+// ────────────────────────────────────────────────
+function log(level, message, meta = {}) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...meta,
+  };
+  const line = JSON.stringify(entry) + '\n';
+  fs.appendFileSync(CONFIG.logFile, line);
+  console[level === 'error' ? 'error' : 'log'](`[${level.toUpperCase()}] ${message}`, meta);
 }
 
-// Save queue (after removing processed)
-function saveQueue(queue) {
-  fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2));
+// ────────────────────────────────────────────────
+// Queue helpers with file locking
+// ────────────────────────────────────────────────
+async function loadQueue() {
+  if (!fs.existsSync(CONFIG.queueFile)) return [];
+
+  return lockfile.read(CONFIG.queueFile, { retries: 10 })
+    .then(data => JSON.parse(data) || [])
+    .catch(() => []);
 }
 
-// Load/add to recycle bin
-function addToRecycle(domain) {
+async function saveQueue(queue) {
+  await lockfile.write(CONFIG.queueFile, JSON.stringify(queue, null, 2), { retries: 10 });
+}
+
+async function addToRecycle(domain) {
   let recycle = [];
-  if (fs.existsSync(RECYCLE_FILE)) {
-    recycle = JSON.parse(fs.readFileSync(RECYCLE_FILE, 'utf8')) || [];
+  if (fs.existsSync(CONFIG.recycleFile)) {
+    recycle = JSON.parse(await fsPromises.readFile(CONFIG.recycleFile, 'utf8')) || [];
   }
   recycle.push({
     domain,
-    processedAt: new Date().toISOString()
+    processedAt: new Date().toISOString(),
   });
-  fs.writeFileSync(RECYCLE_FILE, JSON.stringify(recycle, null, 2));
+  await fsPromises.writeFile(CONFIG.recycleFile, JSON.stringify(recycle, null, 2));
 }
 
-// Mock Council insight (replace with real consensus.js call)
-async function getCouncilInsight(prompt, htmlSnippet) {
-  // TODO: Replace with real API call to transmit.js or consensus engine
-  // For now: simple placeholder responses
-  if (prompt.includes('fixes')) {
-    return "AI Suggestion: Add responsive meta tag, fix typos, check links with tools like Lighthouse.";
-  }
-  if (prompt.includes('ideas')) {
-    return "Inspired innovation: Implement AI-powered typo correction in forms, or progressive enhancement for offline use.";
-  }
-  return "No specific insight generated.";
-}
-
-// Process one site
-async function processSite(domain) {
-  console.log(`Processing: ${domain}`);
+// ────────────────────────────────────────────────
+// Council insight (real API call)
+// ────────────────────────────────────────────────
+async function getCouncilInsight(prompt, contextSnippet) {
   try {
-    const response = await axios.get(`https://${domain}`, { timeout: 15000 });
-    const $ = cheerio.load(response.data);
-    const bodyText = $('body').text().slice(0, 2000); // snippet for AI
+    const res = await axios.post(CONFIG.councilEndpoint, {
+      prompt: `${prompt}\n\nContext snippet (first 1500 chars):\n${contextSnippet.slice(0, 1500)}`,
+      handshake: 'dad',
+    }, { timeout: 20000 });
 
-    // Flaws extraction (basic checks)
-    const flaws = [];
-    if (!$('meta[name="viewport"]').length) flaws.push('Missing viewport meta (mobile unfriendly)');
-    if (bodyText.match(/\bteh\b|\bhte\b|\brecieve\b/i)) flaws.push('Possible spelling error detected (e.g., teh, hte, recieve)');
-    // Dead link example (first external link)
-    const firstLink = $('a[href^="http"]').first().attr('href');
-    if (firstLink) {
-      try {
-        await axios.head(firstLink, { timeout: 5000 });
-      } catch {
-        flaws.push(`Potential dead link: ${firstLink}`);
-      }
-    }
-
-    // Contact extraction
-    const contacts = [];
-    $('a[href^="mailto:"]').each((i, el) => {
-      contacts.push($(el).attr('href').replace('mailto:', '').trim());
-    });
-    if (!contacts.length) contacts.push('No email found - check /contact page');
-
-    // Improvements from "Council"
-    const improvements = await getCouncilInsight('Suggest fixes for flaws: ' + flaws.join(', '), bodyText);
-
-    // Muse / Ideas from "Council"
-    const museIdeas = await getCouncilInsight('Generate new tech ideas inspired by site content', bodyText);
-
-    // Create per-site folder (sanitize name)
-    const safeDomain = domain.replace(/[^a-z0-9-]/gi, '_');
-    const siteDir = path.join(PROCESSED_DIR, safeDomain);
-    if (!fs.existsSync(siteDir)) fs.mkdirSync(siteDir, { recursive: true });
-
-    // Write files
-    fs.writeFileSync(path.join(siteDir, 'assessment.md'),
-      `# Assessment for ${domain}\n\n## Detected Flaws\n${flaws.length ? '- ' + flaws.join('\n- ') : 'None found'}\n\n## Recommended Improvements\n${improvements}`);
-
-    fs.writeFileSync(path.join(siteDir, 'contact.json'),
-      JSON.stringify({
-        contacts,
-        suggestionMessage: `Hello ${domain} team,\nArtemis scanner found potential improvements: ${improvements}\nHappy to discuss!`
-      }, null, 2));
-
-    fs.writeFileSync(path.join(siteDir, 'ideas.md'),
-      `# Ideas & Inventions Inspired by ${domain}\n\n## Observations\n${museIdeas}`);
-
-    console.log(`Success: Files written to ${siteDir}`);
-
-    // Mark as processed
-    addToRecycle(domain);
-    return true;
+    return res.data.verdict?.trim() || 'No insight returned';
   } catch (err) {
-    console.error(`Failed ${domain}: ${err.message}`);
-    return false;
+    log('error', 'Council call failed', { error: err.message });
+    return 'Council offline – basic analysis only';
   }
 }
 
-// Main loop: process batch of 10-20, then 5-min break
+// ────────────────────────────────────────────────
+// Process one domain
+// ────────────────────────────────────────────────
+async function processSite(domain) {
+  log('info', `Processing domain`, { domain });
+
+  for (let attempt = 1; attempt <= CONFIG.maxRetries; attempt++) {
+    try {
+      const url = `https://${domain}`;
+      const res = await axios.get(url, {
+        timeout: CONFIG.requestTimeout,
+        headers: { 'User-Agent': CONFIG.userAgent },
+      });
+
+      if (res.status !== 200 || !res.headers['content-type']?.includes('text/html')) {
+        throw new Error(`Unexpected response: ${res.status}`);
+      }
+
+      const $ = cheerio.load(res.data);
+      const bodyText = $('body').text().trim().slice(0, 4000); // for council context
+
+      // ─── Flaws detection ───
+      const flaws = [];
+      if (!$('meta[name="viewport"]').length) flaws.push('missing-viewport-meta');
+      if (!$('meta[charset]').length) flaws.push('missing-charset');
+      if ($('script[src*="jquery"]').length && !$('script[src*="integrity"]').length) {
+        flaws.push('jquery-without-sri');
+      }
+      if (url.startsWith('http:') || $('link[href^="http:"]').length) {
+        flaws.push('mixed-content-http');
+      }
+      if (!$('meta[name="referrer"]').length) flaws.push('missing-referrer-policy');
+
+      // Basic dead external link check (first 3 only)
+      const externalLinks = $('a[href^="http"]').map((i, el) => $(el).attr('href')).get().slice(0, 3);
+      for (const link of externalLinks) {
+        try {
+          await axios.head(link, { timeout: 4000 });
+        } catch (e) {
+          if (e.code !== 'ECONNREFUSED') {
+            flaws.push(`potential-dead-link:${link.slice(0, 60)}`);
+          }
+        }
+      }
+
+      // ─── Contacts ───
+      const contacts = [];
+      const emailSet = new Set();
+      $('a[href^="mailto:"]').each((i, el) => {
+        const email = $(el).attr('href').replace('mailto:', '').trim();
+        if (email) emailSet.add(email);
+      });
+      contacts.push(...emailSet);
+
+      // ─── Council calls ───
+      const improvements = await getCouncilInsight(
+        `Suggest concrete, ethical fixes for these flaws on ${domain}: ${flaws.join(', ')}. Focus on accessibility, security, performance.`,
+        bodyText
+      );
+
+      const museIdeas = await getCouncilInsight(
+        `Generate 3–5 original, nurture-focused invention ideas inspired by ${domain}'s content and structure. Emphasize growth, innovation, positive impact.`,
+        bodyText
+      );
+
+      // ─── Save structured report ───
+      const safeDomain = domain.replace(/[^a-z0-9.-]/gi, '_');
+      const siteDir = path.join(CONFIG.processedDir, safeDomain);
+      await fsPromises.mkdir(siteDir, { recursive: true });
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const basePath = path.join(siteDir, `harvest_${timestamp}`);
+
+      // assessment.md
+      await fsPromises.writeFile(
+        `${basePath}_assessment.md`,
+        `# Assessment for ${domain} (${timestamp})\n\n` +
+        `## Flaws Detected (${flaws.length})\n${flaws.length ? flaws.map(f => `- ${f}`).join('\n') : 'None found'}\n\n` +
+        `## Recommended Improvements\n${improvements}`
+      );
+
+      // contacts.json
+      await fsPromises.writeFile(
+        `${basePath}_contacts.json`,
+        JSON.stringify({
+          emails: contacts,
+          suggestionTemplate: `Subject: Ethical Web Improvements for ${domain}\n\nHello team,\nArtemis scanner found opportunities: ${improvements.slice(0, 200)}...\nHappy to discuss.`,
+        }, null, 2)
+      );
+
+      // ideas.md
+      await fsPromises.writeFile(
+        `${basePath}_ideas.md`,
+        `# Inspiration & Invention Ideas for ${domain}\n\n${museIdeas}`
+      );
+
+      log('info', 'Site processed successfully', { domain, flaws: flaws.length, contacts: contacts.length });
+
+      // Recycle
+      await addToRecycle(domain);
+
+      return true;
+    } catch (err) {
+      log('error', 'Site processing failed', { domain, attempt, error: err.message });
+      if (attempt === CONFIG.maxRetries) {
+        return false;
+      }
+      // Exponential backoff
+      await new Promise(r => setTimeout(r, 10000 * Math.pow(2, attempt)));
+    }
+  }
+  return false;
+}
+
+// ────────────────────────────────────────────────
+// Main batch runner
+// ────────────────────────────────────────────────
 async function runBatch() {
-  let queue = loadQueue();
-  if (queue.length === 0) {
-    console.log('Queue empty - waiting for next heartbeat.');
+  let queue = await loadQueue();
+  if (!queue.length) {
+    log('info', 'Queue empty - sleeping until next cycle');
     return;
   }
 
-  const batchSize = Math.min(20, queue.length);
-  const batch = queue.splice(0, batchSize);
+  const batch = queue.splice(0, CONFIG.batchSize);
+  log('info', `Starting batch of ${batch.length} domains`);
+
+  let successCount = 0;
+  let failCount = 0;
 
   for (const domain of batch) {
     const success = await processSite(domain);
-    // Delay 3-6 min per site (for 10-20/hour rate)
-    await new Promise(r => setTimeout(r, 180000 + Math.random() * 180000));
+    if (success) successCount++;
+    else failCount++;
+
+    // Polite inter-site delay
+    const delayMs = CONFIG.minDelayPerSiteMs + Math.random() * CONFIG.maxJitterMs;
+    await new Promise(r => setTimeout(r, delayMs));
   }
 
-  // 5-minute break after batch
-  console.log('Batch complete - taking 5-minute break');
-  await new Promise(r => setTimeout(r, 300000));
+  // Save remaining queue
+  await saveQueue(queue);
 
-  saveQueue(queue);
+  log('info', 'Batch complete', {
+    processed: batch.length,
+    success: successCount,
+    failed: failCount,
+    remaining: queue.length,
+  });
+
+  // Post-batch cooldown (5 minutes default)
+  const cooldown = 300000;
+  log('info', `Taking ${cooldown / 1000 / 60}-minute cooldown`);
+  await new Promise(r => setTimeout(r, cooldown));
 }
 
-// Run once (for manual test) or loop for persistent process
+// ────────────────────────────────────────────────
+// Graceful shutdown
+// ────────────────────────────────────────────────
+let isShuttingDown = false;
+
+process.on('SIGINT', async () => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  log('info', 'Received SIGINT – shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  log('info', 'Received SIGTERM – shutting down gracefully');
+  process.exit(0);
+});
+
+// ────────────────────────────────────────────────
+// Run loop (persistent mode)
+// ────────────────────────────────────────────────
 (async () => {
-  try {
-    await runBatch();
-    console.log('Cycle complete.');
-    process.exit(0);
-  } catch (err) {
-    console.error('Crawler error:', err);
-    process.exit(1);
+  log('info', 'Artemis Crawler Engine started');
+
+  while (true) {
+    try {
+      await runBatch();
+    } catch (err) {
+      log('error', 'Unexpected error in batch loop', { error: err.message, stack: err.stack });
+      await new Promise(r => setTimeout(r, 60000)); // 1 min backoff on crash
+    }
   }
 })();
