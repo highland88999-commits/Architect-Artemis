@@ -1,81 +1,148 @@
+// api/transmit.js
 /**
- * ARCHITECT ARTEMIS | VERCEL BRIDGE
- * Purpose: Routing frontend commands to the Consensus Engine.
+ * ARCHITECT ARTEMIS – VERCEL API BRIDGE
+ * Main entry point: routes frontend prompts → Consensus Engine / Agent Loop
+ * Supports council mode (public) and privileged Architect mode (handshake required)
  */
 
-const architect = require('../core/architect');
+require('dotenv').config();
+const { agentLoop } = require('../core/agent');
+const { speakSequentially } = require('../core/consensus'); // fallback
+
+const LANDLINE_KEY = process.env.ARTEMIS_LANDLINE || 'DISCONNECTED';
+const MAX_PROMPT_LENGTH = 8000; // safety cap
+
+// ────────────────────────────────────────────────
+// Structured logging helper
+// ────────────────────────────────────────────────
+function log(level, message, meta = {}) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...meta,
+  };
+  console[level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'](
+    `[Transmit API] ${message}`,
+    meta
+  );
+  // Future: send to Sentry, Loki, or file
+}
 
 export default async function handler(req, res) {
-  // CORS headers - allow all origins (for development; tighten in production if needed)
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // ─── CORS & preflight ───
+  res.setHeader('Access-Control-Allow-Origin', '*'); // tighten in prod (e.g. your domain)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // Handle preflight OPTIONS request from browser
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Only accept POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed', allowed: ['POST'] });
   }
 
-  const { prompt, handshake, mode = 'council' } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt required' });
+  // ─── Body parsing & validation ───
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    log('warn', 'Invalid JSON body');
+    return res.status(400).json({ error: 'Invalid JSON payload' });
   }
 
-  // Security: Require handshake for Architect-level access
+  const { prompt, handshake, mode = 'council' } = body;
+
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    log('warn', 'Missing or empty prompt');
+    return res.status(400).json({ error: 'Valid "prompt" string is required' });
+  }
+
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    log('warn', 'Prompt too long', { length: prompt.length });
+    return res.status(413).json({ error: `Prompt exceeds ${MAX_PROMPT_LENGTH} characters` });
+  }
+
+  // ─── Access control ───
   const isArchitect = handshake === 'dad';
-  if (!isArchitect && mode === 'privileged') {
-    return res.status(403).json({ error: 'Architect mode required for privileged operations' });
+  const requiresArchitect = mode === 'privileged' || mode === 'architect';
+
+  if (requiresArchitect && !isArchitect) {
+    log('warn', 'Privileged mode attempted without Architect handshake', { mode });
+    return res.status(403).json({
+      error: 'Access Denied',
+      message: 'Architect mode requires valid handshake.',
+    });
   }
+
+  if (LANDLINE_KEY !== 'CONNECTED') {
+    log('warn', 'Landline disconnected – denying request');
+    return res.status(503).json({
+      error: 'Service Unavailable',
+      message: 'Artemis Landline is offline. Check server environment.',
+    });
+  }
+
+  log('info', 'Transmit request received', {
+    mode,
+    isArchitect,
+    promptLength: prompt.length,
+  });
 
   try {
-    console.log(`[${new Date().toISOString()}] API: Transmitting to Artemis... Prompt: "${prompt}" (Mode: ${mode})`);
+    // ─── Primary path: Agent Loop ───
+    let result;
+    try {
+      result = await Promise.race([
+        agentLoop(prompt, handshake),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Agent loop timeout')), 45000)
+        ),
+      ]);
+    } catch (agentErr) {
+      log('warn', 'Agent loop failed – falling back to sequential', {
+        error: agentErr.message,
+      });
 
-    // Trigger the full Consensus → Compass → Synthesis flow
-    const result = await architect.resolveCommand(prompt);
+      // ─── Code 13 / fallback ───
+      result = await speakSequentially(prompt);
+    }
+
+    const safeVerdict = typeof result === 'string' ? result : JSON.stringify(result);
 
     return res.status(200).json({
       success: true,
-      verdict: result,
+      verdict: safeVerdict,
+      mode,
       timestamp: new Date().toISOString(),
-      mode
+      agent: isArchitect ? 'Architect' : 'Council',
     });
-  } catch (error) {
-    console.error(`[${new Date().toISOString()}] API Error:`, error);
+
+  } catch (err) {
+    log('error', 'Critical transmit failure', {
+      error: err.message,
+      stack: err.stack?.slice(0, 300),
+      promptSnippet: prompt.slice(0, 100) + (prompt.length > 100 ? '...' : ''),
+    });
+
     return res.status(500).json({
       success: false,
-      error: 'Artemis encountered a synaptic failure.',
-      details: error.message || 'Unknown error'
+      error: 'Synaptic failure in Artemis bridge',
+      message: 'The consensus engine encountered an internal error. Please retry or contact Architect.',
+      retryAfter: 30, // hint for frontend
     });
   }
 }
 
-// Vercel config: Limit body size to prevent abuse
+// ────────────────────────────────────────────────
+// Vercel / Next.js config (recommended)
+// ────────────────────────────────────────────────
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '1mb'
-    }
-  }
-};
-
-
-// api/transmit.js (excerpt)
-const { agentLoop } = require('../core/agent');
-
-module.exports = async (req, res) => {
-  const { prompt, handshake } = req.body;
-  try {
-    const result = await agentLoop(prompt, handshake);
-    res.json({ verdict: result });
-  } catch (err) {
-    // Code 13 fallback to sequential
-    const fallback = await speakSequentially(prompt);
-    res.json({ verdict: fallback });
-  }
+      sizeLimit: '1mb', // prevent abuse
+    },
+    responseLimit: false, // allow large verdicts if needed
+  },
 };
