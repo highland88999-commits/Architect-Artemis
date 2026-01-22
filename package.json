@@ -31,3 +31,13 @@
   "author": "Olympus By Merlin $Dropee",
   "license": "MIT"
 }
+
+
+"dependencies": {
+  "@google/generative-ai": "^0.12.0",  // Updated for 2026 features
+  "langchain": "^0.2.0",  // Optional: For easier agent orchestration (chains tools/reasoning)
+  "sqlite3": "^5.1.7",  // For persistent state/memory
+  "axios": "^1.7.2"  // For API calls
+}
+
+
