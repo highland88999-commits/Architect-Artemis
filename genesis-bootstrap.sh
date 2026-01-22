@@ -88,3 +88,13 @@ echo "  - Test handshake: ant → dad in terminal"
 echo "  - Check incubator/ for inventions"
 echo "========================================"
 exit 0
+# At the end of genesis-bootstrap.sh
+
+echo ""
+echo "Installing common Python STEM packages locally (for dev/testing)..."
+if command -v pip >/dev/null 2>&1; then
+  pip install --user numpy scipy sympy
+  echo "Installed numpy, scipy, sympy (user level)"
+else
+  echo "pip not found — skipping local Python package install"
+fi
