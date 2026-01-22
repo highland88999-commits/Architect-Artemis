@@ -4,3 +4,5 @@
   ],
   "cleanUrls": true
 }
+{ "src": "/api/agent", "dest": "/api/transmit.js" }
+
