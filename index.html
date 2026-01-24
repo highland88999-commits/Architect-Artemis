@@ -24,6 +24,7 @@
         --c-hoodie: #FF8C00;
         --c-symbiote: #00FFFF;
         --c-starblood: #ff3333;
+        --c-aquarium: #0080ff; /* Precision added aqua-blue */
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -136,6 +137,7 @@
     .dock-icon:nth-child(6) .guide-text { animation-delay: 1.0s; }
     .dock-icon:nth-child(7) .guide-text { animation-delay: 1.2s; }
     .dock-icon:nth-child(8) .guide-text { animation-delay: 1.4s; }
+    .dock-icon:nth-child(9) .guide-text { animation-delay: 1.6s; }
 
     #holo-overlay { 
         display: none; position: fixed; inset: 5%; background: var(--glass); 
@@ -245,6 +247,10 @@
         <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         <span class="guide-text">Starblood</span>
     </div>
+    <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aquarium)">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z M4.41 12c0 4.19 3.4 7.59 7.59 7.59s7.59-3.4 7.59-7.59S16.19 4.41 12 4.41 4.41 7.81 4.41 12z"/></svg>
+        <span class="guide-text">Aquarium</span>
+    </div>
 </div>
 
 <div id="holo-overlay">
@@ -323,8 +329,7 @@
                     charIndex++;
                     typingTimer = setTimeout(typeLine, 30);
                 } else {
-                    responseField.innerHTML += '
-';
+                    responseField.innerHTML += '<br>';
                     lineIndex++;
                     charIndex = 0;
                     typingTimer = setTimeout(typeLine, 200); // Pause between lines
@@ -336,10 +341,6 @@
         typeLine();
     }
 
-    function getRandomColor() {
-        return ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'][Math.floor(Math.random() * 8)];
-    }
-
     const cmd = document.getElementById('guest-cmd');
     const sendBtn = document.getElementById('send-btn');
     const micBtn = document.getElementById('mic-btn');
@@ -349,66 +350,15 @@
     sendBtn.addEventListener('click', sendToArtemis);
     cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); sendToArtemis(); } });
 
-    // Speech recognition
+    // Speech recognition logic
     micBtn.addEventListener('click', () => {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
         recognition.start();
-
         recognition.onresult = (event) => {
             cmd.value = event.results[0][0].transcript;
             sendToArtemis();
         };
-
-        recognition.onspeechend = () => {
-            recognition.stop();
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error', event.error);
-        };
-    });
-
-    // File upload
-    fileUpload.addEventListener('change', async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            updateOracleStatus('Uploading...');
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const response = await fetch('/api/upload', { // Assume backend endpoint
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                clearOracleStatus();
-                fadeInMessage(data.message || 'File uploaded');
-            } catch (err) {
-                clearOracleStatus();
-                fadeInMessage('Upload failed');
-            }
-        }
-    });
-
-    // Download button
-    downloadBtn.addEventListener('click', () => {
-        if (currentFiles.length > 0) {
-            currentFiles.forEach(url => {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = url.split('/').pop();
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            });
-        } else {
-            alert('No files to download');
-        }
     });
 
     async function sendToArtemis() {
@@ -424,7 +374,7 @@
             const data = await response.json();
             document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
             const aiReply = data.verdict || data.response || 'The council has spoken...';
-            currentFiles = data.files || []; // Assume backend sends array of file URLs
+            currentFiles = data.files || [];
             downloadBtn.style.visibility = currentFiles.length > 0 ? 'visible' : 'hidden';
             updateOracleStatus('Responding...');
             typeResponse(aiReply);
@@ -451,4 +401,3 @@
     });
 </script></body>
 </html>
-
