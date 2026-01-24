@@ -1,50 +1,51 @@
-# .gitignore - ARTEMIS Ignore Rules (minimal & non-restrictive)
-
-# Environment & Secrets (critical - never commit)
+# --- CRITICAL: SECRETS & KEYS ---
+# Never, ever allow these in the repo.
 .env
-.env.local
-.env.development
-.env.production
-.env.test
-.env*.local
+.env.*
+!.env.example
+secrets.json
+service-account.json
 
-# Node.js / Build Junk
+# --- PERSISTENCE: ALLOWED DATA ---
+# We WANT Git to track these so Artemis has a "Memory"
+# Ensure these are NOT ignored:
+!brain.json
+!data/queue.json
+!data/recycle_bin.json
+
+# --- NODE.JS / RUNTIME ---
 node_modules/
 npm-debug.log*
-yarn-error.log
-dist/
-build/
-public/  # If used as output folder
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.vercel
 
-# Python Cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# OS / Editor Temp Files
+# --- SYSTEM & EDITORS ---
 .DS_Store
 Thumbs.db
-*.swp
-*~
 .vscode/
 .idea/
-*.sublime-*
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
 
-# Logs & Temp (optional - comment out if you want ALL logs committed)
+# --- BUILD & TEMP ---
+dist/
+build/
+# We ignore standard logs to keep the repo clean, 
+# but allow the brain and data folder above.
 *.log
 tmp/
 temp/
 
-# Optional: Ignore large backups or generated files (uncomment if needed)
-# *.bak
-# *.sqlite
-# *.sqlite3
-# *.db
-
-# Optional: Ignore heavy data folders only if they become too large/sensitive
-# data/processed/
-# data/harvested/
-# morality-conflict/
-# legal-risks/
-# incubator/*.bak
+# --- PYTHON (If using executeCode tool) ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
