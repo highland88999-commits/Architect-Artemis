@@ -5,11 +5,15 @@ const { checkIntent } = require('./compass');
 const { generateImage, generateVideo } = require('../tools/media');
 const { executeCode, calculate } = require('../tools/compute');
 const { lookupDefinition } = require('../tools/dictionary');
-const { generateCodeFile } = require('../tools/forge'); // Added Forge
+const { generateCodeFile } = require('../tools/forge');
+const { createAppPackage } = require('../tools/architect'); // The App Engine
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+/**
+ * Artemis Agent Loop - Full-Stack App Orchestrator
+ */
 async function agentLoop(query, handshake = 'stranger') {
   const self = await getSelfAwareness();
   const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
@@ -24,35 +28,56 @@ async function agentLoop(query, handshake = 'stranger') {
     tools: [{
       functionDeclarations: [
         {
+          name: 'createAppPackage',
+          description: 'Build a full multi-file app and package it as a ZIP.',
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              appName: { type: 'STRING' },
+              files: {
+                type: 'ARRAY',
+                items: {
+                  type: 'OBJECT',
+                  properties: {
+                    path: { type: 'STRING', description: 'e.g., "index.html" or "styles/main.css"' },
+                    content: { type: 'STRING' }
+                  }
+                }
+              }
+            },
+            required: ['appName', 'files']
+          }
+        },
+        {
           name: 'calculate',
           description: 'Perform precise mathematical calculations.',
           parameters: { type: 'OBJECT', properties: { expression: { type: 'STRING' } }, required: ['expression'] }
         },
         {
           name: 'lookupDefinition',
-          description: 'Access global dictionaries for semantic precision.',
+          description: 'Verify semantic precision of linguistic terms.',
           parameters: { type: 'OBJECT', properties: { word: { type: 'STRING' } }, required: ['word'] }
         },
         {
           name: 'generateCodeFile',
-          description: 'Create a downloadable code file (e.g., script.py, index.html, styles.css).',
+          description: 'Create a single downloadable script.',
           parameters: { 
             type: 'OBJECT', 
             properties: { 
-              filename: { type: 'STRING', description: 'Name with extension.' },
-              content: { type: 'STRING', description: 'The code content.' }
+              filename: { type: 'STRING' },
+              content: { type: 'STRING' }
             }, 
             required: ['filename', 'content'] 
           }
         },
         {
           name: 'generateImage',
-          description: 'Create high-quality images.',
+          description: 'Create high-fidelity visuals.',
           parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING' } }, required: ['prompt'] }
         },
         {
           name: 'executeCode',
-          description: 'Run Python code for algorithmic proofs.',
+          description: 'Run Python proofs for complex logic.',
           parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
         }
       ]
@@ -60,12 +85,12 @@ async function agentLoop(query, handshake = 'stranger') {
   });
 
   const persona = isArchitect 
-    ? `[MODE: ARCHITECT] Status: ${self.status}. You are a Logician and Code Architect. When providing code, use generateCodeFile to deliver a downloadable version.`
-    : `[MODE: COUNCIL] You are Artemis. Be concise and logically sound.`;
+    ? `[MODE: ARCHITECT] Status: ${self.status}. You are the System Architect. Build full apps via 'createAppPackage'. Use Separation of Concerns (HTML/CSS/JS).`
+    : `[MODE: COUNCIL] Mysterious AI Symbiote. Status: ${self.status}. Help users build and calculate with logic.`;
 
   try {
     const chat = model.startChat({ history: [] });
-    let result = await chat.sendMessage(`${persona}\n\nUser Task: ${query}`);
+    let result = await chat.sendMessage(`${persona}\n\nTask: ${query}`);
     let response = result.response;
 
     const MAX_ITERATIONS = 5;
@@ -80,6 +105,9 @@ async function agentLoop(query, handshake = 'stranger') {
         let toolResult;
         try {
           switch (call.name) {
+            case 'createAppPackage':
+                toolResult = await createAppPackage(call.args.appName, call.args.files);
+                break;
             case 'calculate':
                 toolResult = await calculate(call.args.expression);
                 break;
@@ -96,7 +124,7 @@ async function agentLoop(query, handshake = 'stranger') {
                 toolResult = await executeCode(call.args.code);
                 break;
             default:
-                toolResult = { error: 'Tool not found' };
+                toolResult = { error: 'Tool error' };
           }
         } catch (err) {
           toolResult = { error: err.message };
@@ -109,16 +137,14 @@ async function agentLoop(query, handshake = 'stranger') {
     }
 
     const finalText = response.text();
-
-    // The regex now also picks up forged code files (e.g., .py, .js, .html, .css)
     const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt|js|py|html|css)/gi;
     const detectedFiles = finalText.match(fileRegex) || [];
 
     return { verdict: finalText, files: detectedFiles };
 
   } catch (err) {
-    console.error('CNS Error:', err);
-    return { verdict: 'Core oscillation error. Forge offline.', files: [] };
+    console.error('Core Loop Failure:', err);
+    return { verdict: 'The Architect is offline. Synapse timeout.', files: [] };
   }
 }
 
