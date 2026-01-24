@@ -145,4 +145,104 @@
         <span class="guide-text">Creator</span>
     </div>
     <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
-        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="guide-text">Blood</span>
+    </div>
+</div>
+
+<div id="holo-overlay">
+    <div class="holo-header">
+        <span style="font-size: 0.8rem; letter-spacing: 2px;">NEXUS_VIEW</span>
+        <div onclick="closeHolo()" style="cursor:pointer; color:#ff3366;">× CLOSE</div>
+    </div>
+    <iframe id="holo-iframe"></iframe>
+</div>
+
+<script>
+    let currentFiles = [];
+
+    function enterNexus() {
+        const landing = document.getElementById('landing-page');
+        landing.classList.add('dissolve-effect');
+        document.getElementById('oracle-video').play();
+        createRain();
+        setTimeout(() => { landing.style.display = 'none'; }, 1500);
+    }
+
+    function createRain() {
+        const container = document.getElementById('rain-container');
+        if (container.children.length > 0) return;
+        for(let i=0; i<50; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 0.5 + 0.7) + 's';
+            drop.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(drop);
+        }
+    }
+
+    function typeResponse(text) {
+        const field = document.getElementById('response-field');
+        field.innerHTML = '';
+        field.classList.add('expanded');
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                field.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+                i++;
+                setTimeout(type, 20);
+                field.scrollTop = field.scrollHeight;
+            } else {
+                document.getElementById('shader-overlay').style.opacity = 0;
+                document.getElementById('oracle-message').style.opacity = 0;
+            }
+        }
+        type();
+    }
+
+    async function sendToArtemis() {
+        const cmdInput = document.getElementById('guest-cmd');
+        const val = cmdInput.value.trim(); if (!val) return;
+        cmdInput.value = '';
+
+        document.getElementById('oracle-message').textContent = 'COMMUNING...';
+        document.getElementById('oracle-message').style.opacity = 1;
+        document.getElementById('shader-overlay').style.opacity = 0.8;
+
+        try {
+            const response = await fetch('/api/transmit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    prompt: val, 
+                    handshake: localStorage.getItem('artemis_handshake') || 'stranger' 
+                })
+            });
+            const data = await response.json();
+            currentFiles = data.files || [];
+            document.getElementById('download-btn').style.display = currentFiles.length > 0 ? 'block' : 'none';
+            typeResponse(data.verdict || data.response || "Silence from the Council.");
+        } catch (err) {
+            typeResponse("!! CONNECTION TERMINATED: Link unstable.");
+        }
+    }
+
+    function openHolo(url) {
+        document.getElementById('holo-iframe').src = url;
+        document.getElementById('holo-overlay').style.display = 'flex';
+    }
+    function closeHolo() {
+        document.getElementById('holo-overlay').style.display = 'none';
+        document.getElementById('holo-iframe').src = '';
+    }
+
+    document.getElementById('send-btn').addEventListener('click', sendToArtemis);
+    document.getElementById('guest-cmd').addEventListener('keypress', e => { if(e.key==='Enter') sendToArtemis(); });
+    
+    document.querySelectorAll('.dock-icon').forEach(icon => {
+        icon.addEventListener('click', () => openHolo(icon.getAttribute('data-url')));
+    });
+</script>
+</body>
+</html>
