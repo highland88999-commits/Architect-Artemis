@@ -1,74 +1,61 @@
-// scripts/collect_domains.js
-// Fetches chronological domain lists (newly registered / recently dropped) and updates queue.json
-
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 const axios = require('axios');
 
-const QUEUE_FILE = path.join(__dirname, '../data/queue.json');
+// Database configuration via environment variable
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Helper: Load existing queue or initialize empty array
-function loadQueue() {
-  if (fs.existsSync(QUEUE_FILE)) {
-    try {
-      return JSON.parse(fs.readFileSync(QUEUE_FILE, 'utf8'));
-    } catch (err) {
-      console.error('Failed to parse queue.json, starting fresh:', err.message);
-      return [];
-    }
-  }
-  return [];
-}
+/**
+ * Harvests newly registered domains and inserts them into the PostgreSQL 'web_map' table.
+ * This replaces the local queue.json to ensure the Batch Controller and 
+ * Neural Heartbeat are synchronized.
+ */
+async function fetchAndSeedDomains() {
+  // Using an alias for the internal harvester name
+  console.log('🌱 Project Atlas: Harvesting new seeds for the database...');
 
-// Helper: Save updated queue (newest first)
-function saveQueue(queue) {
-  fs.writeFileSync(QUEUE_FILE, JSON.stringify(queue, null, 2));
-  console.log(`Queue updated: ${queue.length} domains total`);
-}
+  let newDomainsCount = 0;
+  const sourceUrl = 'https://raw.githubusercontent.com/shreshta-labs/newly-registered-domains/main/nrd-1w.txt';
 
-async function fetchNewDomains() {
-  const queue = loadQueue();
-  const existingSet = new Set(queue); // For quick duplicate check
-  let newDomains = [];
-
-  console.log('Fetching new domains...');
-
-  // Source 1: shreshta-labs newly registered domains (recent-first list)
   try {
-    const url = 'https://raw.githubusercontent.com/shreshta-labs/newly-registered-domains/main/nrd-1w.txt';
-    const response = await axios.get(url, { timeout: 15000 });
+    const response = await axios.get(sourceUrl, { timeout: 15000 });
     const lines = response.data.split('\n').map(d => d.trim()).filter(Boolean);
-    const fetched = lines.slice(0, 200); // Limit per heartbeat to avoid overload
+    
+    // Limit per heartbeat to manage database load
+    const fetched = lines.slice(0, 200); 
 
-    fetched.forEach(domain => {
-      if (!existingSet.has(domain)) {
-        newDomains.push(domain);
-        existingSet.add(domain);
+    for (const url of fetched) {
+      try {
+        // ON CONFLICT ensures we don't duplicate domains already in the Atlas
+        const res = await pool.query(
+          `INSERT INTO web_map (url, status, priority_score) 
+           VALUES ($1, 'pending', 5) 
+           ON CONFLICT (url) DO NOTHING`, 
+          [url]
+        );
+
+        if (res.rowCount > 0) {
+          newDomainsCount++;
+        }
+      } catch (err) {
+        console.error(`Failed to insert ${url}:`, err.message);
       }
-    });
-    console.log(`Fetched ${fetched.length} from shreshta-labs, added ${newDomains.length} new`);
+    }
+
+    console.log(`✅ Success: ${newDomainsCount} new domains added to the queue.`);
   } catch (err) {
-    console.error('shreshta-labs fetch failed:', err.message);
-  }
-
-  // Source 2: Example fallback (add more sources here if desired, e.g., expireddomains.net RSS or API)
-  // For now we rely on the primary source above.
-
-  if (newDomains.length > 0) {
-    // Prepend new domains (chronological: newest first)
-    queue.unshift(...newDomains);
-    saveQueue(queue);
-  } else {
-    console.log('No new domains found this cycle');
+    console.error('Failed to fetch from shreshta-labs:', err.message);
+  } finally {
+    // Close the pool connection
+    await pool.end();
   }
 }
 
 (async () => {
   try {
-    await fetchNewDomains();
+    await fetchAndSeedDomains();
     process.exit(0);
   } catch (err) {
-    console.error('Domain collection failed:', err);
+    console.error('Domain collection critical failure:', err);
     process.exit(1);
   }
 })();
