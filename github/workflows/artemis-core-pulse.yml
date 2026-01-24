@@ -1,0 +1,81 @@
+name: Artemis Core Pulse (Metabolism & Queue)
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour on the hour
+  workflow_dispatch: # Manual override button
+
+jobs:
+  # --- 1. METABOLISM (Cleanup & Memory) ---
+  metabolism:
+    name: Core Metabolism
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Purge and Recall
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          HANDSHAKE: ${{ secrets.HANDSHAKE }}
+        run: |
+          node -e "
+          const M = require('./core/metabolism');
+          const brain = new M();
+          async function pulse() {
+            console.log('🔄 Mortal Recall active...');
+            await brain.runMortalRecall();
+            console.log('🧹 Purging Void...');
+            await brain.purgeVoid();
+          }
+          pulse().then(() => console.log('✅ Metabolism Balanced.'));
+          "
+
+  # --- 2. BATCH CYCLE (Starts after Job 1 + 5 min delay) ---
+  batch_cycle:
+    name: Queue Processor
+    needs: metabolism
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cooldown
+        run: sleep 300 # 5 Minute Break
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Process Pending Queue
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          node -e "
+          require('./core/batch-controller').processQueue()
+            .then(() => console.log('✅ Batch Complete.'));
+          "
+
+  # --- 3. HEALTH SUMMARY (Final Step) ---
+  steward_summary:
+    name: Final Health Report
+    needs: batch_cycle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cooldown
+        run: sleep 300 # 5 Minute Break
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Transmit Report
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          ARCHITECT_EMAIL: ${{ secrets.ARCHITECT_EMAIL }}
+        run: |
+          node -e "
+          require('./core/stewardship/health-summary').generateDailyReport()
+            .then(() => console.log('✉️ Summary Transmitted.'));
+          "
