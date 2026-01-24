@@ -1,0 +1,36 @@
+name: Artemis Hyper-Pulse
+
+on:
+  schedule:
+    # This triggers the heartbeat every hour (at minute 0)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows you to trigger a scan manually from GitHub UI
+
+jobs:
+  hyper_pulse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Execute Hyper-Pulse Scan
+        env:
+          # Pass all secrets from GitHub Actions Secrets to the script
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          ARCHITECT_EMAIL: ${{ secrets.ARCHITECT_EMAIL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          HANDSHAKE: ${{ secrets.HANDSHAKE }}
+        # This calls the script we will create/update in the next step
+        run: node scripts/hyper-pulse-scan.js
