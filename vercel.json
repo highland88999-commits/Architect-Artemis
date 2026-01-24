@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "crons": [
     {
       "path": "/api/cron/batch-cycle",
@@ -14,8 +15,14 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/agent", "destination": "/api/transmit.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { 
+      "source": "/api/chat", 
+      "destination": "/api/transmit" 
+    },
+    { 
+      "source": "/((?!api/).*)", 
+      "destination": "/index.html" 
+    }
   ],
   "cleanUrls": true
 }
