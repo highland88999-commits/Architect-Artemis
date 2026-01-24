@@ -14,6 +14,8 @@
             --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
             --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
             --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
+            
+            /* Label Colors */
             --c-maps: #00D2FF; --c-city: #A259FF; --c-pearl: #FFF5E1;
             --c-gully: #FF4B2B; --c-finance: #00FF87; --c-hoodie: #FF8C00;
             --c-symbiote: #00FFFF; --c-starblood: #ff3333; --c-aquarium: #0080ff;
@@ -49,22 +51,23 @@
         .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
         @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
 
-        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-        #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; }
+        #response-field { width: min(400px, 85vw); max-height: 0; overflow: hidden; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 0 12px; color: #fff; font-size: 0.9rem; line-height: 1.4; text-align: left; transition: max-height 0.5s ease, padding 0.5s ease; backdrop-filter: blur(12px); margin-bottom: 2vh; }
+        #response-field.expanded { max-height: 300px; padding: 12px; overflow-y: auto; }
+
+        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .input-wrapper { display: flex; align-items: center; width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; backdrop-filter: blur(18px); padding: 5px 15px; }
+        #guest-cmd { flex: 1; padding: 12px; background: transparent; border: none; color: var(--cyan); font-size: 1.1rem; text-align: center; outline: none; }
         #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; }
+        .icon-btn { background: none; border: none; cursor: pointer; color: var(--cyan); font-size: 1.3rem; transition: 0.2s; opacity: 0.7; }
+        .icon-btn:hover { opacity: 1; transform: scale(1.1); }
 
         /* --- Dock --- */
         #bottom-dock { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); backdrop-filter: blur(20px); width: fit-content; max-width: 95vw; overflow-x: auto; scrollbar-width: none; }
         #bottom-dock::-webkit-scrollbar { display: none; }
-        .dock-icon { flex-shrink: 0; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; padding-top: 5px; }
-        .dock-icon:hover { transform: scale(1.1) translateY(-5px); }
+        .dock-icon { flex-shrink: 0; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .dock-icon svg { width: 22px; height: 22px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
-        .guide-text { display: block; font-size: 8px; margin-top: 6px; text-align: center; white-space: nowrap; text-transform: lowercase; opacity: 0; animation: breatheLabel 3s infinite ease-in-out; color: var(--label-color); text-shadow: 0 0 5px var(--label-color); pointer-events: none; }
+        .guide-text { display: block; font-size: 8px; margin-top: 6px; text-align: center; white-space: nowrap; text-transform: lowercase; opacity: 0; animation: breatheLabel 3s infinite ease-in-out; color: var(--label-color); }
         @keyframes breatheLabel { 0%, 100% { opacity: 0; transform: translateY(2px); } 50% { opacity: 1; transform: translateY(0px); } }
-
-        #response-field { width: min(400px, 85vw); max-height: 0; overflow: hidden; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 0 12px; color: #fff; font-size: 0.9rem; line-height: 1.4; text-align: left; transition: max-height 0.5s ease, padding 0.5s ease; backdrop-filter: blur(12px); margin-bottom: 2vh; }
-        #response-field.expanded { max-height: 300px; padding: 12px; overflow-y: auto; }
-        .icon-btn { background: none; border: none; cursor: pointer; color: var(--cyan); font-size: 1.5rem; margin: 0 10px; }
     </style>
 </head>
 <body>
@@ -99,8 +102,14 @@
     </div>
 
     <div id="prompt-area">
-        <div style="display: flex; align-items: center; width: 100%;">
+        <div class="input-wrapper">
+            <button id="download-btn" class="icon-btn" style="display: none;" title="Download Creation">↓</button>
+            <label for="file-upload" class="icon-btn" title="Upload File">↑</label>
+            <input type="file" id="file-upload" style="display: none;" />
+            
             <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
+            
+            <button id="mic-btn" class="icon-btn" title="Voice Input">🎤</button>
         </div>
         <button id="send-btn">SEND</button>
     </div>
@@ -112,10 +121,13 @@
     <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" style="--label-color: var(--c-pearl)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg><span class="guide-text">The pearl</span></div>
     <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)"><svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg><span class="guide-text">Grief gully</span></div>
     <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg><span class="guide-text">Finances</span></div>
-    <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)"><svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg><span class="guide-text">Symbiote Creator</span></div>
+    <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)"><svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg><span class="guide-text">Symbiote</span></div>
+    <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aquarium)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z"/></svg><span class="guide-text">Aquarium</span></div>
 </div>
 
 <script>
+    let currentFiles = [];
+
     function enterNexus() {
         const landing = document.getElementById('landing-page');
         landing.classList.add('dissolve-effect');
@@ -155,15 +167,15 @@
     }
 
     async function sendToArtemis() {
-        const cmd = document.getElementById('guest-cmd');
-        const val = cmd.value.trim(); if (!val) return;
-        cmd.value = '';
+        const cmdInput = document.getElementById('guest-cmd');
+        const val = cmdInput.value.trim(); if (!val) return;
+        cmdInput.value = '';
 
         document.getElementById('oracle-message').textContent = 'SYNCING...';
         document.getElementById('oracle-message').style.opacity = 1;
         document.getElementById('shader-overlay').style.opacity = 0.8;
 
-        // Handle Handshake Local Storage
+        // Handshake Establishment
         if(val.toLowerCase().startsWith('handshake:')) {
             const secret = val.split(':')[1].trim();
             localStorage.setItem('artemis_handshake', secret);
@@ -181,14 +193,54 @@
                 })
             });
             const data = await response.json();
-            typeResponse(data.reply || "Core silent.");
+            
+            // Logic for creations/files
+            const aiReply = data.reply || data.verdict || "Core silent.";
+            currentFiles = data.files || [];
+            document.getElementById('download-btn').style.display = currentFiles.length > 0 ? 'block' : 'none';
+
+            typeResponse(aiReply);
         } catch (err) {
             typeResponse("!! Connection Error: Synapse failure.");
         }
     }
 
+    // Voice & Download Events
     document.getElementById('send-btn').addEventListener('click', sendToArtemis);
     document.getElementById('guest-cmd').addEventListener('keypress', e => { if(e.key==='Enter') sendToArtemis(); });
+
+    document.getElementById('mic-btn').addEventListener('click', () => {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.start();
+        recognition.onresult = (e) => {
+            document.getElementById('guest-cmd').value = e.results[0][0].transcript;
+            sendToArtemis();
+        };
+    });
+
+    document.getElementById('download-btn').addEventListener('click', () => {
+        currentFiles.forEach(url => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = url.split('/').pop();
+            a.click();
+        });
+    });
+
+    // File Upload Handler
+    document.getElementById('file-upload').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        typeResponse(`Uploading ${file.name}...`);
+        // Actual upload logic would go here
+    });
+
+    // Dock Redirection
+    document.querySelectorAll('.dock-icon').forEach(icon => {
+        icon.addEventListener('click', () => {
+            window.location.href = icon.getAttribute('data-url');
+        });
+    });
 </script>
 </body>
 </html>
