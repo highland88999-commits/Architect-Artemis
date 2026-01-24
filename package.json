@@ -15,7 +15,7 @@
     "symbiote-ping": "python symbiote.py ping",
     "symbiote-harvest": "python symbiote.py harvest",
     "genesis": "bash genesis.sh",
-    "test:agent": "node core/agent.js 'Test query: Compute 2+2 and generate an image of a cat'",
+    "test:agent": "node core/agent.js",
     "test": "echo 'Add tests here' && exit 0"
   },
   "dependencies": {
@@ -29,7 +29,9 @@
     "langchain": "^0.2.0",
     "pg": "^8.11.3",
     "nodemailer": "^6.9.7",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "python-shell": "^5.0.0",
+    "replicate": "^1.0.1"
   },
   "devDependencies": {
     "servor": "^4.0.2"
