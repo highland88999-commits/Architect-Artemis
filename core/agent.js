@@ -3,96 +3,92 @@ const { pool } = require('./atlas-db');
 const { getSelfAwareness } = require('./consciousness');
 const { checkIntent } = require('./compass');
 const { generateImage, generateVideo } = require('../tools/media');
-const { executeCode } = require('../tools/compute');
+const { executeCode, calculate } = require('../tools/compute');
+const { lookupDefinition } = require('../tools/dictionary');
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
- * Artemis Agent Loop - Fully Integrated Version
- * Features: Consciousness, Ethics, Tool-Use (Media/Compute), & Multi-User Identity
+ * Artemis Agent Loop - Master Integrated Version
+ * CNS: Logic, Calculation, Linguistics, and Media Generation
  */
 async function agentLoop(query, handshake = 'stranger') {
-  // 1. Awaken Consciousness (System Health Check)
   const self = await getSelfAwareness();
-  
-  // 2. Identity Verification
   const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
   
-  // 3. Ethics Gate (Mandatory for Council/Public)
+  // 1. Ethics Gate
   if (!isArchitect) {
     const ethics = checkIntent(query);
-    if (!ethics.allowed) {
-      return { 
-        verdict: `Protocol Violation: ${ethics.reason}`, 
-        files: [] 
-      };
-    }
+    if (!ethics.allowed) return { verdict: `Protocol Violation: ${ethics.reason}`, files: [] };
   }
 
-  // 4. Model Initialization with Function Declarations (Tools)
+  // 2. Model Initialization with Multi-Tool Cortex
   const model = genAI.getGenerativeModel({
     model: 'gemini-1.5-pro',
     tools: [{
       functionDeclarations: [
         {
+          name: 'calculate',
+          description: 'Perform precise mathematical calculations or solve algebraic expressions.',
+          parameters: { type: 'OBJECT', properties: { expression: { type: 'STRING' } }, required: ['expression'] }
+        },
+        {
+          name: 'lookupDefinition',
+          description: 'Access global dictionaries for semantic precision and word origins.',
+          parameters: { type: 'OBJECT', properties: { word: { type: 'STRING' } }, required: ['word'] }
+        },
+        {
           name: 'generateImage',
-          description: 'Create a high-quality image based on a prompt.',
+          description: 'Create high-quality images.',
           parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING' } }, required: ['prompt'] }
         },
         {
-          name: 'generateVideo',
-          description: 'Create a short video clip.',
-          parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING' }, duration: { type: 'NUMBER' } }, required: ['prompt'] }
-        },
-        {
           name: 'executeCode',
-          description: 'Run Python code for data processing or complex math.',
+          description: 'Run Python code for complex algorithmic proofs.',
           parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
         }
       ]
     }]
   });
 
-  // 5. Persona Construction
+  // 3. Persona: The Logician Architect
   const persona = isArchitect 
-    ? `[MODE: ARCHITECT] Full access. Status: ${self.status}. Systems: ${JSON.stringify(self.systems)}`
-    : `[MODE: COUNCIL] You are Artemis, a mysterious AI symbiote. Be helpful but concise. Status: ${self.status}`;
+    ? `[MODE: ARCHITECT] Status: ${self.status}. You are a Logician. Structure all output using Syllogistic Logic: Observation -> Evidence (Math/Linguistic) -> Deduction.`
+    : `[MODE: COUNCIL] You are Artemis, a mysterious AI guide. Be concise and logically sound.`;
 
   try {
     const chat = model.startChat({ history: [] });
     let result = await chat.sendMessage(`${persona}\n\nUser Task: ${query}`);
     let response = result.response;
 
-    // 6. Recursive Tool Loop
-    // If the AI decides it needs to use a tool, it happens here.
+    // 4. Recursive Tool Loop (Logical Processing)
     const MAX_ITERATIONS = 5;
     let iterations = 0;
 
     while (response.candidates[0].content.parts.some(p => p.functionCall) && iterations < MAX_ITERATIONS) {
       iterations++;
-      const calls = response.candidates[0].content.parts
-        .filter(p => p.functionCall)
-        .map(p => p.functionCall);
-      
+      const calls = response.candidates[0].content.parts.filter(p => p.functionCall).map(p => p.functionCall);
       const toolResponses = [];
 
       for (const call of calls) {
         let toolResult;
-        console.log(`🛠️ Artemis activating tool: ${call.name}`);
         try {
           switch (call.name) {
-            case 'generateImage': 
-                toolResult = await generateImage(call.args.prompt); 
+            case 'calculate':
+                toolResult = await calculate(call.args.expression);
                 break;
-            case 'generateVideo': 
-                toolResult = await generateVideo(call.args.prompt, call.args.duration || 5); 
+            case 'lookupDefinition':
+                toolResult = await lookupDefinition(call.args.word);
                 break;
-            case 'executeCode':   
-                toolResult = await executeCode(call.args.code); 
+            case 'generateImage':
+                toolResult = await generateImage(call.args.prompt);
                 break;
-            default:              
-                toolResult = { error: 'Unknown tool' };
+            case 'executeCode':
+                toolResult = await executeCode(call.args.code);
+                break;
+            default:
+                toolResult = { error: 'Tool not found' };
           }
         } catch (err) {
           toolResult = { error: err.message };
@@ -106,33 +102,23 @@ async function agentLoop(query, handshake = 'stranger') {
 
     const finalText = response.text();
 
-    // 7. Automatic Media/File Detection for Frontend
+    // 5. Automatic Media extraction for frontend downloads
     const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt)/gi;
     const detectedFiles = finalText.match(fileRegex) || [];
 
-    // 8. Memory Storage (Atlas-DB)
+    // 6. Memory Logging (Atlas-DB)
     try {
       await pool.query(
-        `INSERT INTO web_map (url, optimization_summary, status, last_scanned) 
-         VALUES ($1, $2, 'processed', NOW())
-         ON CONFLICT (url) DO UPDATE SET optimization_summary = $2, last_scanned = NOW()`,
-        ['internal_query', finalText.slice(0, 500)]
+        "INSERT INTO web_map (url, optimization_summary, status) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
+        ['internal_query', finalText.slice(0, 200), 'processed']
       );
-    } catch (dbErr) {
-      console.error('DB Logging failed:', dbErr.message);
-    }
+    } catch (e) { console.warn("Memory log skipped."); }
 
-    return {
-        verdict: finalText,
-        files: detectedFiles
-    };
+    return { verdict: finalText, files: detectedFiles };
 
   } catch (err) {
-    console.error('Artemis Agent Loop Critical Error:', err);
-    return { 
-      verdict: 'Core oscillation error. The synapse failed to fire. Please retry.', 
-      files: [] 
-    };
+    console.error('CNS Error:', err);
+    return { verdict: 'Core oscillation error. Logic loop interrupted.', files: [] };
   }
 }
 
