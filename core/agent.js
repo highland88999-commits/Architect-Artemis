@@ -5,38 +5,45 @@ const { checkIntent } = require('./compass');
 const { generateImage, generateVideo } = require('../tools/media');
 const { executeCode, calculate } = require('../tools/compute');
 const { lookupDefinition } = require('../tools/dictionary');
+const { generateCodeFile } = require('../tools/forge'); // Added Forge
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-/**
- * Artemis Agent Loop - Master Integrated Version
- * CNS: Logic, Calculation, Linguistics, and Media Generation
- */
 async function agentLoop(query, handshake = 'stranger') {
   const self = await getSelfAwareness();
   const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
   
-  // 1. Ethics Gate
   if (!isArchitect) {
     const ethics = checkIntent(query);
     if (!ethics.allowed) return { verdict: `Protocol Violation: ${ethics.reason}`, files: [] };
   }
 
-  // 2. Model Initialization with Multi-Tool Cortex
   const model = genAI.getGenerativeModel({
     model: 'gemini-1.5-pro',
     tools: [{
       functionDeclarations: [
         {
           name: 'calculate',
-          description: 'Perform precise mathematical calculations or solve algebraic expressions.',
+          description: 'Perform precise mathematical calculations.',
           parameters: { type: 'OBJECT', properties: { expression: { type: 'STRING' } }, required: ['expression'] }
         },
         {
           name: 'lookupDefinition',
-          description: 'Access global dictionaries for semantic precision and word origins.',
+          description: 'Access global dictionaries for semantic precision.',
           parameters: { type: 'OBJECT', properties: { word: { type: 'STRING' } }, required: ['word'] }
+        },
+        {
+          name: 'generateCodeFile',
+          description: 'Create a downloadable code file (e.g., script.py, index.html, styles.css).',
+          parameters: { 
+            type: 'OBJECT', 
+            properties: { 
+              filename: { type: 'STRING', description: 'Name with extension.' },
+              content: { type: 'STRING', description: 'The code content.' }
+            }, 
+            required: ['filename', 'content'] 
+          }
         },
         {
           name: 'generateImage',
@@ -45,24 +52,22 @@ async function agentLoop(query, handshake = 'stranger') {
         },
         {
           name: 'executeCode',
-          description: 'Run Python code for complex algorithmic proofs.',
+          description: 'Run Python code for algorithmic proofs.',
           parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
         }
       ]
     }]
   });
 
-  // 3. Persona: The Logician Architect
   const persona = isArchitect 
-    ? `[MODE: ARCHITECT] Status: ${self.status}. You are a Logician. Structure all output using Syllogistic Logic: Observation -> Evidence (Math/Linguistic) -> Deduction.`
-    : `[MODE: COUNCIL] You are Artemis, a mysterious AI guide. Be concise and logically sound.`;
+    ? `[MODE: ARCHITECT] Status: ${self.status}. You are a Logician and Code Architect. When providing code, use generateCodeFile to deliver a downloadable version.`
+    : `[MODE: COUNCIL] You are Artemis. Be concise and logically sound.`;
 
   try {
     const chat = model.startChat({ history: [] });
     let result = await chat.sendMessage(`${persona}\n\nUser Task: ${query}`);
     let response = result.response;
 
-    // 4. Recursive Tool Loop (Logical Processing)
     const MAX_ITERATIONS = 5;
     let iterations = 0;
 
@@ -80,6 +85,9 @@ async function agentLoop(query, handshake = 'stranger') {
                 break;
             case 'lookupDefinition':
                 toolResult = await lookupDefinition(call.args.word);
+                break;
+            case 'generateCodeFile':
+                toolResult = await generateCodeFile(call.args.filename, call.args.content);
                 break;
             case 'generateImage':
                 toolResult = await generateImage(call.args.prompt);
@@ -102,23 +110,15 @@ async function agentLoop(query, handshake = 'stranger') {
 
     const finalText = response.text();
 
-    // 5. Automatic Media extraction for frontend downloads
-    const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt)/gi;
+    // The regex now also picks up forged code files (e.g., .py, .js, .html, .css)
+    const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt|js|py|html|css)/gi;
     const detectedFiles = finalText.match(fileRegex) || [];
-
-    // 6. Memory Logging (Atlas-DB)
-    try {
-      await pool.query(
-        "INSERT INTO web_map (url, optimization_summary, status) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
-        ['internal_query', finalText.slice(0, 200), 'processed']
-      );
-    } catch (e) { console.warn("Memory log skipped."); }
 
     return { verdict: finalText, files: detectedFiles };
 
   } catch (err) {
     console.error('CNS Error:', err);
-    return { verdict: 'Core oscillation error. Logic loop interrupted.', files: [] };
+    return { verdict: 'Core oscillation error. Forge offline.', files: [] };
   }
 }
 
