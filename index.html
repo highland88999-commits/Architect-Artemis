@@ -12,7 +12,6 @@
             --glass: rgba(8, 8, 25, 0.45);
             --border: rgba(0, 242, 255, 0.35);
             --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
-            --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
             --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
             
             /* Label Colors */
@@ -27,7 +26,7 @@
         /* --- Landing Page --- */
         #landing-page { position: fixed; inset: 0; z-index: 1000; background: #000; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease-in; }
         #landing-video { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-        #landing-prompt { position: relative; z-index: 1001; font-size: 1.2rem; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 20px var(--cyan); animation: pulseFade 3s infinite; pointer-events: none; }
+        #landing-prompt { position: relative; z-index: 1001; font-size: 1.2rem; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 20px var(--cyan); animation: pulseFade 3s infinite; }
         @keyframes pulseFade { 0%, 100% { opacity: 0.3; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
         .dissolve-effect { opacity: 0 !important; transform: scale(1.5); filter: brightness(2) blur(20px); pointer-events: none; }
 
@@ -38,36 +37,44 @@
 
         /* --- Main UI --- */
         #container { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; }
-        #oracle-circle { width: min(320px, 70vw); height: min(320px, 70vw); border-radius: 50%; border: 9px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); position: relative; overflow: hidden; margin-bottom: 2vh; }
+        #oracle-circle { width: min(300px, 65vw); height: min(300px, 65vw); border-radius: 50%; border: 9px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); position: relative; overflow: hidden; margin-bottom: 2vh; }
         #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
         #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        #oracle-message { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: bold; text-align: center; padding: 20px; opacity: 0; transition: opacity 0.6s ease; text-shadow: 0 0 15px rgba(0,242,255,0.8); pointer-events: none; letter-spacing: 1px; line-height: 1.4; text-transform: uppercase; animation: textPulse 2s infinite; }
-        @keyframes textPulse { 0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); } 50% { text-shadow: 0 0 20px rgba(0,242,255,1); } }
+        #oracle-message { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 1.1rem; font-weight: bold; text-align: center; padding: 20px; opacity: 0; transition: opacity 0.6s ease; text-shadow: 0 0 15px rgba(0,242,255,0.8); pointer-events: none; text-transform: uppercase; }
 
+        /* Response Field (Scrollable) */
+        #response-field { width: min(400px, 85vw); max-height: 0; overflow: hidden; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: #fff; font-size: 0.85rem; text-align: left; transition: max-height 0.5s ease; backdrop-filter: blur(12px); margin-bottom: 2vh; }
+        #response-field.expanded { max-height: 250px; padding: 12px; overflow-y: auto; border: 1px solid var(--cyan); }
+
+        /* Council Pips */
         #council-pips { display: flex; gap: 8px; margin-bottom: 8px; }
         .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--pip-color); box-shadow: 0 0 10px var(--pip-color); animation: pipPulse 1.5s infinite ease-in-out; }
         .pip:nth-child(1) { --pip-color: #00f2ff; animation-delay: 0s; }
         .pip:nth-child(2) { --pip-color: #ff3366; animation-delay: 0.2s; }
         .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
-        @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
+        @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
 
-        #response-field { width: min(400px, 85vw); max-height: 0; overflow: hidden; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 0 12px; color: #fff; font-size: 0.9rem; line-height: 1.4; text-align: left; transition: max-height 0.5s ease, padding 0.5s ease; backdrop-filter: blur(12px); margin-bottom: 2vh; }
-        #response-field.expanded { max-height: 300px; padding: 12px; overflow-y: auto; }
-
-        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-        .input-wrapper { display: flex; align-items: center; width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; backdrop-filter: blur(18px); padding: 5px 15px; }
-        #guest-cmd { flex: 1; padding: 12px; background: transparent; border: none; color: var(--cyan); font-size: 1.1rem; text-align: center; outline: none; }
-        #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; }
-        .icon-btn { background: none; border: none; cursor: pointer; color: var(--cyan); font-size: 1.3rem; transition: 0.2s; opacity: 0.7; }
-        .icon-btn:hover { opacity: 1; transform: scale(1.1); }
+        /* Unified Input Area */
+        #prompt-area { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .input-wrapper { display: flex; align-items: center; width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 30px; backdrop-filter: blur(20px); padding: 8px 15px; box-shadow: inset 0 0 10px rgba(0,242,255,0.1); }
+        #guest-cmd { flex: 1; padding: 10px; background: transparent; border: none; color: var(--cyan); font-size: 1rem; text-align: center; outline: none; }
+        #send-btn { padding: 12px 50px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 25px var(--cyan); transition: 0.3s; letter-spacing: 2px; }
+        .icon-btn { background: none; border: none; cursor: pointer; color: var(--cyan); font-size: 1.2rem; opacity: 0.6; transition: 0.2s; }
+        .icon-btn:hover { opacity: 1; transform: scale(1.2); }
 
         /* --- Dock --- */
-        #bottom-dock { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); backdrop-filter: blur(20px); width: fit-content; max-width: 95vw; overflow-x: auto; scrollbar-width: none; }
+        #bottom-dock { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 100; background: var(--glass); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--border); backdrop-filter: blur(20px); max-width: 95vw; overflow-x: auto; scrollbar-width: none; }
         #bottom-dock::-webkit-scrollbar { display: none; }
-        .dock-icon { flex-shrink: 0; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .dock-icon svg { width: 22px; height: 22px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
-        .guide-text { display: block; font-size: 8px; margin-top: 6px; text-align: center; white-space: nowrap; text-transform: lowercase; opacity: 0; animation: breatheLabel 3s infinite ease-in-out; color: var(--label-color); }
+        .dock-icon { flex-shrink: 0; width: 50px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
+        .dock-icon svg { width: 20px; height: 20px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
+        .guide-text { font-size: 7px; margin-top: 5px; text-transform: uppercase; opacity: 0; animation: breatheLabel 3s infinite ease-in-out; color: var(--label-color); }
         @keyframes breatheLabel { 0%, 100% { opacity: 0; transform: translateY(2px); } 50% { opacity: 1; transform: translateY(0px); } }
+
+        /* Holo Iframe View */
+        #holo-overlay { display: none; position: fixed; inset: 5%; background: rgba(0,0,0,0.9); border: 2px solid var(--cyan); border-radius: 20px; z-index: 2000; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,242,255,0.3); }
+        .holo-header { padding: 10px 20px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .holo-close { cursor: pointer; color: #ff3366; font-weight: bold; font-size: 1.5rem; }
+        #holo-iframe { flex: 1; border: none; background: #fff; }
     </style>
 </head>
 <body>
@@ -76,7 +83,7 @@
     <video id="landing-video" autoplay loop muted playsinline>
         <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
     </video>
-    <div id="landing-prompt">Click anywhere to enter</div>
+    <div id="landing-prompt">INITIATE CONNECTION</div>
 </div>
 
 <div id="rain-container"></div>
@@ -92,52 +99,69 @@
 
     <div id="response-field"></div>
 
-    <div id="council-header" style="display: flex; flex-direction: column; align-items: center;">
+    <div id="council-header">
         <div id="council-pips">
             <div class="pip"></div><div class="pip"></div><div class="pip"></div>
         </div>
-        <div id="council-status" style="font-size: 9px; color: var(--cyan); margin-bottom: 10px; opacity: 0.6; letter-spacing: 2px;">
-            [COUNCIL: ACTIVE] <span id="harvest-stats">[OPTIMIZING_NODES...]</span>
+        <div id="council-status" style="font-size: 8px; color: var(--cyan); margin-bottom: 10px; opacity: 0.5; letter-spacing: 2px;">
+            [COUNCIL: ONLINE] <span id="harvest-stats">[SYNCING]</span>
         </div>
     </div>
 
     <div id="prompt-area">
         <div class="input-wrapper">
             <button id="download-btn" class="icon-btn" style="display: none;" title="Download Creation">↓</button>
-            <label for="file-upload" class="icon-btn" title="Upload File">↑</label>
+            <label for="file-upload" class="icon-btn" title="Upload">↑</label>
             <input type="file" id="file-upload" style="display: none;" />
             
-            <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
+            <input type="text" id="guest-cmd" placeholder="Command Artemis..." autocomplete="off"/>
             
-            <button id="mic-btn" class="icon-btn" title="Voice Input">🎤</button>
+            <button id="mic-btn" class="icon-btn" title="Voice">🎤</button>
         </div>
-        <button id="send-btn">SEND</button>
+        <button id="send-btn">TRANSMIT</button>
     </div>
 </div>
 
 <div id="bottom-dock">
-    <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg><span class="guide-text">Maps</span></div>
-    <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aquarium)"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z"/></svg><span class="guide-text">Aquarium</span></div>
+    <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span class="guide-text">Maps</span>
+    </div>
+    <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aquarium)">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z"/></svg>
+        <span class="guide-text">Aquarium</span>
+    </div>
+    <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+        <span class="guide-text">Creator</span>
+    </div>
+</div>
+
+<div id="holo-overlay">
+    <div class="holo-header">
+        <span id="holo-title" style="font-size: 0.8rem; letter-spacing: 2px;">NEXUS_VIEW</span>
+        <div class="holo-close" onclick="closeHolo()">×</div>
+    </div>
+    <iframe id="holo-iframe"></iframe>
 </div>
 
 <script>
     let currentFiles = [];
 
     function enterNexus() {
-        const landing = document.getElementById('landing-page');
-        landing.classList.add('dissolve-effect');
+        document.getElementById('landing-page').classList.add('dissolve-effect');
         document.getElementById('oracle-video').play();
         createRain();
-        setTimeout(() => { landing.style.display = 'none'; }, 1500);
+        setTimeout(() => { document.getElementById('landing-page').style.display = 'none'; }, 1500);
     }
 
     function createRain() {
         const container = document.getElementById('rain-container');
-        for(let i=0; i<60; i++) {
+        for(let i=0; i<50; i++) {
             const drop = document.createElement('div');
             drop.className = 'drop';
             drop.style.left = Math.random() * 100 + 'vw';
-            drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+            drop.style.animationDuration = (Math.random() * 0.5 + 0.7) + 's';
             drop.style.animationDelay = Math.random() * 2 + 's';
             container.appendChild(drop);
         }
@@ -152,7 +176,8 @@
             if (i < text.length) {
                 field.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
                 i++;
-                setTimeout(type, 25);
+                setTimeout(type, 20);
+                field.scrollTop = field.scrollHeight;
             } else {
                 document.getElementById('shader-overlay').style.opacity = 0;
                 document.getElementById('oracle-message').style.opacity = 0;
@@ -166,20 +191,18 @@
         const val = cmdInput.value.trim(); if (!val) return;
         cmdInput.value = '';
 
-        document.getElementById('oracle-message').textContent = 'SYNCING...';
+        document.getElementById('oracle-message').textContent = 'COMMUNING...';
         document.getElementById('oracle-message').style.opacity = 1;
         document.getElementById('shader-overlay').style.opacity = 0.8;
 
-        // Handshake Establishment
         if(val.toLowerCase().startsWith('handshake:')) {
             const secret = val.split(':')[1].trim();
             localStorage.setItem('artemis_handshake', secret);
-            typeResponse(`!! Identity lock established. Welcome, Architect.`);
+            typeResponse(`!! IDENTITY SECURED. Handshake verified.`);
             return;
         }
 
         try {
-            // Using /api/transmit to match your new Bridge
             const response = await fetch('/api/transmit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -189,46 +212,43 @@
                 })
             });
             const data = await response.json();
-            
-            // Extract the 'verdict' and 'files' from the Bridge payload
-            const aiReply = data.verdict || data.error || "Core silent.";
             currentFiles = data.files || [];
-            
-            // Show Download button if files exist
             document.getElementById('download-btn').style.display = currentFiles.length > 0 ? 'block' : 'none';
-
-            typeResponse(aiReply);
+            typeResponse(data.verdict || data.response || "Silence from the Council.");
         } catch (err) {
-            typeResponse("!! Connection Error: Synapse failure.");
+            typeResponse("!! CONNECTION TERMINATED: Link unstable.");
         }
+    }
+
+    function openHolo(url) {
+        document.getElementById('holo-iframe').src = url;
+        document.getElementById('holo-overlay').style.display = 'flex';
+    }
+    function closeHolo() {
+        document.getElementById('holo-overlay').style.display = 'none';
+        document.getElementById('holo-iframe').src = '';
     }
 
     document.getElementById('send-btn').addEventListener('click', sendToArtemis);
     document.getElementById('guest-cmd').addEventListener('keypress', e => { if(e.key==='Enter') sendToArtemis(); });
 
     document.getElementById('mic-btn').addEventListener('click', () => {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.start();
-        recognition.onresult = (e) => {
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!Speech) return alert("Voice not supported.");
+        const rec = new Speech();
+        rec.start();
+        rec.onresult = (e) => {
             document.getElementById('guest-cmd').value = e.results[0][0].transcript;
             sendToArtemis();
         };
     });
 
     document.getElementById('download-btn').addEventListener('click', () => {
-        currentFiles.forEach(url => {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank';
-            a.download = 'artemis_creation';
-            a.click();
-        });
+        currentFiles.forEach(url => window.open(url, '_blank'));
     });
 
     document.querySelectorAll('.dock-icon').forEach(icon => {
-        icon.addEventListener('click', () => {
-            window.location.href = icon.getAttribute('data-url');
-        });
+        icon.addEventListener('click', () => openHolo(icon.getAttribute('data-url')));
     });
 </script>
 </body>
