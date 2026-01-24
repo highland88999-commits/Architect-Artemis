@@ -1,8 +1,21 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/batch-cycle",
+      "schedule": "0 * * * *" 
+    },
+    {
+      "path": "/api/cron/daily-summary",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/metabolism-pulse",
+      "schedule": "0 0 1 * *"
+    }
+  ],
   "rewrites": [
+    { "source": "/api/agent", "destination": "/api/transmit.js" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "cleanUrls": true
 }
-{ "src": "/api/agent", "dest": "/api/transmit.js" }
-
