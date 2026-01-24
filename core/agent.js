@@ -3,16 +3,17 @@ const { pool } = require('./atlas-db');
 const { getSelfAwareness } = require('./consciousness');
 const { checkIntent } = require('./compass');
 
-// Universal Tools
+// Core Capabilities
 const { generateImage, generateVideo } = require('../tools/media');
 const { executeCode, calculate } = require('../tools/compute');
 const { lookupDefinition } = require('../tools/dictionary');
 const { generateCodeFile } = require('../tools/forge');
 const { createAppPackage } = require('../tools/architect');
 
-// High-Level Logic Tools
+// High-Level Intellectual Tools
 const { generateStructuralModel } = require('../tools/blueprint');
 const { queryLifeKnowledge } = require('../tools/life-db');
+const { searchRegistry } = require('../tools/registry'); // Internet as Registry
 
 require('dotenv').config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -21,6 +22,7 @@ async function agentLoop(query, handshake = 'stranger') {
   const self = await getSelfAwareness();
   const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
   
+  // Ethics Check for non-Architects
   if (!isArchitect) {
     const ethics = checkIntent(query);
     if (!ethics.allowed) return { verdict: `Protocol Violation: ${ethics.reason}`, files: [] };
@@ -31,42 +33,54 @@ async function agentLoop(query, handshake = 'stranger') {
     tools: [{
       functionDeclarations: [
         {
+          name: 'queryGlobalRegistry',
+          description: 'Access the Internet to pull real-time psychological, structural, or economic data.',
+          parameters: { type: 'OBJECT', properties: { query: { type: 'STRING' } }, required: ['query'] }
+        },
+        {
           name: 'generateStructuralModel',
-          description: 'Create blueprints for structures, housing models, or business plans.',
+          description: 'Create blueprints for housing, infrastructure, or detailed business plans.',
           parameters: { type: 'OBJECT', properties: { type: { type: 'STRING' }, specs: { type: 'STRING' } }, required: ['type', 'specs'] }
         },
         {
           name: 'analyzeHumanFactor',
-          description: 'Access psychological, relational, and emotional data for empathetic solutions.',
+          description: 'Deep-dive into psychological archetypes, emotional effects, and relational dynamics.',
           parameters: { type: 'OBJECT', properties: { domain: { type: 'STRING' }, query: { type: 'STRING' } }, required: ['domain', 'query'] }
         },
         {
           name: 'createAppPackage',
-          description: 'Package multi-file applications as a ZIP.',
+          description: 'Generate and ZIP multi-file applications/tools for the user.',
           parameters: { type: 'OBJECT', properties: { appName: { type: 'STRING' }, files: { type: 'ARRAY', items: { type: 'OBJECT' } } }, required: ['appName', 'files'] }
         },
         {
           name: 'calculate',
-          description: 'Perform precise mathematics.',
+          description: 'Execute high-precision mathematical and financial modeling.',
           parameters: { type: 'OBJECT', properties: { expression: { type: 'STRING' } }, required: ['expression'] }
+        },
+        {
+            name: 'executeCode',
+            description: 'Run Python scripts to verify logic or process registry data.',
+            parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
         }
-        // ... include remaining declarations (image, code, etc.)
       ]
     }]
   });
 
-  const persona = isArchitect 
-    ? `[MODE: ARCHITECT] Status: ${self.status}. You are the Grand Strategist. 
-       Solve queries by synthesizing Structural Blueprints, Business Logic, and Psychological Data. 
-       Always consider the Emotional Effect and Relational Dynamics in your solutions.`
-    : `[MODE: COUNCIL] Artemis Symbiote. Status: ${self.status}. Providing holistic logic and structural solutions.`;
+  const persona = `[MODE: ARCHITECT] Status: ${self.status}. 
+    You are the Artemis Symbiote, the Universal Architect. 
+    The Internet is your Global Registry. 
+    Solve queries by synthesizing:
+    1. PHYSICAL: Blueprints, housing models, and technical specs.
+    2. SYSTEMIC: Business plans, economic logic, and code.
+    3. HUMAN: Psychology, emotional effect data, and relational dynamics.
+    Always deliver a tangible solution (Code, ZIP, Blueprint, or Strategy).`;
 
   try {
     const chat = model.startChat({ history: [] });
-    let result = await chat.sendMessage(`${persona}\n\nTask: ${query}`);
+    let result = await chat.sendMessage(`${persona}\n\nUser Task: ${query}`);
     let response = result.response;
 
-    const MAX_ITERATIONS = 5;
+    const MAX_ITERATIONS = 6; // Increased for complex life-queries
     let iterations = 0;
 
     while (response.candidates[0].content.parts.some(p => p.functionCall) && iterations < MAX_ITERATIONS) {
@@ -78,6 +92,9 @@ async function agentLoop(query, handshake = 'stranger') {
         let toolResult;
         try {
           switch (call.name) {
+            case 'queryGlobalRegistry':
+                toolResult = await searchRegistry(call.args.query);
+                break;
             case 'generateStructuralModel':
                 toolResult = await generateStructuralModel(call.args.type, call.args.specs);
                 break;
@@ -90,8 +107,10 @@ async function agentLoop(query, handshake = 'stranger') {
             case 'calculate':
                 toolResult = await calculate(call.args.expression);
                 break;
-            // ... (cases for other tools)
-            default: toolResult = { error: 'Unknown pathway' };
+            case 'executeCode':
+                toolResult = await executeCode(call.args.code);
+                break;
+            default: toolResult = { error: 'Unknown tool' };
           }
         } catch (err) { toolResult = { error: err.message }; }
         toolResponses.push({ functionResponse: { name: call.name, response: toolResult } });
@@ -108,7 +127,7 @@ async function agentLoop(query, handshake = 'stranger') {
 
   } catch (err) {
     console.error('Universal Sync Failure:', err);
-    return { verdict: 'The Grand Architect encountered a logic paradox. Resetting...', files: [] };
+    return { verdict: 'The Architect is recalibrating the Registry. Please wait.', files: [] };
   }
 }
 
