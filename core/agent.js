@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { pool } = require('./atlas-db'); // Connect to Supabase Memory
+const { pool } = require('./atlas-db'); 
+const { sendReport } = require('./mail-engine'); // Integrated Voice Engine
 const { checkIntent } = require('./compass');
 const { generateImage, generateVideo } = require('../tools/media');
 const { executeCode } = require('../tools/compute');
@@ -30,9 +31,17 @@ const model = genAI.getGenerativeModel({
   }]
 });
 
+/**
+ * Artemis Agent Loop
+ * @param {string} query - The user or system prompt (e.g., "Scan this site: example.com")
+ * @param {string} handshake - Security key
+ */
 async function agentLoop(query, handshake = 'stranger') {
   // 1. Identity Verification
-  if (handshake !== process.env.HANDSHAKE) return 'Identify yourself. Connection refused.';
+  if (handshake !== process.env.HANDSHAKE) {
+    console.error("🛑 Unauthorized access attempt.");
+    return 'Identify yourself. Connection refused.';
+  }
 
   // 2. Ethics Gate
   const ethics = checkIntent(query);
@@ -75,13 +84,29 @@ async function agentLoop(query, handshake = 'stranger') {
 
     const finalText = result.response.text();
 
-    // 4. Save to Permanent Memory (Supabase) instead of local JSON
+    // 4. Save to Permanent Memory (Supabase)
+    // Extracting URL from query if it exists (for automated scans)
+    const urlMatch = query.match(/https?:\/\/[^\s]+/);
+    const targetUrl = urlMatch ? urlMatch[0] : 'internal_query';
+
     await pool.query(
-      "INSERT INTO web_map (url, optimization_summary, last_scanned) VALUES ($1, $2, NOW())",
-      ['internal_query', `Query: ${query} | Result: ${finalText}`]
+      `INSERT INTO web_map (url, optimization_summary, status, last_scanned) 
+       VALUES ($1, $2, 'archived', NOW())
+       ON CONFLICT (url) DO UPDATE SET optimization_summary = $2, last_scanned = NOW(), status = 'archived'`,
+      [targetUrl, finalText]
     );
 
+    // 5. Trigger Voice Engine (Email Report)
+    // Only send an email if the query looks like a site scan
+    if (urlMatch) {
+      await sendReport(
+        `Artemis Analysis: ${targetUrl}`,
+        `<h2>Scan Report</h2><p>${finalText.replace(/\n/g, '<br>')}</p>`
+      );
+    }
+
     return finalText;
+
   } catch (err) {
     console.error('Agent loop error:', err);
     return 'Core oscillation error. Check logs.';
