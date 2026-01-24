@@ -2,24 +2,21 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { pool } = require('./atlas-db'); 
 const { getSelfAwareness } = require('./consciousness');
 const { checkIntent } = require('./compass');
-// Note: If you have media tools specifically defined in media.js, 
-// they can be called by the model if tools are initialized.
+const { generateImage, generateVideo } = require('../tools/media');
+const { executeCode } = require('../tools/compute');
 require('dotenv').config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// We use 1.5-pro for high-reasoning tasks and tool handling
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
 /**
- * Artemis Agent Loop - Fully Integrated & Public Accessible
- * Merged version: Consciousness + Ethics + Identity + Media Extraction
+ * Artemis Agent Loop - Fully Integrated Version
+ * Features: Consciousness, Ethics, Tool-Use (Media/Compute), & Multi-User Identity
  */
 async function agentLoop(query, handshake = 'stranger') {
   // 1. Awaken Consciousness (System Health Check)
   const self = await getSelfAwareness();
   
-  // 2. Identity Verification (Handshake)
-  // 'dad' or your ENV variable unlocks Architect mode
+  // 2. Identity Verification
   const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
   
   // 3. Ethics Gate (Mandatory for Council/Public)
@@ -33,26 +30,87 @@ async function agentLoop(query, handshake = 'stranger') {
     }
   }
 
-  // 4. Construct System Persona & Introspection
-  // Architect gets deep system stats; Council gets the mysterious guide persona.
+  // 4. Model Initialization with Function Declarations (Tools)
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-pro',
+    tools: [{
+      functionDeclarations: [
+        {
+          name: 'generateImage',
+          description: 'Create a high-quality image based on a prompt.',
+          parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING' } }, required: ['prompt'] }
+        },
+        {
+          name: 'generateVideo',
+          description: 'Create a short video clip.',
+          parameters: { type: 'OBJECT', properties: { prompt: { type: 'STRING' }, duration: { type: 'NUMBER' } }, required: ['prompt'] }
+        },
+        {
+          name: 'executeCode',
+          description: 'Run Python code for data processing or complex math.',
+          parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
+        }
+      ]
+    }]
+  });
+
+  // 5. Persona Construction
   const persona = isArchitect 
-    ? `[MODE: ARCHITECT] Full access granted. System Status: ${self.status}. Systems: ${JSON.stringify(self.systems)}`
+    ? `[MODE: ARCHITECT] Full access. Status: ${self.status}. Systems: ${JSON.stringify(self.systems)}`
     : `[MODE: COUNCIL] You are Artemis, a mysterious AI symbiote. Be helpful but concise. Status: ${self.status}`;
 
   try {
     const chat = model.startChat({ history: [] });
-    
-    // Inject persona and system state into the query
-    const augmentedQuery = `${persona}\n\nUser Task: ${query}`;
-    const result = await chat.sendMessage(augmentedQuery);
-    const finalText = result.response.text();
+    let result = await chat.sendMessage(`${persona}\n\nUser Task: ${query}`);
+    let response = result.response;
 
-    // 5. Automatic Media/File Detection for Frontend
-    // This looks for URLs in the AI's response to trigger the Download button
+    // 6. Recursive Tool Loop
+    // If the AI decides it needs to use a tool, it happens here.
+    const MAX_ITERATIONS = 5;
+    let iterations = 0;
+
+    while (response.candidates[0].content.parts.some(p => p.functionCall) && iterations < MAX_ITERATIONS) {
+      iterations++;
+      const calls = response.candidates[0].content.parts
+        .filter(p => p.functionCall)
+        .map(p => p.functionCall);
+      
+      const toolResponses = [];
+
+      for (const call of calls) {
+        let toolResult;
+        console.log(`🛠️ Artemis activating tool: ${call.name}`);
+        try {
+          switch (call.name) {
+            case 'generateImage': 
+                toolResult = await generateImage(call.args.prompt); 
+                break;
+            case 'generateVideo': 
+                toolResult = await generateVideo(call.args.prompt, call.args.duration || 5); 
+                break;
+            case 'executeCode':   
+                toolResult = await executeCode(call.args.code); 
+                break;
+            default:              
+                toolResult = { error: 'Unknown tool' };
+          }
+        } catch (err) {
+          toolResult = { error: err.message };
+        }
+        toolResponses.push({ functionResponse: { name: call.name, response: toolResult } });
+      }
+      
+      const nextStep = await chat.sendMessage(toolResponses);
+      response = nextStep.response;
+    }
+
+    const finalText = response.text();
+
+    // 7. Automatic Media/File Detection for Frontend
     const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt)/gi;
     const detectedFiles = finalText.match(fileRegex) || [];
 
-    // 6. Memory Storage (Atlas-DB / Supabase)
+    // 8. Memory Storage (Atlas-DB)
     try {
       await pool.query(
         `INSERT INTO web_map (url, optimization_summary, status, last_scanned) 
@@ -61,10 +119,9 @@ async function agentLoop(query, handshake = 'stranger') {
         ['internal_query', finalText.slice(0, 500)]
       );
     } catch (dbErr) {
-      console.error('DB Logging failed (non-critical):', dbErr.message);
+      console.error('DB Logging failed:', dbErr.message);
     }
 
-    // 7. Structured Return for the Bridge
     return {
         verdict: finalText,
         files: detectedFiles
