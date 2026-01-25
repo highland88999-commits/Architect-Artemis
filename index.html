@@ -1,41 +1,34 @@
-<div id="bottom-dock-wrapper" style="position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); z-index: 100; width: 95vw; max-width: 600px;">
-    <div id="scroll-hint" style="text-align: center; color: var(--cyan); font-size: 8px; letter-spacing: 3px; margin-bottom: 8px; opacity: 0.4; pointer-events: none; text-transform: uppercase;">
-        ‹ Slide to Navigate Nodes ›
+<div id="bottom-dock">
+    <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span class="guide-text">Maps</span>
     </div>
-    
-    <div id="bottom-dock" style="display: flex; gap: 12px; background: var(--glass); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--border); backdrop-filter: blur(20px); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;">
-        <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span class="guide-text">Maps</span>
-        </div>
-        <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" style="--label-color: var(--c-city)">
-            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
-            <span class="guide-text">City</span>
-        </div>
-        <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)">
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
-            <span class="guide-text">Gully</span>
-        </div>
-        <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)">
-            <svg viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/></svg>
-            <span class="guide-text">Finances</span>
-        </div>
-        
-        <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aqua)">
-            <svg viewBox="0 0 24 24"><path d="M12,20C7.58,20 4,16.42 4,12C4,7.58 7.58,4 12,4C16.42,4 20,7.58 20,12C20,16.42 16.42,20 12,20M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M16,11C15.45,11 15,11.45 15,12C15,12.55 15.45,13 16,13C16.55,13 17,12.55 17,12C17,11.45 16.55,11 16,11M12,9C11.45,9 11,9.45 11,10C11,10.55 11.45,11 12,11C12.55,11 13,10.55 13,10C13,9.45 12.55,9 12,9M8,11C7.45,11 7,11.45 7,12C7,12.55 7.45,13 8,13C8.55,13 9,12.55 9,12C9,11.45 8.55,11 8,11Z"/></svg>
-            <span class="guide-text">Aquarium</span>
-        </div>
-        <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
-            <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
-            <span class="guide-text">Hoodies</span>
-        </div>
-        <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
-            <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
-            <span class="guide-text">Creator</span>
-        </div>
-        <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
-            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <span class="guide-text">Blood</span>
-        </div>
+    <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" style="--label-color: var(--c-city)">
+        <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
+        <span class="guide-text">City</span>
+    </div>
+    <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aqua)">
+        <svg viewBox="0 0 24 24"><path d="M12,20C7.58,20 4,16.42 4,12C4,7.58 7.58,4 12,4C16.42,4 20,7.58 20,12C20,16.42 16.42,20 12,20M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M16,11C15.45,11 15,11.45 15,12C15,12.55 15.45,13 16,13C16.55,13 17,12.55 17,12C17,11.45 16.55,11 16,11M12,9C11.45,9 11,9.45 11,10C11,10.55 11.45,11 12,11C12.55,11 13,10.55 13,10C13,9.45 12.55,9 12,9M8,11C7.45,11 7,11.45 7,12C7,12.55 7.45,13 8,13C8.55,13 9,12.55 9,12C9,11.45 8.55,11 8,11Z"/></svg>
+        <span class="guide-text">Aquarium</span>
+    </div>
+    <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
+        <span class="guide-text">Gully</span>
+    </div>
+    <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)">
+        <svg viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/></svg>
+        <span class="guide-text">Finances</span>
+    </div>
+    <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
+        <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+        <span class="guide-text">Hoodies</span>
+    </div>
+    <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+        <span class="guide-text">Creator</span>
+    </div>
+    <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="guide-text">Blood</span>
     </div>
 </div>
