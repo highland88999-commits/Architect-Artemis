@@ -4,10 +4,25 @@
  * Purpose: Sequential analysis, stewardship evaluation, and final synthesis
  */
 
-const { ClarifaiStub, grpc } = require("clarifai-nodejs-grpc");
-const stub = ClarifaiStub.grpc();
-const metadata = new grpc.Metadata();
-metadata.set("authorization", "Key " + process.env.CLARIFAI_PAT);
+require('dotenv').config();
+
+// Graceful Clarifai initialization - only if PAT is available
+let stub, metadata;
+const CLARIFAI_AVAILABLE = process.env.CLARIFAI_PAT && process.env.CLARIFAI_PAT !== 'optional-for-local-dev';
+
+if (CLARIFAI_AVAILABLE) {
+  try {
+    const { ClarifaiStub, grpc } = require("clarifai-nodejs-grpc");
+    stub = ClarifaiStub.grpc();
+    metadata = new grpc.Metadata();
+    metadata.set("authorization", "Key " + process.env.CLARIFAI_PAT);
+    console.log("✓ Clarifai Council initialized");
+  } catch (err) {
+    console.warn("⚠️  Clarifai initialization failed:", err.message);
+  }
+} else {
+  console.log("ℹ️  Running without Clarifai Council (local dev mode)");
+}
 
 class ConsensusEngine {
   constructor() {
@@ -16,6 +31,7 @@ class ConsensusEngine {
       { name: "Copilot Beta", id: "gpt-4", user: "openai", app: "chat-completion" },
       { name: "Grok X", id: "grok-1", user: "x-ai", app: "completion" },
     ];
+    this.clarifaiAvailable = CLARIFAI_AVAILABLE;
   }
 
   /**
