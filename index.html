@@ -234,6 +234,160 @@
     }
 
     function openHolo(url) {
+        if (url === 'EMERGENT_E1') {
+            // Special handling for E1 - create a beautiful glass interface
+            const holoOverlay = document.getElementById('holo-overlay');
+            const holoIframe = document.getElementById('holo-iframe');
+            
+            // Create E1 interface content
+            holoIframe.srcdoc = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { 
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            font-family: 'Courier New', monospace;
+                            color: #fff;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            padding: 20px;
+                        }
+                        .container {
+                            background: rgba(255, 255, 255, 0.1);
+                            backdrop-filter: blur(20px);
+                            border-radius: 20px;
+                            padding: 40px;
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                            max-width: 600px;
+                            text-align: center;
+                        }
+                        h1 { 
+                            font-size: 3rem; 
+                            margin-bottom: 20px;
+                            background: linear-gradient(45deg, #fff, #a78bfa);
+                            -webkit-background-clip: text;
+                            -webkit-text-fill-color: transparent;
+                            background-clip: text;
+                        }
+                        .subtitle {
+                            font-size: 1.2rem;
+                            margin-bottom: 30px;
+                            opacity: 0.9;
+                        }
+                        .chat-area {
+                            background: rgba(0, 0, 0, 0.3);
+                            border-radius: 15px;
+                            padding: 20px;
+                            margin: 20px 0;
+                            max-height: 300px;
+                            overflow-y: auto;
+                            text-align: left;
+                        }
+                        .input-group {
+                            display: flex;
+                            gap: 10px;
+                            margin-top: 20px;
+                        }
+                        input {
+                            flex: 1;
+                            padding: 15px;
+                            border: none;
+                            border-radius: 10px;
+                            background: rgba(255, 255, 255, 0.2);
+                            color: #fff;
+                            font-size: 1rem;
+                        }
+                        input::placeholder { color: rgba(255, 255, 255, 0.6); }
+                        button {
+                            padding: 15px 30px;
+                            border: none;
+                            border-radius: 10px;
+                            background: linear-gradient(45deg, #7C3AED, #A78BFA);
+                            color: #fff;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: transform 0.2s;
+                        }
+                        button:hover { transform: scale(1.05); }
+                        .message {
+                            margin: 10px 0;
+                            padding: 10px;
+                            border-radius: 8px;
+                            background: rgba(255, 255, 255, 0.1);
+                        }
+                        .user { text-align: right; background: rgba(124, 58, 237, 0.3); }
+                        .ai { text-align: left; background: rgba(167, 139, 250, 0.3); }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>🌟 E1 Agent</h1>
+                        <div class="subtitle">Emergent Intelligence at your service</div>
+                        <div class="chat-area" id="chat">
+                            <div class="message ai">Hello! I'm E1, your Emergent AI assistant integrated into Artemis. How can I help you today?</div>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="e1-input" placeholder="Ask E1 anything..." />
+                            <button onclick="sendE1Message()">Send</button>
+                        </div>
+                    </div>
+                    <script>
+                        async function sendE1Message() {
+                            const input = document.getElementById('e1-input');
+                            const chat = document.getElementById('chat');
+                            const message = input.value.trim();
+                            
+                            if (!message) return;
+                            
+                            // Add user message
+                            chat.innerHTML += '<div class="message user">You: ' + message + '</div>';
+                            input.value = '';
+                            chat.scrollTop = chat.scrollHeight;
+                            
+                            // Add thinking indicator
+                            chat.innerHTML += '<div class="message ai" id="thinking">E1 is thinking...</div>';
+                            chat.scrollTop = chat.scrollHeight;
+                            
+                            try {
+                                // Call Artemis API with E1 context
+                                const response = await fetch('/api/transmit', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        prompt: '[E1 Agent Request] ' + message,
+                                        handshake: 'dad'
+                                    })
+                                });
+                                
+                                const data = await response.json();
+                                document.getElementById('thinking').remove();
+                                chat.innerHTML += '<div class="message ai">E1: ' + (data.verdict || data.response || 'Processing...') + '</div>';
+                            } catch (err) {
+                                document.getElementById('thinking').remove();
+                                chat.innerHTML += '<div class="message ai">E1: Connection error. Please try again.</div>';
+                            }
+                            
+                            chat.scrollTop = chat.scrollHeight;
+                        }
+                        
+                        document.getElementById('e1-input').addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') sendE1Message();
+                        });
+                    </script>
+                </body>
+                </html>
+            `;
+            
+            holoOverlay.style.display = 'flex';
+            return;
+        }
+        
         document.getElementById('holo-iframe').src = url;
         document.getElementById('holo-overlay').style.display = 'flex';
     }
