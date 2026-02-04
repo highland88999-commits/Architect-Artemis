@@ -1,17 +1,18 @@
 /**
  * ARCHITECT ARTEMIS | THE ACTIVE MIND
  * Purpose: Integration of Gemini AI with Moral Guardrails + Council Orchestration
+ * Updated: Now uses Gemini Bridge for Emergent LLM key compatibility
  */
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const geminiBridge = require("./gemini-bridge-client");
 const compass = require("./compass");
 const consensus = require("./consensus"); // Council of Three engine
 const fs = require("fs-extra");
 
 class Architect {
   constructor() {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    this.bridge = geminiBridge;
+    this.model = "gemini-2.5-pro";
 
     // Mode & Handshake
     this.mode = "guest"; // "guest" or "architect"
