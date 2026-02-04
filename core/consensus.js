@@ -148,6 +148,10 @@ class ConsensusEngine {
   }
 
   fetchClarifai(model, prompt) {
+    if (!this.clarifaiAvailable || !stub) {
+      return Promise.reject(new Error("Clarifai not available in local dev mode"));
+    }
+    
     return new Promise((resolve, reject) => {
       stub.PostModelOutputs(
         {
