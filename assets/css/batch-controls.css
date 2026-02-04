@@ -1,0 +1,107 @@
+/* assets/css/batch-controls.css */
+
+/* ────────────────────────────────────────────────
+   Root variables (makes theme changes easier)
+   ──────────────────────────────────────────────── */
+:root {
+  --btn-silver-start: #e6e6e6;
+  --btn-silver-end: #ffffff;
+  --btn-text: #1a1a1a;
+  --btn-border: #b3b3b3;
+  --btn-glow: rgba(255, 255, 255, 0.2);
+  --btn-hover-glow: rgba(255, 255, 255, 0.6);
+  --pulse-gradient: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 70%);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ────────────────────────────────────────────────
+   Main button
+   ──────────────────────────────────────────────── */
+.batch-start-btn {
+  /* Core styling */
+  background: linear-gradient(145deg, var(--btn-silver-start), var(--btn-silver-end));
+  color: var(--btn-text);
+  border: 1px solid var(--btn-border);
+  padding: 12px 28px;
+  font-family: 'Orbitron', 'Courier New', monospace, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2.2px;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;               /* better stacking context */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 12px var(--btn-glow);
+  transition: var(--transition);
+
+  /* Accessibility */
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hover / focus states */
+.batch-start-btn:hover,
+.batch-start-btn:focus-visible {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 6px 20px var(--btn-hover-glow), inset 0 0 12px rgba(255,255,255,0.4);
+  color: #000;
+}
+
+/* Active / pressed state */
+.batch-start-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition-duration: 0.12s;
+}
+
+/* The silver pulse overlay */
+.batch-start-btn::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background: var(--pulse-gradient);
+  opacity: 0.4;
+  animation: silver-glow 5.5s infinite linear;
+  pointer-events: none;
+  z-index: -1;
+  will-change: transform; /* performance hint */
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .batch-start-btn,
+  .batch-start-btn:hover,
+  .batch-start-btn:active {
+    transition: none;
+    transform: none !important;
+  }
+
+  .batch-start-btn::after {
+    animation: none;
+    opacity: 0.25;
+  }
+}
+
+/* Disabled state */
+.batch-start-btn:disabled,
+.batch-start-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: grayscale(0.4);
+}
+
+.batch-start-btn:disabled::after {
+  animation: none;
+}
+
+/* Animation */
+@keyframes silver-glow {
+  0%   { transform: translate(-35%, -35%) rotate(0deg);  }
+  100% { transform: translate(-35%, -35%) rotate(360deg); }
+}

@@ -1,0 +1,7 @@
+# harvesting/requirements.txt
+psycopg2-binary>=2.9.10
+requests>=2.32.0
+beautifulsoup4>=4.12.3          # if you ever want a Python fallback crawler
+urllib3>=2.2.3
+tenacity>=9.0.0                 # for retries
+python-dotenv>=1.0.1            # if loading env vars

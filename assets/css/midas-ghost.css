@@ -1,0 +1,99 @@
+/* assets/css/midas-ghost.css */
+
+/* ────────────────────────────────────────────────
+   MIDAS GHOST – Golden Guidance Apparition
+   Floating golden orb that appears when Midas offers wisdom
+   ──────────────────────────────────────────────── */
+
+:root {
+  --midas-gold-core: #ffd700;
+  --midas-gold-glow: #ffa500;
+  --midas-teal-accent: #00f2ff;
+  --midas-glow-soft: rgba(255, 215, 0, 0.35);
+  --midas-glow-strong: rgba(255, 165, 0, 0.6);
+  --transition-smooth: opacity 1.2s ease-in-out, transform 0.8s ease;
+}
+
+/* Main ghost element */
+#midas-ghost {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 72px;
+  height: 72px;
+  background: radial-gradient(circle at 30% 30%, var(--midas-gold-core) 0%, transparent 65%);
+  border-radius: 50%;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(4px);
+  box-shadow: 0 0 30px var(--midas-glow-soft);
+  transition: var(--transition-smooth);
+  will-change: opacity, transform, box-shadow;
+}
+
+/* Active / visible state */
+#midas-ghost.active {
+  opacity: 0.92;
+  animation: 
+    midas-float 4.2s infinite ease-in-out,
+    midas-glow-pulse 2.8s infinite alternate ease-in-out;
+  filter: blur(2px);
+}
+
+/* Floating motion */
+@keyframes midas-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(0, -28px) scale(1.08);
+  }
+}
+
+/* Pulsing golden aura */
+@keyframes midas-glow-pulse {
+  from {
+    box-shadow: 
+      0 0 20px var(--midas-glow-soft),
+      0 0 40px var(--midas-glow-strong),
+      inset 0 0 12px var(--midas-gold-core);
+  }
+  to {
+    box-shadow: 
+      0 0 40px var(--midas-glow-strong),
+      0 0 70px rgba(255, 165, 0, 0.45),
+      inset 0 0 18px var(--midas-gold-glow);
+  }
+}
+
+/* Reduced motion preference – accessibility win */
+@media (prefers-reduced-motion: reduce) {
+  #midas-ghost,
+  #midas-ghost.active {
+    transition: opacity 1.2s ease;
+    animation: none !important;
+    transform: none !important;
+  }
+
+  #midas-ghost.active {
+    filter: blur(3px);
+    box-shadow: 0 0 35px var(--midas-glow-soft);
+  }
+}
+
+/* Optional: subtle teal accent ring when very active (e.g. critical guidance) */
+#midas-ghost.critical {
+  border: 2px solid var(--midas-teal-accent);
+  box-shadow: 0 0 50px rgba(0, 242, 255, 0.4), inset 0 0 20px var(--midas-teal-accent);
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  #midas-ghost {
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+  }
+}

@@ -1,0 +1,117 @@
+/* assets/css/midas-symbiote.css */
+
+/* ────────────────────────────────────────────────
+   MIDAS SYMBIOTE OVERLAY
+   Golden divine guidance panel – appears when Midas intervenes
+   ──────────────────────────────────────────────── */
+
+:root {
+  --midas-gold-core: #ffd700;
+  --midas-gold-glow: #ffaa00;
+  --midas-gold-soft: rgba(255, 215, 0, 0.35);
+  --midas-gold-strong: rgba(255, 170, 0, 0.65);
+  --midas-teal-hint: rgba(0, 242, 255, 0.18);
+  --transition-midas: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Main overlay container */
+.midas-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 30%,
+    var(--midas-gold-soft) 0%,
+    rgba(0, 0, 0, 0.94) 70%
+  );
+  border: 2px solid var(--midas-gold-core);
+  box-shadow: 
+    0 0 40px var(--midas-gold-strong),
+    inset 0 0 30px var(--midas-gold-soft),
+    inset 0 0 60px var(--midas-teal-hint);
+  color: var(--midas-gold-core);
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-align: center;
+  padding: clamp(20px, 5vw, 40px);
+  border-radius: 0;
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition-midas);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Active / visible state */
+.midas-active {
+  opacity: 1;
+  pointer-events: all;
+  animation: midas-reveal 1.2s ease-out forwards,
+             midas-shimmer 3.5s infinite alternate ease-in-out;
+}
+
+/* Reveal animation on appearance */
+@keyframes midas-reveal {
+  0%   { opacity: 0; transform: scale(0.92) translateY(20px); filter: blur(6px); }
+  70%  { opacity: 0.8; transform: scale(1.03) translateY(-8px); filter: blur(2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+/* Continuous golden shimmer / breathing glow */
+@keyframes midas-shimmer {
+  from {
+    filter: brightness(1) drop-shadow(0 0 12px var(--midas-gold-core));
+    box-shadow: 
+      0 0 40px var(--midas-gold-strong),
+      inset 0 0 35px var(--midas-gold-soft);
+  }
+  to {
+    filter: brightness(1.35) drop-shadow(0 0 28px var(--midas-gold-glow));
+    box-shadow: 
+      0 0 70px var(--midas-gold-strong),
+      inset 0 0 50px rgba(255, 215, 0, 0.45);
+  }
+}
+
+/* Inner content wrapper (optional – for text/icon centering) */
+.midas-overlay > div {
+  max-width: 90%;
+  text-shadow: 0 0 10px var(--midas-gold-core), 0 0 20px var(--midas-gold-glow);
+  animation: midas-text-pulse 4s infinite alternate ease-in-out;
+}
+
+@keyframes midas-text-pulse {
+  from { opacity: 0.92; }
+  to   { opacity: 1; }
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .midas-overlay,
+  .midas-active,
+  .midas-overlay > div {
+    animation: none !important;
+    transition: opacity 1.2s ease;
+    filter: none;
+    transform: none;
+  }
+
+  .midas-active {
+    opacity: 1;
+    box-shadow: 0 0 50px var(--midas-gold-soft);
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .midas-overlay {
+    padding: 16px 20px;
+    font-size: clamp(1rem, 4.5vw, 1.25rem);
+    letter-spacing: 2px;
+  }
+}

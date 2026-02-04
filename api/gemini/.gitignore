@@ -1,0 +1,108 @@
+# .gitignore for Next.js (recommended 2025–2026)
+
+# ────────────────────────────────────────────────
+# Next.js / Vercel build output
+# ────────────────────────────────────────────────
+.next/
+out/
+.vercel/
+.vercel_build_output/
+.vercel_project/
+.vercel/
+dist/
+
+# Next.js cache (very large, never commit)
+.next/cache/
+
+# ────────────────────────────────────────────────
+# Dependency directories
+# ────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
+
+# ────────────────────────────────────────────────
+# Environment & secrets
+# ────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel / deployment secrets
+.vercel
+.now
+
+# ────────────────────────────────────────────────
+# Logs & temporary files
+# ────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ────────────────────────────────────────────────
+# Testing & coverage
+# ────────────────────────────────────────────────
+coverage/
+.nyc_output/
+jest-report/
+playwright-report/
+test-results/
+
+# ────────────────────────────────────────────────
+# Editor / IDE files
+# ────────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ────────────────────────────────────────────────
+# OS generated files
+# ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ────────────────────────────────────────────────
+# Optional: build-time artifacts you might generate
+# ────────────────────────────────────────────────
+*.tsbuildinfo
+*.swc
+.turbo/
+build/
+dist-ssr/
+
+# ────────────────────────────────────────────────
+# Optional: keep these if you want, but usually safe to ignore
+# ────────────────────────────────────────────────
+# public/build/              # if using custom build step
+# .contentlayer/             # if using contentlayer
+# .tamagui/                  # if using Tamagui
+# .sentryclirc               # Sentry config (sometimes contains tokens)
+
+# ────────────────────────────────────────────────
+# Keep these files (do NOT ignore)
+# ────────────────────────────────────────────────
+!README.md
+!LICENSE
+!.env.example
+!.gitignore
+!next.config.*
+!tsconfig.json
+!jsconfig.json
+!postcss.config.*
+!tailwind.config.*
