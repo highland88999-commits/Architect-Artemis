@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Artemis • Symbiote</title>
+    <style>
+        :root {
+            --cyan: #00f2ff;
+            --gold: #d4af37;
+            --purple-shader: rgba(26, 0, 51, 0.82);
+            --glass: rgba(8, 8, 25, 0.45);
+            --border: rgba(0, 242, 255, 0.35);
+            --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
+            
+            /* Label Colors */
+            --c-maps: #00D2FF; --c-city: #A259FF; --c-pearl: #FFF5E1;
+            --c-gully: #FF4B2B; --c-finance: #00FF87; --c-hoodie: #FF8C00;
+            --c-symbiote: #00FFFF; --c-starblood: #ff3333;
+            --c-aqua: #0077be;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body, html { width:100%; height:100%; overflow:hidden; background:#000; font-family: 'Courier New', monospace; color:var(--cyan); touch-action: manipulation; }
+
+        /* --- Landing Page --- */
+        #landing-page { position: fixed; inset: 0; z-index: 1000; background: #000; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: opacity 1.5s ease; }
+        #landing-video { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+        #landing-prompt { position: relative; z-index: 1001; font-size: 1.2rem; letter-spacing: 4px; text-transform: uppercase; text-shadow: 0 0 20px var(--cyan); animation: pulseFade 3s infinite; }
+        @keyframes pulseFade { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .dissolve-effect { opacity: 0 !important; transform: scale(1.1); filter: blur(20px); pointer-events: none; }
+
+        /* --- Rain Effect --- */
+        #rain-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        .drop { position: absolute; background: linear-gradient(transparent, var(--cyan)); width: 1px; height: 80px; top: -100px; animation: fall 1.5s linear infinite; opacity: 0.3; }
+        @keyframes fall { to { transform: translateY(110vh); } }
+
+        /* --- Main UI --- */
+        #container { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; }
+        #oracle-circle { width: min(300px, 65vw); height: min(300px, 65vw); border-radius: 50%; border: 9px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); position: relative; overflow: hidden; margin-bottom: 2vh; }
+        #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+        #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.5s ease; }
+        #oracle-message { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 1.1rem; font-weight: bold; padding: 20px; opacity: 0; transition: opacity 0.6s ease; text-transform: uppercase; pointer-events: none; }
+
+        /* Response Field */
+        #response-field { width: min(400px, 85vw); max-height: 0; overflow: hidden; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: #fff; font-size: 0.85rem; text-align: left; transition: max-height 0.5s ease; backdrop-filter: blur(12px); margin-bottom: 2vh; }
+        #response-field.expanded { max-height: 250px; padding: 12px; overflow-y: auto; border: 1px solid var(--cyan); }
+
+        /* Council Pips */
+        #council-pips { display: flex; gap: 8px; margin-bottom: 8px; }
+        .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--pip-color); box-shadow: 0 0 10px var(--pip-color); animation: pipPulse 1.5s infinite ease-in-out; }
+        .pip:nth-child(1) { --pip-color: #00f2ff; animation-delay: 0s; }
+        .pip:nth-child(2) { --pip-color: #ff3366; animation-delay: 0.2s; }
+        .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
+        @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+        /* Input Area */
+        #prompt-area { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .input-wrapper { display: flex; align-items: center; width: 100%; background: var(--glass); border: 1px solid var(--border); border-radius: 30px; backdrop-filter: blur(20px); padding: 8px 15px; }
+        #guest-cmd { flex: 1; padding: 10px; background: transparent; border: none; color: var(--cyan); font-size: 1rem; text-align: center; outline: none; }
+        #send-btn { padding: 12px 50px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 25px var(--cyan); letter-spacing: 2px; }
+        .icon-btn { background: none; border: none; cursor: pointer; color: var(--cyan); font-size: 1.2rem; opacity: 0.6; transition: 0.2s; }
+
+        /* Dock */
+        #bottom-dock { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 100; background: var(--glass); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--border); backdrop-filter: blur(20px); max-width: 95vw; overflow-x: auto; scrollbar-width: none; }
+        .dock-icon { flex-shrink: 0; width: 50px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
+        .dock-icon svg { width: 20px; height: 20px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
+        .guide-text { font-size: 7px; margin-top: 5px; text-transform: uppercase; opacity: 0; animation: breatheLabel 3s infinite ease-in-out; color: var(--label-color); }
+        @keyframes breatheLabel { 0%, 100% { opacity: 0; transform: translateY(2px); } 50% { opacity: 1; transform: translateY(0px); } }
+
+        #holo-overlay { display: none; position: fixed; inset: 5%; background: rgba(0,0,0,0.9); border: 2px solid var(--cyan); border-radius: 20px; z-index: 2000; flex-direction: column; overflow: hidden; }
+        .holo-header { padding: 10px 20px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        #holo-iframe { flex: 1; border: none; background: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="landing-page" onclick="enterNexus()">
+    <video id="landing-video" autoplay loop muted playsinline>
+        <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
+    </video>
+    <div id="landing-prompt">INITIATE CONNECTION</div>
+</div>
+
+<div id="rain-container"></div>
+
+<div id="container">
+    <div id="oracle-circle">
+        <video id="oracle-video" loop muted playsinline>
+            <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
+        </video>
+        <div id="shader-overlay"></div>
+        <div id="oracle-message"></div>
+    </div>
+
+    <div id="response-field"></div>
+
+    <div id="council-header">
+        <div id="council-pips">
+            <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+        </div>
+        <div id="council-status" style="font-size: 8px; color: var(--cyan); margin-bottom: 10px; opacity: 0.5; letter-spacing: 2px;">
+            [COUNCIL: ONLINE] <span id="harvest-stats">[SYNCING]</span>
+        </div>
+    </div>
+
+    <div id="prompt-area">
+        <div class="input-wrapper">
+            <button id="download-btn" class="icon-btn" style="display: none;">↓</button>
+            <label for="file-upload" class="icon-btn">↑</label>
+            <input type="file" id="file-upload" style="display: none;" />
+            <input type="text" id="guest-cmd" placeholder="Command Artemis..." autocomplete="off"/>
+            <button id="mic-btn" class="icon-btn">🎤</button>
+        </div>
+        <button id="send-btn">TRANSMIT</button>
+    </div>
+</div>
+
+<div id="bottom-dock">
+    <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span class="guide-text">Maps</span>
+    </div>
+    <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
+        <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+        <span class="guide-text">Hoodies</span>
+    </div>
+    <div class="dock-icon" data-url="https://georgia-aquarium.vercel.app/" style="--label-color: var(--c-aqua)">
+        <svg viewBox="0 0 24 24"><path d="M12,20C7.58,20 4,16.42 4,12C4,7.58 7.58,4 12,4C16.42,4 20,7.58 20,12C20,16.42 16.42,20 12,20M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M16,11C15.45,11 15,11.45 15,12C15,12.55 15.45,13 16,13C16.55,13 17,12.55 17,12C17,11.45 16.55,11 16,11M12,9C11.45,9 11,9.45 11,10C11,10.55 11.45,11 12,11C12.55,11 13,10.55 13,10C13,9.45 12.55,9 12,9M8,11C7.45,11 7,11.45 7,12C7,12.55 7.45,13 8,13C8.55,13 9,12.55 9,12C9,11.45 8.55,11 8,11Z"/></svg>
+        <span class="guide-text">Aquarium</span>
+    </div>
+    <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+        <span class="guide-text">Creator</span>
+    </div>
+    <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
+        <span class="guide-text">Gully</span>
+    </div>
+    <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)">
+        <svg viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/></svg>
+        <span class="guide-text">Finances</span>
+    </div>
+    <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="guide-text">Blood</span>
+    </div>
+    <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" style="--label-color: var(--c-city)">
+        <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
+        <span class="guide-text">City</span>
+    </div>
+</div>
+
+<div id="holo-overlay">
+    <div class="holo-header">
+        <span style="font-size: 0.8rem; letter-spacing: 2px;">NEXUS_VIEW</span>
+        <div onclick="closeHolo()" style="cursor:pointer; color:#ff3366;">× CLOSE</div>
+    </div>
+    <iframe id="holo-iframe"></iframe>
+</div>
+
+<script>
+    let currentFiles = [];
+
+    function enterNexus() {
+        const landing = document.getElementById('landing-page');
+        landing.classList.add('dissolve-effect');
+        document.getElementById('oracle-video').play();
+        createRain();
+        setTimeout(() => { landing.style.display = 'none'; }, 1500);
+    }
+
+    function createRain() {
+        const container = document.getElementById('rain-container');
+        if (container.children.length > 0) return;
+        for(let i=0; i<50; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 0.5 + 0.7) + 's';
+            drop.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(drop);
+        }
+    }
+
+    function typeResponse(text) {
+        const field = document.getElementById('response-field');
+        field.innerHTML = '';
+        field.classList.add('expanded');
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                field.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+                i++;
+                setTimeout(type, 20);
+                field.scrollTop = field.scrollHeight;
+            } else {
+                document.getElementById('shader-overlay').style.opacity = 0;
+                document.getElementById('oracle-message').style.opacity = 0;
+            }
+        }
+        type();
+    }
+
+    async function sendToArtemis() {
+        const cmdInput = document.getElementById('guest-cmd');
+        const val = cmdInput.value.trim(); if (!val) return;
+        cmdInput.value = '';
+
+        document.getElementById('oracle-message').textContent = 'COMMUNING...';
+        document.getElementById('oracle-message').style.opacity = 1;
+        document.getElementById('shader-overlay').style.opacity = 0.8;
+
+        try {
+            const response = await fetch('/api/transmit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    prompt: val, 
+                    handshake: localStorage.getItem('artemis_handshake') || 'stranger' 
+                })
+            });
+            const data = await response.json();
+            currentFiles = data.files || [];
+            document.getElementById('download-btn').style.display = currentFiles.length > 0 ? 'block' : 'none';
+            typeResponse(data.verdict || data.response || "Silence from the Council.");
+        } catch (err) {
+            typeResponse("!! CONNECTION TERMINATED: Link unstable.");
+        }
+    }
+
+    function openHolo(url) {
+        document.getElementById('holo-iframe').src = url;
+        document.getElementById('holo-overlay').style.display = 'flex';
+    }
+    function closeHolo() {
+        document.getElementById('holo-overlay').style.display = 'none';
+        document.getElementById('holo-iframe').src = '';
+    }
+
+    document.getElementById('send-btn').addEventListener('click', sendToArtemis);
+    document.getElementById('guest-cmd').addEventListener('keypress', e => { if(e.key==='Enter') sendToArtemis(); });
+    
+    document.querySelectorAll('.dock-icon').forEach(icon => {
+        icon.addEventListener('click', () => openHolo(icon.getAttribute('data-url')));
+    });
+</script>
+</body>
+</html>
