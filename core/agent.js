@@ -82,47 +82,48 @@ async function agentLoop(query, handshake = 'stranger') {
       tools: tools,
       maxIterations: 6
     });
-
-    const MAX_ITERATIONS = 6; // Increased for complex life-queries
-    let iterations = 0;
-
-    while (response.candidates[0].content.parts.some(p => p.functionCall) && iterations < MAX_ITERATIONS) {
-      iterations++;
-      const calls = response.candidates[0].content.parts.filter(p => p.functionCall).map(p => p.functionCall);
-      const toolResponses = [];
-
-      for (const call of calls) {
+    // Handle tool calls from response
+    if (result.tool_calls && result.tool_calls.length > 0) {
+      for (const toolCall of result.tool_calls) {
         let toolResult;
         try {
-          switch (call.name) {
+          switch (toolCall.tool) {
             case 'queryGlobalRegistry':
-                toolResult = await searchRegistry(call.args.query);
-                break;
+              toolResult = await searchRegistry(toolCall.args.query);
+              break;
             case 'generateStructuralModel':
-                toolResult = await generateStructuralModel(call.args.type, call.args.specs);
-                break;
+              toolResult = await generateStructuralModel(toolCall.args.type, toolCall.args.specs);
+              break;
             case 'analyzeHumanFactor':
-                toolResult = await queryLifeKnowledge(call.args.domain, call.args.query);
-                break;
+              toolResult = await queryLifeKnowledge(toolCall.args.domain, toolCall.args.query);
+              break;
             case 'createAppPackage':
-                toolResult = await createAppPackage(call.args.appName, call.args.files);
-                break;
+              toolResult = await createAppPackage(toolCall.args.appName, toolCall.args.files);
+              break;
+            case 'createAgent':
+              toolResult = await geminiBridge.createAgent(
+                toolCall.args.name,
+                toolCall.args.purpose,
+                toolCall.args.system_prompt,
+                toolCall.args.tools || []
+              );
+              break;
             case 'calculate':
-                toolResult = await calculate(call.args.expression);
-                break;
+              toolResult = await calculate(toolCall.args.expression);
+              break;
             case 'executeCode':
-                toolResult = await executeCode(call.args.code);
-                break;
-            default: toolResult = { error: 'Unknown tool' };
+              toolResult = await executeCode(toolCall.args.code);
+              break;
+            default:
+              toolResult = { error: 'Unknown tool' };
           }
-        } catch (err) { toolResult = { error: err.message }; }
-        toolResponses.push({ functionResponse: { name: call.name, response: toolResult } });
+        } catch (err) {
+          toolResult = { error: err.message };
+        }
       }
-      const nextStep = await chat.sendMessage(toolResponses);
-      response = nextStep.response;
     }
 
-    const finalText = response.text();
+    const finalText = result.response || 'Artemis is contemplating...';
     const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt|js|py|html|css)/gi;
     const detectedFiles = finalText.match(fileRegex) || [];
 
