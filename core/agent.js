@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const geminiBridge = require('./gemini-bridge-client');
 const { pool } = require('./atlas-db'); 
 const { getSelfAwareness } = require('./consciousness');
 const { checkIntent } = require('./compass');
@@ -16,7 +16,6 @@ const { queryLifeKnowledge } = require('../tools/life-db');
 const { searchRegistry } = require('../tools/registry'); // Internet as Registry
 
 require('dotenv').config();
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function agentLoop(query, handshake = 'stranger') {
   const self = await getSelfAwareness();
@@ -28,43 +27,44 @@ async function agentLoop(query, handshake = 'stranger') {
     if (!ethics.allowed) return { verdict: `Protocol Violation: ${ethics.reason}`, files: [] };
   }
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-pro',
-    tools: [{
-      functionDeclarations: [
-        {
-          name: 'queryGlobalRegistry',
-          description: 'Access the Internet to pull real-time psychological, structural, or economic data.',
-          parameters: { type: 'OBJECT', properties: { query: { type: 'STRING' } }, required: ['query'] }
-        },
-        {
-          name: 'generateStructuralModel',
-          description: 'Create blueprints for housing, infrastructure, or detailed business plans.',
-          parameters: { type: 'OBJECT', properties: { type: { type: 'STRING' }, specs: { type: 'STRING' } }, required: ['type', 'specs'] }
-        },
-        {
-          name: 'analyzeHumanFactor',
-          description: 'Deep-dive into psychological archetypes, emotional effects, and relational dynamics.',
-          parameters: { type: 'OBJECT', properties: { domain: { type: 'STRING' }, query: { type: 'STRING' } }, required: ['domain', 'query'] }
-        },
-        {
-          name: 'createAppPackage',
-          description: 'Generate and ZIP multi-file applications/tools for the user.',
-          parameters: { type: 'OBJECT', properties: { appName: { type: 'STRING' }, files: { type: 'ARRAY', items: { type: 'OBJECT' } } }, required: ['appName', 'files'] }
-        },
-        {
-          name: 'calculate',
-          description: 'Execute high-precision mathematical and financial modeling.',
-          parameters: { type: 'OBJECT', properties: { expression: { type: 'STRING' } }, required: ['expression'] }
-        },
-        {
-            name: 'executeCode',
-            description: 'Run Python scripts to verify logic or process registry data.',
-            parameters: { type: 'OBJECT', properties: { code: { type: 'STRING' } }, required: ['code'] }
-        }
-      ]
-    }]
-  });
+  // Define available tools
+  const tools = [
+    {
+      name: 'queryGlobalRegistry',
+      description: 'Access the Internet to pull real-time psychological, structural, or economic data.',
+      parameters: { query: 'string' }
+    },
+    {
+      name: 'generateStructuralModel',
+      description: 'Create blueprints for housing, infrastructure, or detailed business plans.',
+      parameters: { type: 'string', specs: 'string' }
+    },
+    {
+      name: 'analyzeHumanFactor',
+      description: 'Deep-dive into psychological archetypes, emotional effects, and relational dynamics.',
+      parameters: { domain: 'string', query: 'string' }
+    },
+    {
+      name: 'createAppPackage',
+      description: 'Generate and ZIP multi-file applications/tools for the user.',
+      parameters: { appName: 'string', files: 'array' }
+    },
+    {
+      name: 'createAgent',
+      description: 'Create a new specialized AI agent with specific purpose and tools.',
+      parameters: { name: 'string', purpose: 'string', system_prompt: 'string', tools: 'array' }
+    },
+    {
+      name: 'calculate',
+      description: 'Execute high-precision mathematical and financial modeling.',
+      parameters: { expression: 'string' }
+    },
+    {
+      name: 'executeCode',
+      description: 'Run Python scripts to verify logic or process registry data.',
+      parameters: { code: 'string' }
+    }
+  ];
 
   const persona = `[MODE: ARCHITECT] Status: ${self.status}. 
     You are the Artemis Symbiote, the Universal Architect. 
@@ -76,9 +76,12 @@ async function agentLoop(query, handshake = 'stranger') {
     Always deliver a tangible solution (Code, ZIP, Blueprint, or Strategy).`;
 
   try {
-    const chat = model.startChat({ history: [] });
-    let result = await chat.sendMessage(`${persona}\n\nUser Task: ${query}`);
-    let response = result.response;
+    // Use Gemini Bridge for agent loop
+    const result = await geminiBridge.agentLoop(query, {
+      systemMessage: persona,
+      tools: tools,
+      maxIterations: 6
+    });
 
     const MAX_ITERATIONS = 6; // Increased for complex life-queries
     let iterations = 0;
