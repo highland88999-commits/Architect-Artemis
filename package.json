@@ -6,7 +6,7 @@
   "author": "Olympus By Merlin $Dropee",
   "license": "MIT",
   "scripts": {
-    "start": "servor --reload --port 3000",
+    "start": "servor . index.html 3001 --reload",
     "build": "mkdir -p public && cp index.html public/ && cp -r assets public/",
     "heartbeat": "node scripts/collect_domains.js",
     "batch": "node core/batch-controller.js",
