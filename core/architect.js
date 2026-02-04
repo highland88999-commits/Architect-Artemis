@@ -81,9 +81,10 @@ class Architect {
     `;
 
     try {
-      const result = await this.model.generateContent(fullPrompt);
-      const response = await result.response;
-      const text = response.text();
+      const text = await this.bridge.chat(fullPrompt, {
+        model: this.model,
+        sessionId: `architect-${Date.now()}`
+      });
 
       // Optional: Pass through Council for synthesis (if desired)
       // const councilVerdict = await consensus.speakSequentially(this.applyMomDirectives(taskDescription));
