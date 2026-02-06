@@ -18,6 +18,7 @@
             --c-gully: #FF4B2B; --c-finance: #00FF87; --c-hoodie: #FF8C00;
             --c-symbiote: #00FFFF; --c-starblood: #ff3333;
             --c-aqua: #0077be; --c-emergent: #7C3AED;
+            --c-dutchman: #00FFCC; /* Sailboat Color */
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -213,6 +214,10 @@
         <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         <span class="guide-text">Maps</span>
     </div>
+    <div class="dock-icon" data-url="https://the-flying-dutchman.vercel.app/" style="--label-color: var(--c-dutchman)">
+        <svg viewBox="0 0 24 24"><path d="M4,20L12,22L20,20L12,18L4,20M12,2L5,17H19L12,2M12,5L16.2,15H7.8L12,5Z"/></svg>
+        <span class="guide-text">Dutchman</span>
+    </div>
     <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
         <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
         <span class="guide-text">Hoodies</span>
@@ -348,7 +353,7 @@
         const iframe = document.getElementById('holo-iframe');
 
         if (url === 'EMERGENT_E1') {
-            iframe.srcdoc = `...`;  // ← your existing E1 srcdoc here (kept short for brevity)
+            iframe.srcdoc = `...`;  // ← your existing E1 srcdoc remains here
             overlay.style.display = 'flex';
             return;
         }
@@ -363,7 +368,6 @@
         document.getElementById('holo-iframe').src = '';
     }
 
-    // Event listeners for landing page
     const landingEl = document.getElementById('landing-page');
     landingEl.addEventListener('click', enterNexus);
     landingEl.addEventListener('touchend', (e) => {
@@ -371,7 +375,6 @@
         enterNexus();
     }, { passive: false });
 
-    // Main UI listeners
     document.getElementById('send-btn').addEventListener('click', sendToArtemis);
     document.getElementById('guest-cmd').addEventListener('keypress', e => {
         if (e.key === 'Enter') sendToArtemis();
@@ -381,7 +384,6 @@
         el.addEventListener('click', () => openHolo(el.dataset.url));
     });
 
-    // Preload oracle video
     window.addEventListener('load', () => {
         document.getElementById('oracle-video').load();
     });
