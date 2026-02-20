@@ -202,6 +202,20 @@
       border-width: 3px !important;
       box-shadow: 0 0 30px var(--label-color) !important;
     }
+
+    /* Background Video */
+    .video-container {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0; overflow: hidden;
+    }
+
+    #bg-video {
+      position: absolute; top: 50%; left: 50%;
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -212,6 +226,12 @@
     <img src="https://via.placeholder.com/800x1200/000/00f2ff?text=Landing+Video" alt="">
   </video>
   <div id="landing-prompt">INITIATE CONNECTION<br><small>(tap anywhere to enter)</small></div>
+</div>
+
+<div class="video-container">
+  <video id="bg-video" autoplay loop muted playsinline>
+    <source src="https://www.dropbox.com/scl/fi/x93qcdd64hcpedqn2murk/grok_video_2026-02-20-06-12-55.mp4?rlkey=q51etky32dg2gsrx3w3sez1s8&raw=1" type="video/mp4">
+  </video>
 </div>
 
 <div id="rain-container"></div>
