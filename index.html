@@ -263,16 +263,23 @@
 <script>
   // 1. DATA DEFINITION (Sinching your Nexus Vortex data with Artemis Logic)
   const PORTAL_DATA = [
-    { name: "Maps", url: "https://rem-psi-mauve.vercel.app/", colors: ['#00f2ff', '#0099ff'], speed: 1.2 },
-    { name: "Dutchman", url: "https://the-flying-dutchman.vercel.app/", colors: ['#00FFCC', '#008080'], speed: 1.5 },
+    { name: "REM", url: "https://rem-psi-mauve.vercel.app/", colors: ['#00f2ff', '#0099ff'], speed: 1.2 },
+    { name: "Aetheris", url: "https://aetheris-business-model.vercel.app/", colors: ['#FFD700', '#DAA520'], speed: 1.4 },
+    { name: "Tracker", url: "https://olympus-aetheris.vercel.app/", colors: ['#32CD32', '#228B22'], speed: 1.6 },
     { name: "Hoodies", url: "https://olympus-lac.vercel.app/", colors: ['#FF8C00', '#ff4500'], speed: 1.3 },
-    { name: "Aquarium", url: "https://georgia-aquarium.vercel.app/", colors: ['#0077be', '#00bfff'], speed: 1.1 },
-    { name: "Creator", url: "https://nexus-symbiote.onrender.com/", colors: ['#00FFFF', '#9900cc'], speed: 1.6 },
-    { name: "Gully", url: "https://grief-gully.vercel.app/", colors: ['#FF4B2B', '#6a0dad'], speed: 1.4 },
+    { name: "Colossus", url: "https://colossus-xi.vercel.app/", colors: ['#808080', '#696969'], speed: 1.5 },
+    { name: "Converge", url: "https://convergence-murex.vercel.app/", colors: ['#4B0082', '#9370DB'], speed: 1.7 },
+    { name: "Symbiote", url: "https://nexus-symbiote.onrender.com/", colors: ['#00FFFF', '#9900cc'], speed: 1.6 },
+    { name: "Pearl", url: "https://axiom-repository.vercel.app/", colors: ['#FFEFD5', '#FFF5EE'], speed: 1.1 },
+    { name: "Architect", url: "https://architect-artemis.vercel.app/", colors: ['#1E90FF', '#00BFFF'], speed: 1.8 },
+    { name: "Dutchman", url: "https://the-flying-dutchman.vercel.app/", colors: ['#00FFCC', '#008080'], speed: 1.5 },
+    { name: "Starblood", url: "https://starblood.vercel.app/", colors: ['#ff3333', '#880000'], speed: 1.8 },
+    { name: "Titan", url: "https://mega-city-liard.vercel.app/", colors: ['#A259FF', '#3355cc'], speed: 1.1 },
     { name: "Finances", url: "https://olympian-finances.vercel.app/", colors: ['#00FF87', '#3366ff'], speed: 1.2 },
-    { name: "Blood", url: "https://starblood.vercel.app/", colors: ['#ff3333', '#880000'], speed: 1.8 },
-    { name: "City", url: "https://mega-city-liard.vercel.app/", colors: ['#A259FF', '#3355cc'], speed: 1.1 },
-    { name: "E1", url: "EMERGENT_E1", colors: ['#7C3AED', '#ffffff'], speed: 2.0 }
+    { name: "Gully", url: "https://grief-gully.vercel.app/", colors: ['#FF4B2B', '#6a0dad'], speed: 1.4 },
+    { name: "Contact", url: "https://georgia-aquarium.vercel.app/", colors: ['#0077be', '#00bfff'], speed: 1.1 },
+    { name: "ArtOS", url: "https://artemis-os.vercel.app/", colors: ['#FF00FF', '#FF69B4'], speed: 1.9 },
+    { name: "Ares", url: "https://ares-gamma.vercel.app/", colors: ['#FF4500', '#FF8C00'], speed: 2.0 }
   ];
 
   let currentFiles = [];
@@ -286,7 +293,13 @@
       const iconWrap = document.createElement('div');
       iconWrap.className = 'dock-icon';
       iconWrap.style.setProperty('--label-color', p.colors[0]);
-      iconWrap.onclick = () => openHolo(p.url);
+      iconWrap.onclick = () => {
+        if (confirm("Open in new tab? OK for new tab in browser, Cancel for in-house glass holoframe.")) {
+          window.open(p.url, '_blank');
+        } else {
+          openHolo(p.url);
+        }
+      };
 
       iconWrap.innerHTML = `
         <div class="portal-thumb">
@@ -516,16 +529,6 @@
   function openHolo(url) {
     const overlay = document.getElementById('holo-overlay');
     const iframe = document.getElementById('holo-iframe');
-
-    if (url === 'EMERGENT_E1') {
-      iframe.srcdoc = `<html><body style="background:#000;color:#00f2ff;font-family:monospace;padding:20px;">
-        <h1>EMERGENT E1</h1>
-        <p>Placeholder for E1 content — insert your actual srcdoc here.</p>
-      </body></html>`;
-      overlay.style.display = 'flex';
-      return;
-    }
-
     iframe.src = url;
     overlay.style.display = 'flex';
   }
