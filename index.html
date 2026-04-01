@@ -9,10 +9,10 @@
     :root {
       --cyan: #00f2ff;
       --gold: #d4af37;
+      --gold-glow: 0 0 50px rgba(212, 175, 55, 0.8), inset 0 0 30px rgba(212, 175, 55, 0.5);
       --purple-shader: rgba(26, 0, 51, 0.82);
-      --glass: rgba(8, 8, 25, 0.45);
+      --glass: rgba(8, 8, 25, 0.55);
       --border: rgba(0, 242, 255, 0.35);
-      --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
 
       /* Label Colors */
       --c-maps: #00D2FF; --c-city: #A259FF; --c-pearl: #FFF5E1;
@@ -52,7 +52,10 @@
     @keyframes pulseFade { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
     .dissolve-effect { opacity: 0; transform: scale(1.08); filter: blur(16px); pointer-events: none; }
 
-    /* Rain Effect */
+    /* BG Video & Rain */
+    .video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
+    #bg-video { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; }
+    
     #rain-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
     .drop { 
       position: absolute; background: linear-gradient(transparent, var(--cyan)); 
@@ -61,71 +64,72 @@
     }
     @keyframes fall { to { transform: translateY(110vh); } }
 
-    /* Main UI */
+    /* Main UI - Adaptive Geometry */
     #container { 
       position: relative; z-index: 10; 
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      height: 100vh; text-align: center; padding: 16px; 
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+      height: 100vh; text-align: center; padding: clamp(20px, 4vh, 40px) 16px clamp(90px, 12vh, 120px) 16px; 
     }
+
+    /* Oracle Circle & Golden Bloom */
     #oracle-circle { 
-      width: min(320px, 70vw); height: min(320px, 70vw); 
+      width: clamp(180px, 35vh, 320px); height: clamp(180px, 35vh, 320px); 
       border-radius: 50%; 
       border: 4px solid var(--cyan);
       box-shadow: 0 0 30px var(--cyan), inset 0 0 50px var(--cyan);
-      position: relative; overflow: hidden; margin-bottom: 3vh; 
-      transition: border-color 1s ease, box-shadow 1s ease;
+      position: relative; overflow: hidden; 
+      transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 5;
+      margin-top: 2vh;
     }
     #oracle-circle::after {
-      content: '';
-      position: absolute;
-      inset: -20px;
-      border-radius: 50%;
-      background: transparent;
-      box-shadow: 0 0 60px var(--active-glow, var(--cyan));
-      opacity: 0.6;
-      pointer-events: none;
-      transition: box-shadow 1s ease;
+      content: ''; position: absolute; inset: -20px; border-radius: 50%; background: transparent;
+      box-shadow: 0 0 60px var(--active-glow, var(--cyan)); opacity: 0.6; pointer-events: none; transition: box-shadow 1s ease;
     }
-    #oracle-video { 
-      position: absolute; inset: 0; width: 100%; height: 100%; 
-      object-fit: contain;
+    #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+    #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.6s ease; pointer-events: none; }
+    
+    #gold-bloom {
+      position: absolute; inset: 0; background: radial-gradient(circle, rgba(212, 175, 55, 0.45) 0%, transparent 70%);
+      mix-blend-mode: screen; opacity: 0; transition: opacity 1.5s ease; pointer-events: none; z-index: 6;
     }
-    #shader-overlay { 
-      position: absolute; inset: 0; background: var(--purple-shader); 
-      opacity: 0; transition: opacity 0.6s ease; pointer-events: none; 
-    }
-    #oracle-message { 
-      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
-      color: var(--cyan); font-size: 1.05rem; font-weight: bold; 
-      padding: 24px; opacity: 0; transition: opacity 0.7s ease; 
-      text-transform: uppercase; pointer-events: none; text-shadow: 0 0 10px black; 
-    }
+    .powered-up #gold-bloom { opacity: 1; }
+    .powered-up#oracle-circle { border-color: var(--gold) !important; box-shadow: var(--gold-glow) !important; }
 
-    /* Response Field */
-    #response-field { 
-      width: min(420px, 88vw); max-height: 0; overflow: hidden; 
-      background: var(--glass); border: 1px solid var(--border); border-radius: 12px; 
-      color: #eee; font-size: 0.9rem; text-align: left; 
-      transition: max-height 0.6s ease, padding 0.6s ease; 
-      backdrop-filter: blur(14px); margin-bottom: 2vh; 
-    }
-    #response-field.expanded { max-height: 280px; padding: 14px; overflow-y: auto; border-color: var(--cyan); }
-
-    /* Council Pips */
+    /* Council Processing Area */
+    #council-header { display: flex; flex-direction: column; align-items: center; margin-top: auto; margin-bottom: 1vh; }
     #council-pips { display: flex; gap: 10px; margin-bottom: 6px; justify-content: center; }
     .pip { 
       width: 7px; height: 7px; border-radius: 50%; 
       background: var(--pip-color); box-shadow: 0 0 12px var(--pip-color); 
-      animation: pipPulse 1.8s infinite ease-in-out; 
+      transition: all 0.3s ease;
     }
-    .pip:nth-child(1) { --pip-color: #00f2ff; animation-delay: 0s; }
-    .pip:nth-child(2) { --pip-color: #ff3366; animation-delay: 0.25s; }
-    .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.5s; }
-    @keyframes pipPulse { 0%, 100% { opacity: 0.4; transform: scale(0.75); } 50% { opacity: 1; transform: scale(1.3); } }
+    .pip:nth-child(1) { --pip-color: #00f2ff; }
+    .pip:nth-child(2) { --pip-color: #ff3366; }
+    .pip:nth-child(3) { --pip-color: #66ff66; }
+    
+    /* Thinking Animation */
+    #council-header.thinking .pip { animation: pipThinking 0.5s infinite alternate ease-in-out; }
+    #council-header.thinking .pip:nth-child(1) { animation-delay: 0s; }
+    #council-header.thinking .pip:nth-child(2) { animation-delay: 0.15s; }
+    #council-header.thinking .pip:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes pipThinking { to { transform: translateY(-10px) scale(1.3); opacity: 1; filter: brightness(1.5); } }
+
+    #council-status { font-size: 8px; color: var(--cyan); opacity: 0.6; letter-spacing: 1.5px; transition: color 0.5s ease; }
+
+    /* Response Field */
+    #response-field { 
+      width: 100%; max-width: 520px; max-height: 0; overflow: hidden; 
+      background: var(--glass); border: 1px solid var(--border); border-radius: 12px; 
+      color: #eee; font-size: 0.9rem; text-align: left; 
+      transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), padding 0.8s ease; 
+      backdrop-filter: blur(14px); margin-bottom: 2vh; 
+      scrollbar-width: none;
+    }
+    #response-field.active { max-height: 30vh; padding: 16px; overflow-y: auto; border-color: var(--cyan); }
 
     /* Input Area */
-    #prompt-area { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    #prompt-area { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 2vh; }
     .input-wrapper { 
       display: flex; align-items: center; width: 100%; 
       background: var(--glass); border: 1px solid var(--border); border-radius: 999px; 
@@ -170,25 +174,18 @@
       background: #000;
       margin-bottom: 4px;
     }
-    .portal-canvas-mini {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    }
+    .portal-canvas-mini { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
     .guide-text { 
       font-size: 8px; text-transform: uppercase; 
       color: var(--label-color); font-weight: bold;
-      letter-spacing: 1px;
-      text-shadow: 0 0 5px #000;
+      letter-spacing: 1px; text-shadow: 0 0 5px #000;
     }
 
     /* Effects */
     .oracle-flare { transform: scale(1.05); filter: brightness(1.5) contrast(1.2); transition: 0.2s ease; }
     .portal-flare { transform: translateY(-15px) scale(1.2); filter: brightness(1.8); }
     .portal-thumb.flare-border { border-width: 3px !important; box-shadow: 0 0 30px var(--label-color) !important; }
-
-    /* BG Video */
-    .video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
-    #bg-video { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; }
 
     /* Holo Overlay */
     #holo-overlay {
@@ -217,24 +214,25 @@
 <div id="rain-container"></div>
 
 <div id="container">
+  
   <div id="oracle-circle">
+    <div id="gold-bloom"></div>
     <video id="oracle-video" loop muted playsinline>
       <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
     </video>
     <div id="shader-overlay"></div>
-    <div id="oracle-message"></div>
   </div>
-
-  <div id="response-field" role="log"></div>
 
   <div id="council-header">
     <div id="council-pips">
       <div class="pip"></div><div class="pip"></div><div class="pip"></div>
     </div>
-    <div id="council-status" style="font-size: 8px; color: var(--cyan); margin-bottom: 8px; opacity: 0.6; letter-spacing: 1.5px;">
+    <div id="council-status">
       [COUNCIL: ONLINE] <span id="harvest-stats">[SYNCING]</span>
     </div>
   </div>
+
+  <div id="response-field" role="log"></div>
 
   <div id="prompt-area">
     <div class="input-wrapper">
@@ -258,7 +256,6 @@
 </div>
 
 <script>
-  // UPDATED PORTAL DATA: Hercules injected at the vanguard
   const PORTAL_DATA = [
     { name: "Hercules", url: "https://hercules-nine.vercel.app/", colors: ['#FF0000', '#FFD700'], speed: 2.1 },
     { name: "REM", url: "https://rem-psi-mauve.vercel.app/", colors: ['#00f2ff', '#0099ff'], speed: 1.2 },
@@ -281,6 +278,7 @@
   ];
 
   let isGlobalFlare = false;
+  let syncInterval;
 
   function initPortalDock() {
     const dock = document.getElementById('bottom-dock');
@@ -337,14 +335,17 @@
   function startOracleSync() {
     const oracle = document.getElementById('oracle-circle');
     let idx = 0;
-    setInterval(() => {
+    syncInterval = setInterval(() => {
+      // Pause cycling if Council is deliberating
+      if(document.getElementById('oracle-circle').classList.contains('powered-up')) return;
+
       const color = PORTAL_DATA[idx].colors[0];
       oracle.style.borderColor = color;
       oracle.style.setProperty('--active-glow', color);
       oracle.style.boxShadow = `0 0 40px ${color}, inset 0 0 60px ${color}`;
       const stats = document.getElementById('harvest-stats');
       stats.textContent = `[SYNCING: ${PORTAL_DATA[idx].name.toUpperCase()}]`;
-      stats.style.color = color;
+      document.getElementById('council-status').style.color = color;
       idx = (idx + 1) % PORTAL_DATA.length;
     }, 2000);
   }
@@ -385,15 +386,65 @@
     document.getElementById('holo-overlay').style.display = 'flex';
     document.getElementById('holo-iframe').src = url;
   }
-
   function closeHolo() {
     document.getElementById('holo-overlay').style.display = 'none';
     document.getElementById('holo-iframe').src = '';
   }
 
+  /* --- COUNCIL PROCESSING LOGIC --- */
+  const responseField = document.getElementById('response-field');
+  const oracle = document.getElementById('oracle-circle');
+  const councilHeader = document.getElementById('council-header');
+  const sendBtn = document.getElementById('send-btn');
+  const guestCmd = document.getElementById('guest-cmd');
+  const statusText = document.getElementById('harvest-stats');
+
+  async function handleTransmit() {
+    const query = guestCmd.value.trim();
+    if (!query) return;
+
+    // 1. Enter "Thinking" State
+    councilHeader.classList.add('thinking');
+    oracle.classList.add('powered-up');
+    responseField.classList.remove('active');
+    responseField.innerHTML = "";
+    statusText.textContent = "[DELIBERATING]";
+    document.getElementById('council-status').style.color = "var(--gold)";
+    
+    // 2. Simulate "Council Deliberation" (Vercel API Fetch goes here)
+    const conceivedAnswer = await simulateCouncilProcess(query);
+
+    // 3. Conception Complete -> Release Bloom & Text
+    setTimeout(() => {
+      councilHeader.classList.remove('thinking');
+      oracle.classList.remove('powered-up');
+      responseField.innerHTML = conceivedAnswer;
+      responseField.classList.add('active');
+      statusText.textContent = "[AWAITING INPUT]";
+      document.getElementById('council-status').style.color = "var(--cyan)";
+      
+      // Oracle Pulse Effect & Clear Input
+      triggerGlobalFlare(); 
+      guestCmd.value = "";
+    }, 2000);
+  }
+
+  function simulateCouncilProcess(q) {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(`<strong>[COUNCIL VERDICT]:</strong><br><br>Your inquiry regarding <em>"${q}"</em> has been processed through the Aetheris logic gates.<br><br>The Architect confirms structural integrity. The Strategist approves the deployment vector.`), 2500);
+    });
+  }
+
+  sendBtn.addEventListener('click', handleTransmit);
+  guestCmd.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleTransmit(); });
+
   document.getElementById('landing-page').addEventListener('click', enterNexus);
   document.getElementById('oracle-circle').addEventListener('click', triggerGlobalFlare);
-  window.addEventListener('load', () => { initPortalDock(); startOracleSync(); });
+  
+  window.addEventListener('load', () => { 
+    initPortalDock(); 
+    startOracleSync(); 
+  });
 </script>
 </body>
 </html>
