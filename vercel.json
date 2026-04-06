@@ -1,14 +1,8 @@
 {
   "version": 2,
   "rewrites": [
-    { 
-      "source": "/api/chat", 
-      "destination": "/api/transmit" 
-    },
-    { 
-      "source": "/((?!api/).*)", 
-      "destination": "/index.html" 
-    }
+    { "source": "/api/chat", "destination": "/api/transmit" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "cleanUrls": true
 }
