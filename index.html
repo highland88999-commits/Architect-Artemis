@@ -10,7 +10,6 @@
     :root {
       --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366; --purple: #8a2be2;
       --active-color: var(--cyan);
-      --star-glow: var(--cyan);
       --glass: rgba(8, 8, 25, 0.92); 
       --border: rgba(0, 242, 255, 0.35);
     }
@@ -30,7 +29,7 @@
       display: flex; flex-direction: column; 
       align-items: center; justify-content: space-between;
       height: 100dvh; 
-      padding: 20px 20px 110px 20px; 
+      padding: 20px 20px 120px 20px; 
     }
 
     #oracle-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
@@ -84,6 +83,44 @@
     }
     #send-btn:hover { transform: scale(1.03); box-shadow: 0 0 35px var(--active-color); }
 
+    /* NEW: RESPONSE AREA */
+    #response-area {
+      width: 100%; max-width: 520px;
+      background: var(--glass); 
+      border: 1px solid var(--border); 
+      border-radius: 16px;
+      padding: 18px 24px;
+      min-height: 120px;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #fff;
+      display: none;
+      position: relative;
+      box-shadow: 0 0 20px rgba(0, 242, 255, 0.15);
+      cursor: pointer;
+    }
+    #response-area.show { display: block; }
+    #response-area:hover { border-color: var(--active-color); }
+
+    #read-aloud-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(212, 175, 55, 0.9);
+      color: #000;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px #d4af37;
+    }
+    #response-area.show #read-aloud-btn { display: flex; }
+
     .pip-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
     .pip { 
       width: 6px; height: 6px; border-radius: 50%; background: var(--active-color); 
@@ -129,14 +166,20 @@
     </div>
     <button id="send-btn">TRANSMIT TO OLYMPUS</button>
   </div>
+
+  <!-- NEW RESPONSE FIELD -->
+  <div id="response-area">
+    <div id="response-text">Artemis is listening...</div>
+    <button id="read-aloud-btn" title="Read aloud">🔊</button>
+  </div>
 </div>
 
 <div id="bottom-dock">
-    <div id="dock-text">OLYMPUS ROOT • STAGING v0.8.4 // PORTALS ALIGNED</div>
+    <div id="dock-text">OLYMPUS ROOT • STAGING v0.8.5 // PORTALS ALIGNED</div>
 </div>
 
 <script>
-  // --- THREE.JS STARFIELD TEXT (enhanced) ---
+  // --- THREE.JS STARFIELD (unchanged from previous) ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, 520 / 88, 0.1, 1000);
@@ -179,8 +222,7 @@
 
   starGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
   const starMat = new THREE.PointsMaterial({ size: 0.048, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthTest: false });
-  const starPoints = new THREE.Points(starGeo, starMat);
-  scene.add(starPoints);
+  scene.add(new THREE.Points(starGeo, starMat));
   camera.position.z = 7.2;
 
   let time = 0;
@@ -212,11 +254,45 @@
   }
   animate();
 
-  // --- TRANSMIT LOGIC + GOLD MODE ---
+  // --- RESPONSE HANDLING ---
+  const responseArea = document.getElementById('response-area');
+  const responseText = document.getElementById('response-text');
+  const readAloudBtn = document.getElementById('read-aloud-btn');
   const statusEl = document.getElementById('council-status');
   const root = document.documentElement;
   const oracleCircle = document.getElementById('oracle-circle');
 
+  function showResponse(message) {
+    responseText.textContent = message;
+    responseArea.classList.add('show');
+    
+    // Auto-scroll to response on mobile
+    responseArea.scrollIntoView({ behavior: "smooth" });
+  }
+
+  // Read aloud function (user-initiated)
+  function readResponse() {
+    if (!('speechSynthesis' in window)) {
+      alert("Text-to-speech not supported on this device.");
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(responseText.textContent);
+    utterance.rate = 0.95;
+    utterance.pitch = 1.05;
+    utterance.volume = 0.9;
+    speechSynthesis.speak(utterance);
+  }
+
+  readAloudBtn.addEventListener('click', readResponse);
+
+  // Click anywhere on response area also triggers read (optional, can remove if too sensitive)
+  responseArea.addEventListener('click', (e) => {
+    if (e.target !== readAloudBtn) {
+      readResponse();
+    }
+  });
+
+  // --- TRANSMIT LOGIC ---
   async function transmit() {
     const input = document.getElementById('guest-cmd');
     const val = input.value.trim();
@@ -225,6 +301,7 @@
     statusEl.textContent = "[SIGNAL ACQUIRED...]";
     statusEl.style.color = "#ff3366";
 
+    // Simulate thinking + response (replace this with real backend call later)
     setTimeout(() => {
       state = 'active';
       starMat.color.set(0xd4af37);
@@ -233,6 +310,15 @@
       root.style.setProperty('--active-color', '#d4af37');
       oracleCircle.style.borderColor = '#d4af37';
       oracleCircle.style.boxShadow = '0 0 45px #d4af37, inset 0 0 55px #d4af37, 0 0 90px rgba(212, 175, 55, 0.25)';
+
+      // Example dynamic response (customize based on input)
+      let reply = `Command received: "${val}".\n\nThe Edmonton airbourifier factory is aligned. 100 units in Year 1 will ship to New Delhi to begin reversing pollution. The floating forest vision is locked in Phase 2 — funded by clean air revenue. Bio-culture protocols active. What is your next directive, Olympus?`;
+
+      if (val.toLowerCase().includes("factory") || val.toLowerCase().includes("airbourifier")) {
+        reply = "Factory status: Land secured. Workforce ready in Edmonton. Suppliers confirmed. First 100 large-scale 7–10m outdoor units scheduled for production. Bio-remediation systems will re-use live cultures. Ready for deployment to high-pollution zones.";
+      }
+
+      showResponse(reply);
       input.value = "";
     }, 850);
   }
