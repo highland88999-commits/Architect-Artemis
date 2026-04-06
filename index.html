@@ -22,7 +22,6 @@
       color:var(--active-color); 
     }
 
-    /* Background layer */
     .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.35; pointer-events: none; }
     #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
 
@@ -32,47 +31,43 @@
       height: 100vh; padding: 20px 20px 120px 20px; 
     }
 
-    /* Oracle Circle with Logo */
     #oracle-circle { 
       width: clamp(180px, 30vh, 280px); height: clamp(180px, 30vh, 280px); 
       border-radius: 50%; border: 3px solid var(--active-color);
       box-shadow: var(--bloom), inset 0 0 40px var(--active-color);
-      position: relative; overflow: hidden; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
       background: rgba(0,0,0,0.5);
     }
     
     #oracle-video { width: 105%; height: 105%; object-fit: cover; mix-blend-mode: screen; }
 
-    #council-header { text-align: center; }
     #council-status { 
       font-size: 11px; color: var(--active-color); background: rgba(0,0,0,0.85); 
       padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
       letter-spacing: 3px; text-transform: uppercase; text-shadow: var(--bloom);
     }
 
-    /* THE MALL PORTAL - Optimized for Bloom and Fit */
+    /* THE MALL PORTAL - MAX FIT FRAME */
     #mall-link-container {
-      width: 100%; max-width: 480px; height: 70px; 
+      width: 100%; max-width: 480px; height: 80px; 
       position: relative; overflow: hidden; border-radius: 14px;
-      border: 1px solid var(--border); background: rgba(0,0,0,0.95);
+      border: 1px solid var(--border); background: rgba(0,0,0,0.98);
       display: flex; align-items: center; justify-content: center;
       text-decoration: none; transition: 0.4s ease;
-      box-shadow: inset 0 0 20px rgba(0,0,0,1);
+      box-shadow: inset 0 0 25px rgba(0,0,0,1);
     }
     
     #mall-link-container:hover {
         border-color: var(--active-color);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 25px rgba(0, 242, 255, 0.15);
+        transform: scale(1.01);
+        box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
     }
 
     #starfield-canvas { 
       position: absolute; inset: 0; z-index: 1; 
-      filter: drop-shadow(0 0 4px var(--active-color)); /* Adds the CSS Bloom */
+      filter: drop-shadow(0 0 6px var(--active-color)); 
     }
 
-    /* Response & Input */
     #response-field { 
       width: 100%; max-width: 480px; max-height: 0; overflow: hidden; 
       background: var(--glass); border: 1px solid var(--border); border-radius: 12px; 
@@ -101,7 +96,7 @@
       position: fixed; bottom: 20px; height: 50px; width: 85%; 
       background: var(--glass); border-radius: 40px; border: 1px solid var(--border); 
       left: 50%; transform: translateX(-50%); z-index: 100; 
-      display: flex; align-items: center; justify-content: center; padding: 0 20px; 
+      display: flex; align-items: center; justify-content: center;
     }
   </style>
 </head>
@@ -144,12 +139,12 @@
 </div>
 
 <script>
-  // --- THREE.JS NEON PARTICLE ENGINE ---
+  // --- THREE.JS NEON PARTICLE ENGINE (MAX-FIT EDITION) ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 480 / 70, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(75, 480 / 80, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: mallCanvas, alpha: true, antialias: true });
-  renderer.setSize(480, 70);
+  renderer.setSize(480, 80);
   renderer.setPixelRatio(window.devicePixelRatio);
 
   function getTextPoints(text, width, height) {
@@ -158,24 +153,24 @@
     canvas.width = width;
     canvas.height = height;
     
-    // Fit check: Dynamically sizing font to ensure it fits the box width
+    // MAX WEIGHT: Using 900 weight and 44px to command the frame
     ctx.fillStyle = 'white';
-    ctx.font = '900 36px "Courier New", monospace';
+    ctx.font = '900 44px "Courier New", monospace'; 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, width / 2, height / 2);
 
     const imageData = ctx.getImageData(0, 0, width, height).data;
     const points = [];
-    const density = window.innerWidth < 600 ? 3 : 2; // Higher density for mobile
+    const density = 2; 
 
     for (let y = 0; y < height; y += density) {
       for (let x = 0; x < width; x += density) {
         if (imageData[(y * width + x) * 4 + 3] > 128) {
-          // Centering particles in Three.js space
+          // Centering and scaling points to 95% of container width
           points.push({ 
-            x: (x - width / 2) * 0.024, 
-            y: -(y - height / 2) * 0.024 
+            x: (x - width / 2) * 0.029, 
+            y: -(y - height / 2) * 0.029 
           });
         }
       }
@@ -183,7 +178,7 @@
     return points;
   }
 
-  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 70);
+  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 80);
   const starGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(textPoints.length * 3);
   const originals = new Float32Array(textPoints.length * 3);
@@ -199,9 +194,8 @@
 
   starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   
-  // High-performance neon particle material
   const starMaterial = new THREE.PointsMaterial({ 
-    size: 0.045, 
+    size: 0.055, 
     transparent: true, 
     opacity: 1.0,
     blending: THREE.AdditiveBlending 
@@ -209,24 +203,23 @@
 
   const starMesh = new THREE.Points(starGeometry, starMaterial);
   scene.add(starMesh);
-  camera.position.z = 5.5;
+  camera.position.z = 6.5; 
 
   let time = 0;
   function animate() {
     requestAnimationFrame(animate);
-    time += 0.04;
+    time += 0.045;
     
     const posAttr = starGeometry.attributes.position;
     for (let i = 0; i < textPoints.length; i++) {
-      // Symbiote "breathing" motion
       const xIdx = i * 3;
       const yIdx = i * 3 + 1;
-      posAttr.array[xIdx] = originals[xIdx] + Math.sin(time + originals[xIdx] * 5) * 0.007;
-      posAttr.array[yIdx] = originals[yIdx] + Math.cos(time + originals[yIdx] * 5) * 0.007;
+      // High-frequency symbiotic drift
+      posAttr.array[xIdx] = originals[xIdx] + Math.sin(time + originals[xIdx] * 4) * 0.006;
+      posAttr.array[yIdx] = originals[yIdx] + Math.cos(time + originals[yIdx] * 4) * 0.006;
     }
     posAttr.needsUpdate = true;
     
-    // Sync star color with CSS variable
     const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--active-color').trim();
     starMaterial.color.set(currentColor);
     
@@ -244,13 +237,10 @@
     if (!query) return;
 
     statusText.textContent = "[PROCESSING...]";
-    statusText.style.opacity = "0.5";
     
-    // UI Haptic/Feedback simulation
     setTimeout(() => {
       statusText.textContent = "[SENSE: BLUE]";
-      statusText.style.opacity = "1";
-      responseField.innerHTML = "Olympus link verified. Command stream open. How shall we proceed with the Web Summit deployment?";
+      responseField.innerHTML = "Olympus link verified. Text scaling optimized for 2026 Web Summit Gatekeepers.";
       responseField.classList.add('active');
       document.getElementById('guest-cmd').value = "";
     }, 800);
