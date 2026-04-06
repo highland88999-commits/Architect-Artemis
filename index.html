@@ -10,10 +10,9 @@
     :root {
       --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366; --purple: #8a2be2;
       --active-color: var(--cyan);
-      --star-color-state: var(--cyan);
-      --glass: rgba(8, 8, 25, 0.8); 
+      --star-glow: var(--cyan);
+      --glass: rgba(8, 8, 25, 0.85); 
       --border: rgba(0, 242, 255, 0.3);
-      --bloom: 0 0 15px var(--active-color), 0 0 30px var(--active-color);
     }
 
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -24,64 +23,62 @@
     }
 
     .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.35; pointer-events: none; }
-    #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
+    #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
 
-    /* LAYOUT: Vertical stack with NO overlap */
+    /* STACK ENGINE: Prevents Overlap */
     #container { 
-      position: relative; z-index: 10; display: flex; flex-direction: column; 
+      position: relative; z-index: 10; 
+      display: flex; flex-direction: column; 
       align-items: center; justify-content: space-between;
-      height: 100vh; padding: 20px 20px 90px 20px; 
+      height: 100dvh; /* Use dynamic viewport height for mobile */
+      padding: 15px 20px 100px 20px; 
     }
 
+    /* SECTION 1: Oracle */
+    #oracle-wrap { display: flex; flex-direction: column; align-items: center; gap: 15px; }
     #oracle-circle { 
-      width: clamp(160px, 28vh, 250px); height: clamp(160px, 28vh, 250px); 
+      width: clamp(150px, 25vh, 240px); height: clamp(150px, 25vh, 240px); 
       border-radius: 50%; border: 3px solid var(--active-color);
-      box-shadow: var(--bloom), inset 0 0 40px var(--active-color);
-      position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.5); flex-shrink: 0;
+      box-shadow: 0 0 20px var(--active-color), inset 0 0 30px var(--active-color);
+      position: relative; overflow: hidden; background: #000;
     }
-    
-    #oracle-video { width: 105%; height: 105%; object-fit: cover; mix-blend-mode: screen; }
+    #oracle-video { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen; }
 
-    #council-header { text-align: center; flex-shrink: 0; }
     #council-status { 
-      font-size: 11px; color: var(--active-color); background: rgba(0,0,0,0.85); 
-      padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
-      letter-spacing: 3px; text-transform: uppercase; text-shadow: var(--bloom);
+      font-size: 10px; color: var(--active-color); background: rgba(0,0,0,0.9); 
+      padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+      letter-spacing: 3px; text-transform: uppercase;
     }
 
-    /* THE MALL PORTAL - CENTERED */
+    /* SECTION 2: The Mall Portal */
     #mall-link-container {
       width: 100%; max-width: 480px; height: 80px; 
-      position: relative; overflow: hidden; border-radius: 14px;
-      border: 1px solid var(--border); background: rgba(0,0,0,0.98);
+      position: relative; overflow: hidden; border-radius: 12px;
+      border: 1px solid var(--border); background: rgba(0,0,0,0.95);
       display: flex; align-items: center; justify-content: center;
-      text-decoration: none; transition: 0.4s ease; flex-shrink: 0;
+      text-decoration: none; transition: 0.3s;
     }
-    
-    #starfield-canvas { position: absolute; inset: 0; z-index: 1; }
+    #starfield-canvas { position: absolute; inset: 0; z-index: 1; transition: filter 0.5s ease; }
 
-    /* INPUT STACK - BOTTOM ANCHORED */
-    #input-stack {
-      width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px;
-      flex-shrink: 0;
-    }
-
+    /* SECTION 3: Input Stack */
+    #input-stack { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 10px; }
     .input-wrapper { 
       background: var(--glass); border: 1px solid var(--border); 
-      border-radius: 50px; padding: 10px 24px; display: flex; align-items: center;
+      border-radius: 50px; padding: 12px 24px;
     }
     #guest-cmd { 
-      flex: 1; background: transparent; border: none; color: #fff; 
-      outline: none; text-align: center; font-size: 1.1rem; 
+      width: 100%; background: transparent; border: none; color: #fff; 
+      outline: none; text-align: center; font-size: 1rem; 
     }
     #send-btn { 
       background: var(--active-color); color: #000; border-radius: 50px; 
       padding: 14px; font-weight: 900; border: none; cursor: pointer; 
-      letter-spacing: 2px; transition: 0.3s; box-shadow: var(--bloom); 
+      letter-spacing: 2px; box-shadow: 0 0 15px var(--active-color);
     }
 
-    .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--active-color); box-shadow: var(--bloom); margin: 0 4px; }
+    /* DECO */
+    .pip-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 5px; }
+    .pip { width: 5px; height: 5px; border-radius: 50%; background: var(--active-color); box-shadow: 0 0 8px var(--active-color); }
     
     #bottom-dock { 
       position: fixed; bottom: 20px; height: 50px; width: 90%; max-width: 480px;
@@ -89,7 +86,7 @@
       left: 50%; transform: translateX(-50%); z-index: 100; 
       display: flex; align-items: center; justify-content: center;
     }
-    #dock-text { color:var(--active-color); font-size: 9px; letter-spacing: 2px; font-weight: bold; }
+    #dock-text { color:var(--active-color); font-size: 8px; letter-spacing: 2px; font-weight: bold; opacity: 0.8; }
   </style>
 </head>
 <body>
@@ -99,14 +96,11 @@
 </div>
 
 <div id="container">
-  <div id="oracle-circle">
-    <video id="oracle-video" autoplay loop muted playsinline src="https://files.catbox.moe/no2e76.mp4"></video>
-  </div>
-
-  <div id="council-header">
-    <div style="display:flex; justify-content: center; margin-bottom:10px;">
-      <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+  <div id="oracle-wrap">
+    <div id="oracle-circle">
+      <video id="oracle-video" autoplay loop muted playsinline src="https://files.catbox.moe/no2e76.mp4"></video>
     </div>
+    <div class="pip-row"><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
     <div id="council-status">[SENSE: NEUTRAL]</div>
   </div>
 
@@ -127,27 +121,27 @@
 </div>
 
 <script>
-  // --- THREE.JS NEON PARTICLE ENGINE ---
+  // --- PARTICLE ENGINE ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, 480 / 80, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: mallCanvas, alpha: true, antialias: true });
   renderer.setSize(480, 80);
-  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   function getTextPoints(text, width, height) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = width; canvas.height = height;
     ctx.fillStyle = 'white';
-    ctx.font = '900 44px "Courier New", monospace'; 
+    ctx.font = '900 42px "Courier New", monospace'; 
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(text, width / 2, height / 2);
-    const imageData = ctx.getImageData(0, 0, width, height).data;
+    const data = ctx.getImageData(0, 0, width, height).data;
     const points = [];
     for (let y = 0; y < height; y += 2) {
       for (let x = 0; x < width; x += 2) {
-        if (imageData[(y * width + x) * 4 + 3] > 128) {
+        if (data[(y * width + x) * 4 + 3] > 128) {
           points.push({ x: (x - width / 2) * 0.029, y: -(y - height / 2) * 0.029 });
         }
       }
@@ -156,69 +150,69 @@
   }
 
   const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 80);
-  const starGeometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(textPoints.length * 3);
-  const originals = new Float32Array(textPoints.length * 3);
+  const starGeo = new THREE.BufferGeometry();
+  const posArr = new Float32Array(textPoints.length * 3);
+  const origArr = new Float32Array(textPoints.length * 3);
 
   for (let i = 0; i < textPoints.length; i++) {
-    positions[i * 3] = textPoints[i].x;
-    positions[i * 3 + 1] = textPoints[i].y;
-    positions[i * 3 + 2] = 0;
-    originals[i * 3] = textPoints[i].x;
-    originals[i * 3 + 1] = textPoints[i].y;
-    originals[i * 3 + 2] = 0;
+    posArr[i*3] = origArr[i*3] = textPoints[i].x;
+    posArr[i*3+1] = origArr[i*3+1] = textPoints[i].y;
+    posArr[i*3+2] = origArr[i*3+2] = 0;
   }
 
-  starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const starMaterial = new THREE.PointsMaterial({ size: 0.055, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
-  const starMesh = new THREE.Points(starGeometry, starMaterial);
-  scene.add(starMesh);
+  starGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+  const starMat = new THREE.PointsMaterial({ size: 0.055, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
+  scene.add(new THREE.Points(starGeo, starMat));
   camera.position.z = 6.5; 
 
-  // --- COLOR DYNAMICS ---
+  // --- COLOR & STATE ---
   let time = 0;
-  let currentColor = new THREE.Color(0x00f2ff);
-  let currentSentiment = 'neutral';
-  const neutralPalette = [0x00f2ff, 0xd4af37, 0x8a2be2];
-  const sentimentPalette = { gold: 0xd4af37, red: 0xff3366 };
+  let currentHue = new THREE.Color(0x00f2ff);
+  let state = 'neutral';
+  const colors = [0x00f2ff, 0xd4af37, 0x8a2be2];
 
   function animate() {
     requestAnimationFrame(animate);
     time += 0.04;
-    const posAttr = starGeometry.attributes.position;
+    const p = starGeo.attributes.position;
     for (let i = 0; i < textPoints.length; i++) {
-      posAttr.array[i * 3] = originals[i * 3] + Math.sin(time + originals[i * 3] * 4) * 0.006;
-      posAttr.array[i * 3 + 1] = originals[i * 3 + 1] + Math.cos(time + originals[i * 3 + 1] * 4) * 0.006;
+      p.array[i*3] = origArr[i*3] + Math.sin(time + origArr[i*3]*4) * 0.006;
+      p.array[i*3+1] = origArr[i*3+1] + Math.cos(time + origArr[i*3+1]*4) * 0.006;
     }
-    posAttr.needsUpdate = true;
+    p.needsUpdate = true;
     
-    if (currentSentiment === 'neutral') {
-      const hueIdx = Math.floor((time * 0.08) % neutralPalette.length);
-      currentColor.lerp(new THREE.Color(neutralPalette[hueIdx]), 0.01);
-      starMaterial.color.copy(currentColor);
-    } else {
-      starMaterial.color.set(sentimentPalette[currentSentiment] || 0x00f2ff);
+    if (state === 'neutral') {
+      const target = colors[Math.floor((time * 0.08) % colors.length)];
+      currentHue.lerp(new THREE.Color(target), 0.01);
+      starMat.color.copy(currentHue);
     }
     
-    mallCanvas.style.filter = `drop-shadow(0 0 8px ${"#" + starMaterial.color.getHexString()})`;
+    const hex = "#" + starMat.color.getHexString();
+    mallCanvas.style.filter = `drop-shadow(0 0 8px ${hex})`;
     renderer.render(scene, camera);
   }
   animate();
 
-  async function handleTransmit() {
-    const query = document.getElementById('guest-cmd').value;
-    if (!query) return;
-    document.getElementById('council-status').textContent = "[TRANSMITTING...]";
+  // --- HANDLER ---
+  const status = document.getElementById('council-status');
+  const root = document.documentElement;
+
+  async function transmit() {
+    const val = document.getElementById('guest-cmd').value;
+    if (!val) return;
+    status.textContent = "[ANALYZING...]";
+    
     setTimeout(() => {
-      currentSentiment = 'gold'; // Shift to Gold on success
-      document.getElementById('council-status').textContent = "[SENSE: GOLD]";
-      document.documentElement.style.setProperty('--active-color', '#d4af37');
+      state = 'active';
+      starMat.color.set(0xd4af37); // Switch to Gold
+      status.textContent = "[SENSE: GOLD]";
+      root.style.setProperty('--active-color', '#d4af37');
       document.getElementById('guest-cmd').value = "";
     }, 1000);
   }
 
-  document.getElementById('send-btn').addEventListener('click', handleTransmit);
-  document.getElementById('guest-cmd').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleTransmit(); });
+  document.getElementById('send-btn').onclick = transmit;
+  document.getElementById('guest-cmd').onkeypress = (e) => { if(e.key==='Enter') transmit(); };
 </script>
 </body>
 </html>
