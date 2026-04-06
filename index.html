@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Artemis • Olympus Portal</title>
+  <title>Artemis • Architect Symbiote</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 
   <style>
@@ -11,8 +11,8 @@
       --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366; --purple: #8a2be2;
       --active-color: var(--cyan);
       --star-glow: var(--cyan);
-      --glass: rgba(8, 8, 25, 0.85); 
-      --border: rgba(0, 242, 255, 0.3);
+      --glass: rgba(8, 8, 25, 0.92); 
+      --border: rgba(0, 242, 255, 0.35);
     }
 
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -22,71 +22,84 @@
       color:var(--active-color); 
     }
 
-    .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.35; pointer-events: none; }
-    #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
+    .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.28; pointer-events: none; }
+    #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.45) contrast(1.1); }
 
-    /* STACK ENGINE: Prevents Overlap */
     #container { 
       position: relative; z-index: 10; 
       display: flex; flex-direction: column; 
       align-items: center; justify-content: space-between;
-      height: 100dvh; /* Use dynamic viewport height for mobile */
-      padding: 15px 20px 100px 20px; 
+      height: 100dvh; 
+      padding: 20px 20px 110px 20px; 
     }
 
-    /* SECTION 1: Oracle */
-    #oracle-wrap { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    #oracle-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
     #oracle-circle { 
-      width: clamp(150px, 25vh, 240px); height: clamp(150px, 25vh, 240px); 
-      border-radius: 50%; border: 3px solid var(--active-color);
-      box-shadow: 0 0 20px var(--active-color), inset 0 0 30px var(--active-color);
+      width: clamp(160px, 28vh, 260px); height: clamp(160px, 28vh, 260px); 
+      border-radius: 50%; border: 4px solid var(--active-color);
+      box-shadow: 0 0 35px var(--active-color), inset 0 0 45px var(--active-color), 0 0 80px rgba(0, 242, 255, 0.15);
       position: relative; overflow: hidden; background: #000;
+      transition: all 0.6s ease;
     }
-    #oracle-video { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen; }
+    #oracle-video { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen; filter: contrast(1.15) saturate(1.3); }
 
     #council-status { 
-      font-size: 10px; color: var(--active-color); background: rgba(0,0,0,0.9); 
-      padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
-      letter-spacing: 3px; text-transform: uppercase;
+      font-size: 11px; color: var(--active-color); background: rgba(0,0,0,0.92); 
+      padding: 6px 18px; border-radius: 30px; border: 1px solid var(--border);
+      letter-spacing: 4px; text-transform: uppercase;
+      box-shadow: 0 0 12px var(--active-color);
+      transition: all 0.4s ease;
     }
 
-    /* SECTION 2: The Mall Portal */
     #mall-link-container {
-      width: 100%; max-width: 480px; height: 80px; 
-      position: relative; overflow: hidden; border-radius: 12px;
-      border: 1px solid var(--border); background: rgba(0,0,0,0.95);
+      width: 100%; max-width: 520px; height: 88px; 
+      position: relative; overflow: hidden; border-radius: 16px;
+      border: 2px solid var(--border); background: rgba(0,0,0,0.96);
       display: flex; align-items: center; justify-content: center;
-      text-decoration: none; transition: 0.3s;
+      text-decoration: none; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: 0 0 25px rgba(0, 242, 255, 0.2);
     }
-    #starfield-canvas { position: absolute; inset: 0; z-index: 1; transition: filter 0.5s ease; }
+    #mall-link-container:hover { border-color: var(--active-color); box-shadow: 0 0 40px var(--active-color); transform: translateY(-2px); }
 
-    /* SECTION 3: Input Stack */
-    #input-stack { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 10px; }
+    #starfield-canvas { position: absolute; inset: 0; z-index: 1; transition: filter 0.6s ease; }
+
+    #input-stack { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 14px; }
     .input-wrapper { 
       background: var(--glass); border: 1px solid var(--border); 
-      border-radius: 50px; padding: 12px 24px;
+      border-radius: 50px; padding: 14px 28px;
+      box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.1);
     }
     #guest-cmd { 
       width: 100%; background: transparent; border: none; color: #fff; 
-      outline: none; text-align: center; font-size: 1rem; 
+      outline: none; text-align: center; font-size: 1.05rem; 
     }
+    #guest-cmd::placeholder { color: rgba(255,255,255,0.45); letter-spacing: 1px; }
+
     #send-btn { 
       background: var(--active-color); color: #000; border-radius: 50px; 
-      padding: 14px; font-weight: 900; border: none; cursor: pointer; 
-      letter-spacing: 2px; box-shadow: 0 0 15px var(--active-color);
+      padding: 16px 0; font-weight: 900; border: none; cursor: pointer; 
+      letter-spacing: 3px; font-size: 0.95rem;
+      box-shadow: 0 0 25px var(--active-color);
+      transition: all 0.3s ease;
     }
+    #send-btn:hover { transform: scale(1.03); box-shadow: 0 0 35px var(--active-color); }
 
-    /* DECO */
-    .pip-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 5px; }
-    .pip { width: 5px; height: 5px; border-radius: 50%; background: var(--active-color); box-shadow: 0 0 8px var(--active-color); }
-    
+    .pip-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+    .pip { 
+      width: 6px; height: 6px; border-radius: 50%; background: var(--active-color); 
+      box-shadow: 0 0 10px var(--active-color); 
+      animation: pip-pulse 2s infinite alternate ease-in-out;
+    }
+    @keyframes pip-pulse { from { opacity: 0.4; transform: scale(0.85); } to { opacity: 1; transform: scale(1.15); } }
+
     #bottom-dock { 
-      position: fixed; bottom: 20px; height: 50px; width: 90%; max-width: 480px;
+      position: fixed; bottom: 22px; height: 54px; width: 92%; max-width: 520px;
       background: var(--glass); border-radius: 40px; border: 1px solid var(--border); 
       left: 50%; transform: translateX(-50%); z-index: 100; 
       display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
-    #dock-text { color:var(--active-color); font-size: 8px; letter-spacing: 2px; font-weight: bold; opacity: 0.8; }
+    #dock-text { color:var(--active-color); font-size: 9px; letter-spacing: 3px; font-weight: bold; opacity: 0.75; }
   </style>
 </head>
 <body>
@@ -100,7 +113,9 @@
     <div id="oracle-circle">
       <video id="oracle-video" autoplay loop muted playsinline src="https://files.catbox.moe/no2e76.mp4"></video>
     </div>
-    <div class="pip-row"><div class="pip"></div><div class="pip"></div><div class="pip"></div></div>
+    <div class="pip-row">
+      <div class="pip"></div><div class="pip"></div><div class="pip"></div>
+    </div>
     <div id="council-status">[SENSE: NEUTRAL]</div>
   </div>
 
@@ -112,44 +127,46 @@
     <div class="input-wrapper">
       <input type="text" id="guest-cmd" placeholder="Command Artemis..." autocomplete="off">
     </div>
-    <button id="send-btn">TRANSMIT</button>
+    <button id="send-btn">TRANSMIT TO OLYMPUS</button>
   </div>
 </div>
 
 <div id="bottom-dock">
-    <div id="dock-text">PORTALS CONNECTED // OLYMPUS_ROOT_STAGING</div>
+    <div id="dock-text">OLYMPUS ROOT • STAGING v0.8.4 // PORTALS ALIGNED</div>
 </div>
 
 <script>
-  // --- PARTICLE ENGINE ---
+  // --- THREE.JS STARFIELD TEXT (enhanced) ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 480 / 80, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(75, 520 / 88, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: mallCanvas, alpha: true, antialias: true });
-  renderer.setSize(480, 80);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(520, 88);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.5));
 
   function getTextPoints(text, width, height) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = width; canvas.height = height;
     ctx.fillStyle = 'white';
-    ctx.font = '900 42px "Courier New", monospace'; 
+    ctx.font = '900 48px "Courier New", monospace'; 
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = '#00f2ff';
+    ctx.shadowBlur = 12;
     ctx.fillText(text, width / 2, height / 2);
     const data = ctx.getImageData(0, 0, width, height).data;
     const points = [];
     for (let y = 0; y < height; y += 2) {
       for (let x = 0; x < width; x += 2) {
-        if (data[(y * width + x) * 4 + 3] > 128) {
-          points.push({ x: (x - width / 2) * 0.029, y: -(y - height / 2) * 0.029 });
+        if (data[(y * width + x) * 4 + 3] > 140) {
+          points.push({ x: (x - width / 2) * 0.027, y: -(y - height / 2) * 0.027 });
         }
       }
     }
     return points;
   }
 
-  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 80);
+  const textPoints = getTextPoints('ENTER THE MALL', 520, 88);
   const starGeo = new THREE.BufferGeometry();
   const posArr = new Float32Array(textPoints.length * 3);
   const origArr = new Float32Array(textPoints.length * 3);
@@ -157,62 +174,86 @@
   for (let i = 0; i < textPoints.length; i++) {
     posArr[i*3] = origArr[i*3] = textPoints[i].x;
     posArr[i*3+1] = origArr[i*3+1] = textPoints[i].y;
-    posArr[i*3+2] = origArr[i*3+2] = 0;
+    posArr[i*3+2] = origArr[i*3+2] = Math.random() * 0.6 - 0.3;
   }
 
   starGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
-  const starMat = new THREE.PointsMaterial({ size: 0.055, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
-  scene.add(new THREE.Points(starGeo, starMat));
-  camera.position.z = 6.5; 
+  const starMat = new THREE.PointsMaterial({ size: 0.048, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthTest: false });
+  const starPoints = new THREE.Points(starGeo, starMat);
+  scene.add(starPoints);
+  camera.position.z = 7.2;
 
-  // --- COLOR & STATE ---
   let time = 0;
   let currentHue = new THREE.Color(0x00f2ff);
   let state = 'neutral';
-  const colors = [0x00f2ff, 0xd4af37, 0x8a2be2];
+  const colors = [0x00f2ff, 0xd4af37, 0x8a2be2, 0xff3366];
 
   function animate() {
     requestAnimationFrame(animate);
-    time += 0.04;
+    time += 0.035;
     const p = starGeo.attributes.position;
     for (let i = 0; i < textPoints.length; i++) {
-      p.array[i*3] = origArr[i*3] + Math.sin(time + origArr[i*3]*4) * 0.006;
-      p.array[i*3+1] = origArr[i*3+1] + Math.cos(time + origArr[i*3+1]*4) * 0.006;
+      const idx = i * 3;
+      p.array[idx]     = origArr[idx]     + Math.sin(time * 1.8 + origArr[idx] * 5) * 0.008;
+      p.array[idx + 1] = origArr[idx + 1] + Math.cos(time * 1.6 + origArr[idx + 1] * 4) * 0.008;
+      p.array[idx + 2] = Math.sin(time * 2 + i) * 0.15;
     }
     p.needsUpdate = true;
-    
+
     if (state === 'neutral') {
-      const target = colors[Math.floor((time * 0.08) % colors.length)];
-      currentHue.lerp(new THREE.Color(target), 0.01);
+      const target = colors[Math.floor((time * 0.07) % colors.length)];
+      currentHue.lerp(new THREE.Color(target), 0.008);
       starMat.color.copy(currentHue);
     }
-    
+
     const hex = "#" + starMat.color.getHexString();
-    mallCanvas.style.filter = `drop-shadow(0 0 8px ${hex})`;
+    mallCanvas.style.filter = `drop-shadow(0 0 12px ${hex})`;
     renderer.render(scene, camera);
   }
   animate();
 
-  // --- HANDLER ---
-  const status = document.getElementById('council-status');
+  // --- TRANSMIT LOGIC + GOLD MODE ---
+  const statusEl = document.getElementById('council-status');
   const root = document.documentElement;
+  const oracleCircle = document.getElementById('oracle-circle');
 
   async function transmit() {
-    const val = document.getElementById('guest-cmd').value;
+    const input = document.getElementById('guest-cmd');
+    const val = input.value.trim();
     if (!val) return;
-    status.textContent = "[ANALYZING...]";
-    
+
+    statusEl.textContent = "[SIGNAL ACQUIRED...]";
+    statusEl.style.color = "#ff3366";
+
     setTimeout(() => {
       state = 'active';
-      starMat.color.set(0xd4af37); // Switch to Gold
-      status.textContent = "[SENSE: GOLD]";
+      starMat.color.set(0xd4af37);
+      statusEl.textContent = "[SENSE: GOLD — AWAKENED]";
+      statusEl.style.color = "#d4af37";
       root.style.setProperty('--active-color', '#d4af37');
-      document.getElementById('guest-cmd').value = "";
-    }, 1000);
+      oracleCircle.style.borderColor = '#d4af37';
+      oracleCircle.style.boxShadow = '0 0 45px #d4af37, inset 0 0 55px #d4af37, 0 0 90px rgba(212, 175, 55, 0.25)';
+      input.value = "";
+    }, 850);
   }
 
   document.getElementById('send-btn').onclick = transmit;
   document.getElementById('guest-cmd').onkeypress = (e) => { if(e.key==='Enter') transmit(); };
+
+  // Hermes easter egg
+  let secretBuffer = "";
+  document.addEventListener('keydown', (e) => {
+    secretBuffer += e.key.toLowerCase();
+    if (secretBuffer.length > 10) secretBuffer = secretBuffer.slice(-10);
+    if (secretBuffer.includes("hermes")) {
+      state = 'active';
+      starMat.color.set(0xd4af37);
+      statusEl.textContent = "[SENSE: GOLD — HERMES PROTOCOL]";
+      root.style.setProperty('--active-color', '#d4af37');
+      oracleCircle.style.borderColor = '#d4af37';
+      secretBuffer = "";
+    }
+  });
 </script>
 </body>
 </html>
