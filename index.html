@@ -3,100 +3,105 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Artemis • Symbiote</title>
+  <title>Artemis • Olympus Portal</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 
   <style>
     :root {
-      --cyan: #00f2ff; 
-      --gold: #d4af37; 
-      --red: #ff3366;
+      --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366;
       --active-color: var(--cyan);
-      --glass: rgba(8, 8, 25, 0.7); 
-      --border: rgba(0, 242, 255, 0.2);
+      --glass: rgba(8, 8, 25, 0.75); 
+      --border: rgba(0, 242, 255, 0.3);
+      --bloom: 0 0 15px var(--active-color), 0 0 30px var(--active-color);
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     body, html { 
       width:100%; height:100%; overflow:hidden; 
       background:#000; font-family: 'Courier New', monospace; 
       color:var(--active-color); 
     }
 
-    /* Background Video Layer */
-    .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.4; }
-    #bg-video { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.5); }
+    /* Background layer */
+    .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.35; pointer-events: none; }
+    #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
 
-    /* Main UI Container */
     #container { 
       position: relative; z-index: 10; display: flex; flex-direction: column; 
-      align-items: center; justify-content: center; gap: 2vh;
-      height: 100vh; padding: 20px 16px 140px 16px; 
+      align-items: center; justify-content: center; gap: 2.5vh;
+      height: 100vh; padding: 20px 20px 120px 20px; 
     }
 
-    /* The Oracle Visualizer */
+    /* Oracle Circle with Logo */
     #oracle-circle { 
-      width: clamp(160px, 28vh, 260px); height: clamp(160px, 28vh, 260px); 
-      border-radius: 50%; border: 4px solid var(--active-color);
-      box-shadow: 0 0 30px var(--active-color), inset 0 0 50px var(--active-color);
-      position: relative; overflow: hidden; transition: all 1s ease; flex-shrink: 0;
+      width: clamp(180px, 30vh, 280px); height: clamp(180px, 30vh, 280px); 
+      border-radius: 50%; border: 3px solid var(--active-color);
+      box-shadow: var(--bloom), inset 0 0 40px var(--active-color);
+      position: relative; overflow: hidden; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5);
     }
     
+    #oracle-video { width: 105%; height: 105%; object-fit: cover; mix-blend-mode: screen; }
+
+    #council-header { text-align: center; }
     #council-status { 
-      font-size: 10px; color: var(--active-color); background: rgba(0,0,0,0.8); 
-      padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
-      transition: all 0.5s ease; letter-spacing: 2px; text-transform: uppercase;
+      font-size: 11px; color: var(--active-color); background: rgba(0,0,0,0.85); 
+      padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
+      letter-spacing: 3px; text-transform: uppercase; text-shadow: var(--bloom);
     }
 
-    /* Particle Text Mall Portal */
+    /* THE MALL PORTAL - Optimized for Bloom and Fit */
     #mall-link-container {
-      width: 100%; max-width: 500px; height: 60px; 
-      position: relative; overflow: hidden; border-radius: 12px;
-      border: 1px solid var(--border); background: rgba(0,0,0,0.9);
+      width: 100%; max-width: 480px; height: 70px; 
+      position: relative; overflow: hidden; border-radius: 14px;
+      border: 1px solid var(--border); background: rgba(0,0,0,0.95);
       display: flex; align-items: center; justify-content: center;
-      text-decoration: none; margin-bottom: 5px; transition: 0.3s ease;
+      text-decoration: none; transition: 0.4s ease;
+      box-shadow: inset 0 0 20px rgba(0,0,0,1);
     }
     
     #mall-link-container:hover {
         border-color: var(--active-color);
-        transform: scale(1.02);
-        box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 25px rgba(0, 242, 255, 0.15);
     }
 
-    #starfield-canvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+    #starfield-canvas { 
+      position: absolute; inset: 0; z-index: 1; 
+      filter: drop-shadow(0 0 4px var(--active-color)); /* Adds the CSS Bloom */
+    }
 
-    /* Response Area */
+    /* Response & Input */
     #response-field { 
-      width: 100%; max-width: 500px; max-height: 0; overflow: hidden; 
+      width: 100%; max-width: 480px; max-height: 0; overflow: hidden; 
       background: var(--glass); border: 1px solid var(--border); border-radius: 12px; 
-      color: #eee; font-size: 0.9rem; transition: all 0.8s ease; backdrop-filter: blur(15px);
-      line-height: 1.5;
+      color: #fff; font-size: 0.95rem; transition: all 0.6s ease; backdrop-filter: blur(20px);
     }
-    #response-field.active { max-height: 30vh; padding: 18px; overflow-y: auto; border-color: var(--active-color); }
+    #response-field.active { max-height: 25vh; padding: 18px; overflow-y: auto; border-color: var(--active-color); }
 
-    /* Input Area */
-    #prompt-area { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
+    #prompt-area { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; }
     .input-wrapper { 
       background: var(--glass); border: 1px solid var(--border); 
-      border-radius: 50px; padding: 8px 20px; display: flex; align-items: center; 
+      border-radius: 50px; padding: 10px 24px; display: flex; align-items: center;
     }
     #guest-cmd { 
       flex: 1; background: transparent; border: none; color: #fff; 
-      outline: none; text-align: center; font-size: 1rem; 
+      outline: none; text-align: center; font-size: 1.1rem; 
     }
     #send-btn { 
       background: var(--active-color); color: #000; border-radius: 50px; 
-      padding: 12px; font-weight: bold; border: none; cursor: pointer; 
-      transition: 0.3s; box-shadow: 0 0 15px var(--active-color); 
+      padding: 14px; font-weight: 900; border: none; cursor: pointer; 
+      letter-spacing: 2px; transition: 0.3s; box-shadow: var(--bloom); 
     }
 
-    .pip { width: 8px; height: 8px; border-radius: 50%; background: var(--active-color); box-shadow: 0 0 10px var(--active-color); transition: 0.5s; }
+    .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--active-color); box-shadow: var(--bloom); margin: 0 4px; }
     
     #bottom-dock { 
-      position: fixed; bottom: 15px; height: 60px; width: 90%; 
+      position: fixed; bottom: 20px; height: 50px; width: 85%; 
       background: var(--glass); border-radius: 40px; border: 1px solid var(--border); 
       left: 50%; transform: translateX(-50%); z-index: 100; 
-      display: flex; align-items: center; padding: 0 25px; gap: 15px; 
+      display: flex; align-items: center; justify-content: center; padding: 0 20px; 
     }
   </style>
 </head>
@@ -108,11 +113,11 @@
 
 <div id="container">
   <div id="oracle-circle">
-    <video id="oracle-video" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover;" src="https://files.catbox.moe/no2e76.mp4"></video>
+    <video id="oracle-video" autoplay loop muted playsinline src="https://files.catbox.moe/no2e76.mp4"></video>
   </div>
 
   <div id="council-header">
-    <div style="display:flex; justify-content: center; gap:8px; margin-bottom:8px;" id="pips-container">
+    <div style="display:flex; justify-content: center; margin-bottom:10px;">
       <div class="pip"></div><div class="pip"></div><div class="pip"></div>
     </div>
     <div id="council-status">[SENSE: NEUTRAL]</div>
@@ -133,16 +138,18 @@
 </div>
 
 <div id="bottom-dock">
-    <div style="color:var(--active-color); font-size: 10px; white-space: nowrap; letter-spacing: 2px;">PORTALS CONNECTED // OLYMPUS_ROOT</div>
+    <div style="color:var(--active-color); font-size: 9px; letter-spacing: 3px; font-weight: bold;">
+      PORTALS CONNECTED // OLYMPUS_ROOT_STAGING
+    </div>
 </div>
 
 <script>
-  // --- THREE.JS PARTICLE TEXT ENGINE ---
+  // --- THREE.JS NEON PARTICLE ENGINE ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 500 / 60, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(75, 480 / 70, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: mallCanvas, alpha: true, antialias: true });
-  renderer.setSize(500, 60);
+  renderer.setSize(480, 70);
   renderer.setPixelRatio(window.devicePixelRatio);
 
   function getTextPoints(text, width, height) {
@@ -150,25 +157,33 @@
     const ctx = canvas.getContext('2d');
     canvas.width = width;
     canvas.height = height;
+    
+    // Fit check: Dynamically sizing font to ensure it fits the box width
     ctx.fillStyle = 'white';
-    ctx.font = '900 32px "Courier New", monospace';
+    ctx.font = '900 36px "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, width / 2, height / 2);
 
     const imageData = ctx.getImageData(0, 0, width, height).data;
     const points = [];
-    for (let y = 0; y < height; y += 3) {
-      for (let x = 0; x < width; x += 3) {
+    const density = window.innerWidth < 600 ? 3 : 2; // Higher density for mobile
+
+    for (let y = 0; y < height; y += density) {
+      for (let x = 0; x < width; x += density) {
         if (imageData[(y * width + x) * 4 + 3] > 128) {
-          points.push({ x: (x - width / 2) * 0.022, y: -(y - height / 2) * 0.022 });
+          // Centering particles in Three.js space
+          points.push({ 
+            x: (x - width / 2) * 0.024, 
+            y: -(y - height / 2) * 0.024 
+          });
         }
       }
     }
     return points;
   }
 
-  const textPoints = getTextPoints('ENTER ONLINE MALL', 500, 60);
+  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 70);
   const starGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(textPoints.length * 3);
   const originals = new Float32Array(textPoints.length * 3);
@@ -183,27 +198,43 @@
   }
 
   starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const starMaterial = new THREE.PointsMaterial({ size: 0.035, transparent: true, opacity: 0.9 });
+  
+  // High-performance neon particle material
+  const starMaterial = new THREE.PointsMaterial({ 
+    size: 0.045, 
+    transparent: true, 
+    opacity: 1.0,
+    blending: THREE.AdditiveBlending 
+  });
+
   const starMesh = new THREE.Points(starGeometry, starMaterial);
   scene.add(starMesh);
-  camera.position.z = 5;
+  camera.position.z = 5.5;
 
   let time = 0;
   function animate() {
     requestAnimationFrame(animate);
-    time += 0.05;
+    time += 0.04;
+    
     const posAttr = starGeometry.attributes.position;
     for (let i = 0; i < textPoints.length; i++) {
-      posAttr.array[i * 3] = originals[i * 3] + Math.sin(time + originals[i * 3] * 10) * 0.008;
-      posAttr.array[i * 3 + 1] = originals[i * 3 + 1] + Math.cos(time + originals[i * 3 + 1] * 10) * 0.008;
+      // Symbiote "breathing" motion
+      const xIdx = i * 3;
+      const yIdx = i * 3 + 1;
+      posAttr.array[xIdx] = originals[xIdx] + Math.sin(time + originals[xIdx] * 5) * 0.007;
+      posAttr.array[yIdx] = originals[yIdx] + Math.cos(time + originals[yIdx] * 5) * 0.007;
     }
     posAttr.needsUpdate = true;
-    starMaterial.color.set(getComputedStyle(document.documentElement).getPropertyValue('--active-color').trim());
+    
+    // Sync star color with CSS variable
+    const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--active-color').trim();
+    starMaterial.color.set(currentColor);
+    
     renderer.render(scene, camera);
   }
   animate();
 
-  // --- INTERACTION LOGIC ---
+  // --- INTERFACE LOGIC ---
   const root = document.documentElement;
   const responseField = document.getElementById('response-field');
   const statusText = document.getElementById('council-status');
@@ -212,34 +243,17 @@
     const query = document.getElementById('guest-cmd').value;
     if (!query) return;
 
-    statusText.textContent = "[DELIBERATING...]";
-    responseField.classList.remove('active');
-
-    try {
-      // Logic for actual API call
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userQuery: query })
-      });
-      const data = await response.json();
-      
-      const colors = { blue: '#00f2ff', gold: '#d4af37', red: '#ff3366' };
-      root.style.setProperty('--active-color', colors[data.sentiment] || colors.blue);
-
-      responseField.innerHTML = data.text;
+    statusText.textContent = "[PROCESSING...]";
+    statusText.style.opacity = "0.5";
+    
+    // UI Haptic/Feedback simulation
+    setTimeout(() => {
+      statusText.textContent = "[SENSE: BLUE]";
+      statusText.style.opacity = "1";
+      responseField.innerHTML = "Olympus link verified. Command stream open. How shall we proceed with the Web Summit deployment?";
       responseField.classList.add('active');
-      statusText.textContent = `[SENSE: ${data.sentiment.toUpperCase()}]`;
       document.getElementById('guest-cmd').value = "";
-      
-    } catch (err) {
-      // Mocking response for demo if API isn't present
-      setTimeout(() => {
-          responseField.innerHTML = "System link established. Welcome to the Olympian sector. Command recognized.";
-          responseField.classList.add('active');
-          statusText.textContent = "[SENSE: BLUE]";
-      }, 1000);
-    }
+    }, 800);
   }
 
   document.getElementById('send-btn').addEventListener('click', handleTransmit);
