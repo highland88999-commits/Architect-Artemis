@@ -8,15 +8,10 @@
 
   <style>
     :root {
-      /* Palette */
       --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366; --purple: #8a2be2;
-      
-      /* State Vars */
-      --active-color: var(--cyan); /* Default starting color */
-      --star-color-state: var(--cyan); /* This will be animated */
-      
-      /* UI Elements */
-      --glass: rgba(8, 8, 25, 0.75); 
+      --active-color: var(--cyan);
+      --star-color-state: var(--cyan);
+      --glass: rgba(8, 8, 25, 0.8); 
       --border: rgba(0, 242, 255, 0.3);
       --bloom: 0 0 15px var(--active-color), 0 0 30px var(--active-color);
     }
@@ -31,47 +26,45 @@
     .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.35; pointer-events: none; }
     #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
 
-    /* Main Container with no overlap */
+    /* LAYOUT: Vertical stack with NO overlap */
     #container { 
       position: relative; z-index: 10; display: flex; flex-direction: column; 
-      align-items: center; justify-content: flex-start; gap: 2.5vh;
-      height: 100vh; padding: 20px 20px 0 20px;
+      align-items: center; justify-content: space-between;
+      height: 100vh; padding: 20px 20px 90px 20px; 
     }
 
     #oracle-circle { 
-      margin-top: 10px; /* Slight offset for status bar */
-      width: clamp(160px, 30vh, 260px); height: clamp(160px, 30vh, 260px); 
+      width: clamp(160px, 28vh, 250px); height: clamp(160px, 28vh, 250px); 
       border-radius: 50%; border: 3px solid var(--active-color);
       box-shadow: var(--bloom), inset 0 0 40px var(--active-color);
       position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.5); flex-shrink: 0;
     }
     
     #oracle-video { width: 105%; height: 105%; object-fit: cover; mix-blend-mode: screen; }
 
-    #council-header { text-align: center; }
+    #council-header { text-align: center; flex-shrink: 0; }
     #council-status { 
       font-size: 11px; color: var(--active-color); background: rgba(0,0,0,0.85); 
       padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
       letter-spacing: 3px; text-transform: uppercase; text-shadow: var(--bloom);
     }
 
-    /* THE MALL PORTAL */
+    /* THE MALL PORTAL - CENTERED */
     #mall-link-container {
-      width: 100%; max-width: 480px; height: 75px; 
+      width: 100%; max-width: 480px; height: 80px; 
       position: relative; overflow: hidden; border-radius: 14px;
       border: 1px solid var(--border); background: rgba(0,0,0,0.98);
       display: flex; align-items: center; justify-content: center;
-      text-decoration: none; transition: 0.4s ease;
-      box-shadow: inset 0 0 25px rgba(0,0,0,1);
+      text-decoration: none; transition: 0.4s ease; flex-shrink: 0;
     }
     
-    #starfield-canvas { position: absolute; inset: 0; z-index: 1; filter: drop-shadow(0 0 5px var(--star-color-state)); }
+    #starfield-canvas { position: absolute; inset: 0; z-index: 1; }
 
-    /* Input and Dock Stack */
+    /* INPUT STACK - BOTTOM ANCHORED */
     #input-stack {
       width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px;
-      margin-bottom: 20px; /* Space above dock */
+      flex-shrink: 0;
     }
 
     .input-wrapper { 
@@ -90,14 +83,13 @@
 
     .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--active-color); box-shadow: var(--bloom); margin: 0 4px; }
     
-    /* Dock with fixed height and position */
     #bottom-dock { 
       position: fixed; bottom: 20px; height: 50px; width: 90%; max-width: 480px;
       background: var(--glass); border-radius: 40px; border: 1px solid var(--border); 
       left: 50%; transform: translateX(-50%); z-index: 100; 
-      display: flex; align-items: center; justify-content: center; padding: 0 20px;
+      display: flex; align-items: center; justify-content: center;
     }
-    #dock-text { color:var(--active-color); font-size: 9px; letter-spacing: 2px; font-weight: bold; text-align: center; }
+    #dock-text { color:var(--active-color); font-size: 9px; letter-spacing: 2px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -135,31 +127,26 @@
 </div>
 
 <script>
-  // --- THREE.JS NEON PARTICLE ENGINE (MAX-FIT FRAME) ---
+  // --- THREE.JS NEON PARTICLE ENGINE ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 480 / 75, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(75, 480 / 80, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: mallCanvas, alpha: true, antialias: true });
-  renderer.setSize(480, 75);
+  renderer.setSize(480, 80);
   renderer.setPixelRatio(window.devicePixelRatio);
 
   function getTextPoints(text, width, height) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = width; canvas.height = height;
     ctx.fillStyle = 'white';
     ctx.font = '900 44px "Courier New", monospace'; 
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(text, width / 2, height / 2);
-
     const imageData = ctx.getImageData(0, 0, width, height).data;
     const points = [];
-    const density = 2; 
-
-    for (let y = 0; y < height; y += density) {
-      for (let x = 0; x < width; x += density) {
+    for (let y = 0; y < height; y += 2) {
+      for (let x = 0; x < width; x += 2) {
         if (imageData[(y * width + x) * 4 + 3] > 128) {
           points.push({ x: (x - width / 2) * 0.029, y: -(y - height / 2) * 0.029 });
         }
@@ -168,7 +155,7 @@
     return points;
   }
 
-  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 75);
+  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 80);
   const starGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(textPoints.length * 3);
   const originals = new Float32Array(textPoints.length * 3);
@@ -183,85 +170,55 @@
   }
 
   starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  
-  const starMaterial = new THREE.PointsMaterial({ 
-    size: 0.055, 
-    transparent: true, 
-    opacity: 1.0,
-    blending: THREE.AdditiveBlending 
-  });
-
+  const starMaterial = new THREE.PointsMaterial({ size: 0.055, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending });
   const starMesh = new THREE.Points(starGeometry, starMaterial);
   scene.add(starMesh);
   camera.position.z = 6.5; 
 
-  // --- COLOR ANIMATION & LOGIC ENGINE ---
+  // --- COLOR DYNAMICS ---
   let time = 0;
-  let currentColor = new THREE.Color(0x00f2ff); // Starts Cyan
+  let currentColor = new THREE.Color(0x00f2ff);
   let currentSentiment = 'neutral';
-  
-  const neutralPalette = [0x00f2ff, 0xd4af37, 0x8a2be2]; // Cyan, Gold, Purple
+  const neutralPalette = [0x00f2ff, 0xd4af37, 0x8a2be2];
   const sentimentPalette = { gold: 0xd4af37, red: 0xff3366 };
 
   function animate() {
     requestAnimationFrame(animate);
     time += 0.04;
-    
     const posAttr = starGeometry.attributes.position;
     for (let i = 0; i < textPoints.length; i++) {
-      const xIdx = i * 3;
-      const yIdx = i * 3 + 1;
-      posAttr.array[xIdx] = originals[xIdx] + Math.sin(time + originals[xIdx] * 4) * 0.006;
-      posAttr.array[yIdx] = originals[yIdx] + Math.cos(time + originals[yIdx] * 4) * 0.006;
+      posAttr.array[i * 3] = originals[i * 3] + Math.sin(time + originals[i * 3] * 4) * 0.006;
+      posAttr.array[i * 3 + 1] = originals[i * 3 + 1] + Math.cos(time + originals[i * 3 + 1] * 4) * 0.006;
     }
     posAttr.needsUpdate = true;
     
-    // COLOR LOGIC ENGINE
     if (currentSentiment === 'neutral') {
-      // In NEUTRAL: Slowly breathe through the full palette
-      const hueIdx = Math.floor((time * 0.1) % neutralPalette.length);
-      const targetColorVal = neutralPalette[hueIdx];
-      
-      // Gentle Interpolation (Lerp) to target color
-      currentColor.lerp(new THREE.Color(targetColorVal), 0.005);
+      const hueIdx = Math.floor((time * 0.08) % neutralPalette.length);
+      currentColor.lerp(new THREE.Color(neutralPalette[hueIdx]), 0.01);
       starMaterial.color.copy(currentColor);
     } else {
-      // In ACTIVE SENTIMENT: Snap instantly to a single, static color
-      starMaterial.color.set(sentimentPalette[currentSentiment] || sentimentPalette.gold);
+      starMaterial.color.set(sentimentPalette[currentSentiment] || 0x00f2ff);
     }
     
-    // Sync CSS filter for bloom aura
-    mallCanvas.style.filter = `drop-shadow(0 0 6px ${"#" + starMaterial.color.getHexString()})`;
-    
+    mallCanvas.style.filter = `drop-shadow(0 0 8px ${"#" + starMaterial.color.getHexString()})`;
     renderer.render(scene, camera);
   }
   animate();
 
-  // --- INTERFACE LOGIC ---
-  const root = document.documentElement;
-  const statusText = document.getElementById('council-status');
-
   async function handleTransmit() {
     const query = document.getElementById('guest-cmd').value;
     if (!query) return;
-
-    statusText.textContent = "[PROCESSING...]";
-    
+    document.getElementById('council-status').textContent = "[TRANSMITTING...]";
     setTimeout(() => {
-      // Test the color shift by setting sentiment
-      currentSentiment = 'gold'; // Simulate a gold sentiment return
-      statusText.textContent = "[SENSE: GOLD]";
-      
-      // Update UI color (will hold active sentiment color)
-      root.style.setProperty('--active-color', '#d4af37');
-      
+      currentSentiment = 'gold'; // Shift to Gold on success
+      document.getElementById('council-status').textContent = "[SENSE: GOLD]";
+      document.documentElement.style.setProperty('--active-color', '#d4af37');
       document.getElementById('guest-cmd').value = "";
-    }, 1200);
+    }, 1000);
   }
 
   document.getElementById('send-btn').addEventListener('click', handleTransmit);
   document.getElementById('guest-cmd').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleTransmit(); });
 </script>
-
 </body>
 </html>
