@@ -8,8 +8,14 @@
 
   <style>
     :root {
-      --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366;
-      --active-color: var(--cyan);
+      /* Palette */
+      --cyan: #00f2ff; --gold: #d4af37; --red: #ff3366; --purple: #8a2be2;
+      
+      /* State Vars */
+      --active-color: var(--cyan); /* Default starting color */
+      --star-color-state: var(--cyan); /* This will be animated */
+      
+      /* UI Elements */
       --glass: rgba(8, 8, 25, 0.75); 
       --border: rgba(0, 242, 255, 0.3);
       --bloom: 0 0 15px var(--active-color), 0 0 30px var(--active-color);
@@ -25,14 +31,16 @@
     .video-container { position: fixed; inset: 0; z-index: 0; opacity: 0.35; pointer-events: none; }
     #bg-video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
 
+    /* Main Container with no overlap */
     #container { 
       position: relative; z-index: 10; display: flex; flex-direction: column; 
-      align-items: center; justify-content: center; gap: 2.5vh;
-      height: 100vh; padding: 20px 20px 120px 20px; 
+      align-items: center; justify-content: flex-start; gap: 2.5vh;
+      height: 100vh; padding: 20px 20px 0 20px;
     }
 
     #oracle-circle { 
-      width: clamp(180px, 30vh, 280px); height: clamp(180px, 30vh, 280px); 
+      margin-top: 10px; /* Slight offset for status bar */
+      width: clamp(160px, 30vh, 260px); height: clamp(160px, 30vh, 260px); 
       border-radius: 50%; border: 3px solid var(--active-color);
       box-shadow: var(--bloom), inset 0 0 40px var(--active-color);
       position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
@@ -41,15 +49,16 @@
     
     #oracle-video { width: 105%; height: 105%; object-fit: cover; mix-blend-mode: screen; }
 
+    #council-header { text-align: center; }
     #council-status { 
       font-size: 11px; color: var(--active-color); background: rgba(0,0,0,0.85); 
       padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
       letter-spacing: 3px; text-transform: uppercase; text-shadow: var(--bloom);
     }
 
-    /* THE MALL PORTAL - MAX FIT FRAME */
+    /* THE MALL PORTAL */
     #mall-link-container {
-      width: 100%; max-width: 480px; height: 80px; 
+      width: 100%; max-width: 480px; height: 75px; 
       position: relative; overflow: hidden; border-radius: 14px;
       border: 1px solid var(--border); background: rgba(0,0,0,0.98);
       display: flex; align-items: center; justify-content: center;
@@ -57,25 +66,14 @@
       box-shadow: inset 0 0 25px rgba(0,0,0,1);
     }
     
-    #mall-link-container:hover {
-        border-color: var(--active-color);
-        transform: scale(1.01);
-        box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+    #starfield-canvas { position: absolute; inset: 0; z-index: 1; filter: drop-shadow(0 0 5px var(--star-color-state)); }
+
+    /* Input and Dock Stack */
+    #input-stack {
+      width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px;
+      margin-bottom: 20px; /* Space above dock */
     }
 
-    #starfield-canvas { 
-      position: absolute; inset: 0; z-index: 1; 
-      filter: drop-shadow(0 0 6px var(--active-color)); 
-    }
-
-    #response-field { 
-      width: 100%; max-width: 480px; max-height: 0; overflow: hidden; 
-      background: var(--glass); border: 1px solid var(--border); border-radius: 12px; 
-      color: #fff; font-size: 0.95rem; transition: all 0.6s ease; backdrop-filter: blur(20px);
-    }
-    #response-field.active { max-height: 25vh; padding: 18px; overflow-y: auto; border-color: var(--active-color); }
-
-    #prompt-area { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; }
     .input-wrapper { 
       background: var(--glass); border: 1px solid var(--border); 
       border-radius: 50px; padding: 10px 24px; display: flex; align-items: center;
@@ -92,12 +90,14 @@
 
     .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--active-color); box-shadow: var(--bloom); margin: 0 4px; }
     
+    /* Dock with fixed height and position */
     #bottom-dock { 
-      position: fixed; bottom: 20px; height: 50px; width: 85%; 
+      position: fixed; bottom: 20px; height: 50px; width: 90%; max-width: 480px;
       background: var(--glass); border-radius: 40px; border: 1px solid var(--border); 
       left: 50%; transform: translateX(-50%); z-index: 100; 
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; padding: 0 20px;
     }
+    #dock-text { color:var(--active-color); font-size: 9px; letter-spacing: 2px; font-weight: bold; text-align: center; }
   </style>
 </head>
 <body>
@@ -118,13 +118,11 @@
     <div id="council-status">[SENSE: NEUTRAL]</div>
   </div>
 
-  <div id="response-field"></div>
-
   <a href="https://hermes-landing-nu.vercel.app/" id="mall-link-container" target="_blank">
       <canvas id="starfield-canvas"></canvas>
   </a>
 
-  <div id="prompt-area">
+  <div id="input-stack">
     <div class="input-wrapper">
       <input type="text" id="guest-cmd" placeholder="Command Artemis..." autocomplete="off">
     </div>
@@ -133,18 +131,16 @@
 </div>
 
 <div id="bottom-dock">
-    <div style="color:var(--active-color); font-size: 9px; letter-spacing: 3px; font-weight: bold;">
-      PORTALS CONNECTED // OLYMPUS_ROOT_STAGING
-    </div>
+    <div id="dock-text">PORTALS CONNECTED // OLYMPUS_ROOT_STAGING</div>
 </div>
 
 <script>
-  // --- THREE.JS NEON PARTICLE ENGINE (MAX-FIT EDITION) ---
+  // --- THREE.JS NEON PARTICLE ENGINE (MAX-FIT FRAME) ---
   const mallCanvas = document.getElementById('starfield-canvas');
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, 480 / 80, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(75, 480 / 75, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: mallCanvas, alpha: true, antialias: true });
-  renderer.setSize(480, 80);
+  renderer.setSize(480, 75);
   renderer.setPixelRatio(window.devicePixelRatio);
 
   function getTextPoints(text, width, height) {
@@ -152,8 +148,6 @@
     const ctx = canvas.getContext('2d');
     canvas.width = width;
     canvas.height = height;
-    
-    // MAX WEIGHT: Using 900 weight and 44px to command the frame
     ctx.fillStyle = 'white';
     ctx.font = '900 44px "Courier New", monospace'; 
     ctx.textAlign = 'center';
@@ -167,18 +161,14 @@
     for (let y = 0; y < height; y += density) {
       for (let x = 0; x < width; x += density) {
         if (imageData[(y * width + x) * 4 + 3] > 128) {
-          // Centering and scaling points to 95% of container width
-          points.push({ 
-            x: (x - width / 2) * 0.029, 
-            y: -(y - height / 2) * 0.029 
-          });
+          points.push({ x: (x - width / 2) * 0.029, y: -(y - height / 2) * 0.029 });
         }
       }
     }
     return points;
   }
 
-  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 80);
+  const textPoints = getTextPoints('ENTER ONLINE MALL', 480, 75);
   const starGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(textPoints.length * 3);
   const originals = new Float32Array(textPoints.length * 3);
@@ -205,23 +195,43 @@
   scene.add(starMesh);
   camera.position.z = 6.5; 
 
+  // --- COLOR ANIMATION & LOGIC ENGINE ---
   let time = 0;
+  let currentColor = new THREE.Color(0x00f2ff); // Starts Cyan
+  let currentSentiment = 'neutral';
+  
+  const neutralPalette = [0x00f2ff, 0xd4af37, 0x8a2be2]; // Cyan, Gold, Purple
+  const sentimentPalette = { gold: 0xd4af37, red: 0xff3366 };
+
   function animate() {
     requestAnimationFrame(animate);
-    time += 0.045;
+    time += 0.04;
     
     const posAttr = starGeometry.attributes.position;
     for (let i = 0; i < textPoints.length; i++) {
       const xIdx = i * 3;
       const yIdx = i * 3 + 1;
-      // High-frequency symbiotic drift
       posAttr.array[xIdx] = originals[xIdx] + Math.sin(time + originals[xIdx] * 4) * 0.006;
       posAttr.array[yIdx] = originals[yIdx] + Math.cos(time + originals[yIdx] * 4) * 0.006;
     }
     posAttr.needsUpdate = true;
     
-    const currentColor = getComputedStyle(document.documentElement).getPropertyValue('--active-color').trim();
-    starMaterial.color.set(currentColor);
+    // COLOR LOGIC ENGINE
+    if (currentSentiment === 'neutral') {
+      // In NEUTRAL: Slowly breathe through the full palette
+      const hueIdx = Math.floor((time * 0.1) % neutralPalette.length);
+      const targetColorVal = neutralPalette[hueIdx];
+      
+      // Gentle Interpolation (Lerp) to target color
+      currentColor.lerp(new THREE.Color(targetColorVal), 0.005);
+      starMaterial.color.copy(currentColor);
+    } else {
+      // In ACTIVE SENTIMENT: Snap instantly to a single, static color
+      starMaterial.color.set(sentimentPalette[currentSentiment] || sentimentPalette.gold);
+    }
+    
+    // Sync CSS filter for bloom aura
+    mallCanvas.style.filter = `drop-shadow(0 0 6px ${"#" + starMaterial.color.getHexString()})`;
     
     renderer.render(scene, camera);
   }
@@ -229,7 +239,6 @@
 
   // --- INTERFACE LOGIC ---
   const root = document.documentElement;
-  const responseField = document.getElementById('response-field');
   const statusText = document.getElementById('council-status');
 
   async function handleTransmit() {
@@ -239,11 +248,15 @@
     statusText.textContent = "[PROCESSING...]";
     
     setTimeout(() => {
-      statusText.textContent = "[SENSE: BLUE]";
-      responseField.innerHTML = "Olympus link verified. Text scaling optimized for 2026 Web Summit Gatekeepers.";
-      responseField.classList.add('active');
+      // Test the color shift by setting sentiment
+      currentSentiment = 'gold'; // Simulate a gold sentiment return
+      statusText.textContent = "[SENSE: GOLD]";
+      
+      // Update UI color (will hold active sentiment color)
+      root.style.setProperty('--active-color', '#d4af37');
+      
       document.getElementById('guest-cmd').value = "";
-    }, 800);
+    }, 1200);
   }
 
   document.getElementById('send-btn').addEventListener('click', handleTransmit);
