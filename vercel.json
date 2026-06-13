@@ -1,6 +1,21 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "api/transmit.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build"
+    },
+    {
+      "src": "*.py",
+      "use": "@vercel/python"
+    }
+  ],
   "rewrites": [
+    { "source": "/api/transmit", "destination": "/api/transmit.js" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "cleanUrls": true
