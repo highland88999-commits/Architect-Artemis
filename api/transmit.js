@@ -1,3 +1,4 @@
+```javascript
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 module.exports = async function handler(req, res) {
@@ -37,6 +38,32 @@ module.exports = async function handler(req, res) {
     const trimmedPrompt = prompt ? prompt.trim() : "";
 
     // ==========================================
+    // ROUTE 4: THE CODE ENGINE
+    // ==========================================
+    if (trimmedPrompt.toLowerCase().startsWith('/code ')) {
+        if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing.');
+        
+        const codeQuery = trimmedPrompt.substring(6).trim();
+        
+        const systemPrompt = `You are Artemis, an elite creative coder and UI/UX engineer. The user has requested the following code: "${codeQuery}".
+        
+        YOU MUST OBEY THESE STRICT RULES:
+        1. If creating a website or UI, default to a modern, device-adaptable (responsive) layout.
+        2. Everything must be perfectly centered on the screen using CSS Flexbox or Grid unless specified otherwise.
+        3. The aesthetic should be dark, sleek, and cyberpunk (neon cyans, purples, golds, dark glass overlays).
+        4. If 3D graphics or visual effects are requested, YOU MUST USE Three.js. Automatically include post-processing Bloom effects (EffectComposer, RenderPass, UnrealBloomPass) to make objects glow.
+        5. Output a single, complete HTML file (with inline CSS and JS) so the user can copy and run it instantly.
+        6. Wrap your entire code in a standard markdown code block (\`\`\`html ... \`\`\`).`;
+
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        // CHANGED TO GEMINI-1.5-FLASH
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+        const result = await model.generateContent(systemPrompt);
+        return res.status(200).json({ verdict: result.response.text(), status: 'success', mode: 'council' });
+    }
+
+    // ==========================================
     // ROUTE 3a: START VIDEO ENGINE
     // ==========================================
     if (trimmedPrompt.toLowerCase().startsWith('/video ')) {
@@ -45,7 +72,6 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ verdict: "### Missing API Key\nAdd `REPLICATE_API_TOKEN` to Vercel.", status: 'success' });
         }
 
-        // Fire request to Zeroscope v2 (Text-to-Video Model)
         const response = await fetch("https://api.replicate.com/v1/predictions", {
             method: "POST",
             headers: {
@@ -85,7 +111,8 @@ module.exports = async function handler(req, res) {
     // ==========================================
     if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing.');
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+    // CHANGED TO GEMINI-1.5-FLASH
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const result = await model.generateContent(prompt);
     return res.status(200).json({ verdict: result.response.text(), status: 'success', mode: 'council' });
@@ -95,3 +122,5 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 };
+
+```
