@@ -149,6 +149,8 @@
         #text-holo-content ul, #text-holo-content ol { margin-left: 25px; margin-bottom: 15px; }
         #text-holo-content table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         #text-holo-content th, #text-holo-content td { border: 1px solid var(--border); padding: 8px; }
+        #text-holo-content img { max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
+        #text-holo-content video { max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
 
         .holo-header { padding: 15px 20px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 242, 255, 0.2); }
         .holo-title { font-weight: bold; letter-spacing: 2px; }
@@ -315,7 +317,7 @@
         let latestArtemisText = "";
         let typingTimer;
         
-        // --- NEW: Lock Variables ---
+        // Lock Variables
         let isGenerating = false;
         let currentAbortController = null;
 
@@ -389,7 +391,6 @@
         cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); window.handleSendClick(); } });
         cmd.addEventListener('focus', function() { this.select(); });
 
-        // --- NEW: UI Lock Engine ---
         function lockUI() {
             isGenerating = true;
             const btn = document.getElementById('send-btn');
@@ -429,32 +430,49 @@
             }
         };
 
-        window.sendToArtemis = async function() {
-            const promptText = cmd.value.trim(); if (!promptText) return;
+        // --- NEW: Asynchronous Polling Logic Added Here ---
+        window.sendToArtemis = async function(isPolling = false, pollingJobId = null) {
+            const promptText = isPolling ? "" : cmd.value.trim(); 
+            if (!promptText && !isPolling) return;
             
-            lockUI();
-            currentAbortController = new AbortController();
-            document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '0.3s');
-            
-            const oracleMsg = document.getElementById('oracle-message');
-            oracleMsg.textContent = 'Artemis is awakening the council...';
-            oracleMsg.style.opacity = 1; 
+            if (!isPolling) {
+                lockUI();
+                currentAbortController = new AbortController();
+                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '0.3s');
+                const oracleMsg = document.getElementById('oracle-message');
+                oracleMsg.textContent = 'Artemis is awakening the council...';
+                oracleMsg.style.opacity = 1; 
+            }
 
             try {
+                // Determine if we are sending a new prompt or polling a video job
+                const payload = isPolling 
+                    ? { prompt: "", handshake: 'CONNECTED', mode: 'check_video', jobId: pollingJobId }
+                    : { prompt: promptText, handshake: 'CONNECTED', mode: 'council' };
+
                 const response = await fetch('/api/transmit', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: promptText, handshake: 'CONNECTED', mode: 'council' }),
+                    body: JSON.stringify(payload),
                     signal: currentAbortController.signal
                 });
                 const data = await response.json();
-                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
                 
+                // IF VIDEO IS PROCESSING: Update UI, wait 5 seconds, and loop.
+                if (data.mode === 'video_polling') {
+                    latestArtemisText = data.verdict;
+                    fadeOutMessage(); setTimeout(() => fadeInMessage(data.verdict), 600);
+                    setTimeout(() => window.sendToArtemis(true, data.jobId || pollingJobId), 5000);
+                    return; // Exit function so UI stays locked
+                }
+
+                // IF DONE: Standard text, image, or finished video
+                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
                 const aiReply = data.verdict || data.response || data.error || 'The council has spoken...';
                 latestArtemisText = aiReply; 
                 
                 fadeOutMessage(); setTimeout(() => fadeInMessage(aiReply), 600);
 
-                if (currentUser && !data.error) {
+                if (currentUser && !data.error && !isPolling) {
                     const historyRef = collection(db, "users", currentUser.uid, "history");
                     await addDoc(historyRef, { prompt: promptText, response: aiReply, timestamp: serverTimestamp() });
                 }
@@ -467,11 +485,11 @@
                     fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
                 }
             } finally {
-                if (isGenerating) resetUI();
+                // Only unlock the UI if we aren't in a polling loop
+                if (isGenerating && !isPolling) resetUI();
             }
         };
 
-        // --- NEW: Document Engine ---
         window.openTextHolo = function() {
             if (!latestArtemisText) return;
             // Parse Markdown safely
