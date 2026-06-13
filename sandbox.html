@@ -1,0 +1,68 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artemis Deployment</title>
+    <style>
+        body { background: #000; color: #00f2ff; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .loader { text-align: center; font-size: 1.2rem; letter-spacing: 2px; text-shadow: 0 0 10px #00f2ff; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="loader" id="status">INITIALIZING NEURAL LINK...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrt1J430kPVADh7Sqbdn6nOu371h3rHHI",
+            authDomain: "artemis-f2d47.firebaseapp.com",
+            projectId: "artemis-f2d47",
+            storageBucket: "artemis-f2d47.firebasestorage.app",
+            messagingSenderId: "60116392103",
+            appId: "1:60116392103:web:a75384427cce708b52a382"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function bootSandbox() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const deployId = urlParams.get('id');
+
+            if (!deployId) {
+                document.getElementById('status').innerText = "ERROR: NO DEPLOYMENT ID FOUND.";
+                document.getElementById('status').style.color = "#ff3366";
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "deployments", deployId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const code = docSnap.data().code;
+                    // Wipe the loading screen and instantly execute the raw code
+                    document.open();
+                    document.write(code);
+                    document.close();
+                } else {
+                    document.getElementById('status').innerText = "ERROR: DEPLOYMENT EXPUNGED OR INVALID.";
+                    document.getElementById('status').style.color = "#ff3366";
+                }
+            } catch (error) {
+                console.error("Link Error:", error);
+                document.getElementById('status').innerText = "FATAL ERROR FETCHING DEPLOYMENT.";
+            }
+        }
+
+        bootSandbox();
+    </script>
+</body>
+</html>
+
+```
