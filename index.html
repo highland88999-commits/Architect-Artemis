@@ -65,6 +65,34 @@
         }
         @keyframes fall { to { transform: translateY(110vh); } }
 
+        /* --- Top Auth Button --- */
+        #auth-btn-wrapper {
+            position: fixed; top: 20px; right: 20px; z-index: 2000;
+        }
+        .holo-btn {
+            background: rgba(0, 242, 255, 0.15); border: 1px solid var(--cyan);
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; color: var(--cyan);
+            font-weight: bold; font-size: 0.9rem; transition: 0.2s; backdrop-filter: blur(10px);
+            font-family: 'Courier New', monospace; text-transform: uppercase;
+        }
+        .holo-btn:active { background: var(--cyan); color: #000; }
+
+        /* --- Auth Modal --- */
+        #auth-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            z-index: 4000; justify-content: center; align-items: center; backdrop-filter: blur(8px);
+        }
+        #auth-modal {
+            background: rgba(8, 8, 25, 0.9); border: 2px solid var(--gold); border-radius: 16px;
+            padding: 30px; width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3); text-align: center;
+        }
+        .auth-input {
+            width: 100%; padding: 12px; background: rgba(0, 242, 255, 0.05); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--cyan); font-family: 'Courier New', monospace; outline: none;
+        }
+        .auth-input:focus { border-color: var(--cyan); box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.2); }
+
         /* --- Main UI --- */
         #container { 
             position: relative; z-index: 10; display: flex; flex-direction: column; 
@@ -145,7 +173,6 @@
             z-index: 2000; flex-direction: column; overflow: hidden; 
         }
         
-        /* NEW: Expanded Text Overlay */
         #text-holo-overlay {
             display: none; position: fixed; inset: 10% 5%; background: rgba(8, 8, 25, 0.85); 
             border: 2px solid var(--gold); border-radius: 20px; backdrop-filter: blur(30px); 
@@ -157,12 +184,6 @@
             font-size: 1.1rem; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;
             text-align: left; text-transform: none; text-shadow: 0 0 5px rgba(0, 242, 255, 0.4);
         }
-        .holo-btn {
-            background: rgba(0, 242, 255, 0.15); border: 1px solid var(--cyan);
-            padding: 6px 14px; border-radius: 8px; cursor: pointer; color: var(--cyan);
-            font-weight: bold; font-size: 0.9rem; transition: 0.2s;
-        }
-        .holo-btn:active { background: var(--cyan); color: #000; }
 
         .holo-header { padding: 15px 20px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 242, 255, 0.2); }
         .holo-title { font-weight: bold; letter-spacing: 2px; }
@@ -196,9 +217,7 @@
             z-index: 9998; display: none; justify-content: center; align-items: center;
             backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.4s ease;
         }
-        #starblood-game-overlay.active {
-            display: flex; opacity: 1;
-        }
+        #starblood-game-overlay.active { display: flex; opacity: 1; }
         .starblood-holoframe {
             width: 95vw; height: 90vh; max-width: 1400px;
             border: 2px solid var(--c-starblood); border-radius: 16px;
@@ -206,12 +225,8 @@
             overflow: hidden; position: relative;
             transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #starblood-game-overlay.active .starblood-holoframe {
-            transform: scale(1);
-        }
-        #starblood-iframe {
-            width: 100%; height: 100%; border: none;
-        }
+        #starblood-game-overlay.active .starblood-holoframe { transform: scale(1); }
+        #starblood-iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
@@ -221,6 +236,29 @@
             <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
         </video>
         <div id="landing-prompt">Click anywhere to enter</div>
+    </div>
+
+    <div id="auth-btn-wrapper">
+        <button class="holo-btn" id="top-auth-btn" onclick="toggleAuthModal()">AUTHENTICATE</button>
+    </div>
+
+    <div id="auth-modal-overlay">
+        <div id="auth-modal">
+            <h3 style="color: var(--gold); margin-bottom: 5px;">TERMINAL ACCESS</h3>
+            <p style="font-size: 0.8rem; color: var(--cyan); margin-bottom: 15px; opacity: 0.7;">Secure link required for memory retention.</p>
+            
+            <input type="email" id="auth-email" placeholder="Identifier (Email)" class="auth-input">
+            <input type="password" id="auth-pass" placeholder="Passcode" class="auth-input">
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
+                <button class="holo-btn" onclick="submitAuth('login')">LOGIN</button>
+                <button class="holo-btn" onclick="submitAuth('signup')">SIGN UP</button>
+            </div>
+            
+            <button class="holo-btn" style="border-color: #ff3366; color: #ff3366; margin-top: 10px;" onclick="closeAuthModal()">CONTINUE AS GUEST</button>
+            
+            <div id="auth-error" style="color: #ff3366; font-size: 0.8rem; margin-top: 10px;"></div>
+        </div>
     </div>
 
     <div id="rain-container"></div>
@@ -245,7 +283,7 @@
 
         <div id="prompt-area">
             <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
-            <button id="send-btn">SEND</button>
+            <button id="send-btn" onclick="sendToArtemis()">SEND</button>
         </div>
     </div>
 
@@ -319,17 +357,90 @@
         </div>
     </div>
 
-    <script>
-        // Global variable to store the latest full AI response
-        let latestArtemisText = "";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        function enterNexus() {
+        // Your exact Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrt1J430kPVADh7Sqbdn6nOu371h3rHHI",
+            authDomain: "artemis-f2d47.firebaseapp.com",
+            projectId: "artemis-f2d47",
+            storageBucket: "artemis-f2d47.firebasestorage.app",
+            messagingSenderId: "60116392103",
+            appId: "1:60116392103:web:a75384427cce708b52a382"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let latestArtemisText = "";
+        let typingTimer;
+
+        // --- AUTHENTICATION STATE LISTENER ---
+        onAuthStateChanged(auth, (user) => {
+            const topBtn = document.getElementById('top-auth-btn');
+            if (user) {
+                currentUser = user;
+                topBtn.textContent = "SIGN OUT";
+                topBtn.style.borderColor = "#66ff66";
+                topBtn.style.color = "#66ff66";
+                closeAuthModal();
+            } else {
+                currentUser = null;
+                topBtn.textContent = "AUTHENTICATE";
+                topBtn.style.borderColor = "var(--cyan)";
+                topBtn.style.color = "var(--cyan)";
+            }
+        });
+
+        // --- GLOBAL WINDOW FUNCTIONS ---
+        window.toggleAuthModal = function() {
+            if (currentUser) {
+                signOut(auth);
+            } else {
+                document.getElementById('auth-modal-overlay').style.display = 'flex';
+                document.getElementById('auth-error').textContent = "";
+            }
+        };
+
+        window.closeAuthModal = function() {
+            document.getElementById('auth-modal-overlay').style.display = 'none';
+        };
+
+        window.submitAuth = async function(action) {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value;
+            const errorDiv = document.getElementById('auth-error');
+            
+            if (!email || !pass) {
+                errorDiv.textContent = "Email and Passcode required.";
+                return;
+            }
+            
+            errorDiv.textContent = "Connecting to mainframe...";
+            try {
+                if (action === 'login') {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else if (action === 'signup') {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message.replace("Firebase:", "").trim();
+            }
+        };
+
+        window.enterNexus = function() {
             const landing = document.getElementById('landing-page');
             landing.classList.add('dissolve-effect');
             document.getElementById('oracle-video').play();
             createRain();
             setTimeout(() => { landing.style.display = 'none'; }, 1500);
-        }
+        };
 
         function createRain() {
             const container = document.getElementById('rain-container');
@@ -344,7 +455,7 @@
             }
         }
 
-        function updateHarvester() {
+        setInterval(() => {
             const stats = document.getElementById('harvest-stats');
             const minutes = new Date().getMinutes();
             if (minutes % 20 < 5) {
@@ -354,19 +465,17 @@
                 stats.textContent = `[HARVESTING: ${Math.floor(Math.random()*5)+15}/20 URLS]`;
                 stats.style.color = 'var(--cyan)';
             }
-        }
-        setInterval(updateHarvester, 5000); updateHarvester();
+        }, 5000);
 
-        let typingTimer;
         function fadeInMessage(text) {
-            const newColor = getRandomColor();
+            const colors = ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'];
+            const newColor = colors[Math.floor(Math.random() * colors.length)];
             const oracleCircle = document.getElementById('oracle-circle');
             const shaderOverlay = document.getElementById('shader-overlay');
             const oracleMessage = document.getElementById('oracle-message');
             
             clearTimeout(typingTimer);
             oracleMessage.textContent = '';
-            
             oracleCircle.style.borderColor = newColor;
             oracleCircle.style.boxShadow = `0 0 40px ${newColor}, inset 0 0 90px rgba(0,242,255,0.55)`;
             shaderOverlay.style.opacity = 0.82;
@@ -379,7 +488,6 @@
                     i++;
                     typingTimer = setTimeout(type, 40);
                 } 
-                // Removed the auto-fadeout. The text stays until the next prompt.
             }
             setTimeout(type, 300);
         }
@@ -395,26 +503,17 @@
             }, 500);
         }
 
-        function getRandomColor() {
-            return ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'][Math.floor(Math.random() * 8)];
-        }
-
         const cmd = document.getElementById('guest-cmd');
-        const sendBtn = document.getElementById('send-btn');
-        sendBtn.addEventListener('click', sendToArtemis);
-        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); sendToArtemis(); } });
-        
-        // Auto-select the text when you tap the input box so you don't have to backspace
+        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); window.sendToArtemis(); } });
         cmd.addEventListener('focus', function() { this.select(); });
 
-        async function sendToArtemis() {
+        window.sendToArtemis = async function() {
             const promptText = cmd.value.trim(); if (!promptText) return;
             document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '0.3s');
+            
             const oracleMsg = document.getElementById('oracle-message');
             oracleMsg.textContent = 'Artemis is awakening the council...';
             oracleMsg.style.opacity = 1; 
-            
-            // Removed cmd.value = ''; so your prompt stays visible.
 
             try {
                 const response = await fetch('/api/transmit', {
@@ -425,29 +524,44 @@
                 document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
                 
                 const aiReply = data.verdict || data.response || data.error || 'The council has spoken...';
-                latestArtemisText = aiReply; // Save to global variable for the overlay
+                latestArtemisText = aiReply; 
                 
                 fadeOutMessage(); setTimeout(() => fadeInMessage(aiReply), 600);
+
+                // --- SAVE TO FIRESTORE IF LOGGED IN ---
+                if (currentUser && !data.error) {
+                    try {
+                        const historyRef = collection(db, "users", currentUser.uid, "history");
+                        await addDoc(historyRef, {
+                            prompt: promptText,
+                            response: aiReply,
+                            timestamp: serverTimestamp()
+                        });
+                        console.log("Memory saved to user bucket.");
+                    } catch (dbErr) {
+                        console.error("Failed to write to Firestore:", dbErr);
+                    }
+                }
+
             } catch (err) {
                 document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
                 latestArtemisText = "Synaptic link unstable...";
                 fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
             }
-        }
+        };
 
-        /* --- New Text Expansion Overlay Logic --- */
-        function openTextHolo() {
-            if (!latestArtemisText) return; // Do nothing if Artemis hasn't spoken yet
+        window.openTextHolo = function() {
+            if (!latestArtemisText) return;
             document.getElementById('text-holo-content').textContent = latestArtemisText;
             document.getElementById('text-holo-overlay').style.display = 'flex';
-        }
+        };
 
-        function closeTextHolo() {
+        window.closeTextHolo = function() {
             document.getElementById('text-holo-overlay').style.display = 'none';
-            document.getElementById('copy-btn').textContent = 'COPY'; // Reset button text
-        }
+            document.getElementById('copy-btn').textContent = 'COPY'; 
+        };
 
-        function copyOracleText() {
+        window.copyOracleText = function() {
             if (!latestArtemisText) return;
             navigator.clipboard.writeText(latestArtemisText).then(() => {
                 const btn = document.getElementById('copy-btn');
@@ -456,29 +570,27 @@
             }).catch(err => {
                 console.error('Could not copy text: ', err);
             });
-        }
+        };
 
-        /* --- Existing Iframe Overlay Logic --- */
-        function openHolo(url) {
+        window.openHolo = function(url) {
             document.getElementById('holo-iframe').src = url;
             document.getElementById('holo-overlay').style.display = 'flex';
-        }
-        function closeHolo() {
+        };
+        window.closeHolo = function() {
             document.getElementById('holo-overlay').style.display = 'none';
             document.getElementById('holo-iframe').src = '';
-        }
+        };
+
         document.querySelectorAll('.dock-icon').forEach(icon => {
             icon.addEventListener('click', () => {
                 const url = icon.getAttribute('data-url');
-                if (url) openHolo(url);
+                if (url) window.openHolo(url);
             });
         });
 
-        /* --- Starblood Holographic Car Overlay Logic --- */
-        function toggleStarbloodGame(e) {
+        window.toggleStarbloodGame = function(e) {
             if (e) e.stopPropagation();
             const overlay = document.getElementById('starblood-game-overlay');
-            
             if (overlay.classList.contains('active')) {
                 overlay.classList.remove('active');
                 setTimeout(() => { overlay.style.display = 'none'; }, 400); 
@@ -487,13 +599,13 @@
                 void overlay.offsetWidth;
                 overlay.classList.add('active');
             }
-        }
+        };
 
-        function closeStarbloodGame(e) {
+        window.closeStarbloodGame = function(e) {
             if (e.target.id === 'starblood-game-overlay') {
-                toggleStarbloodGame();
+                window.toggleStarbloodGame();
             }
-        }
+        };
     </script>
 </body>
 </html>
