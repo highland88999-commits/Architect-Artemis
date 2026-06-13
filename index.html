@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>Artemis • Symbiote</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
         :root {
             --cyan: #00f2ff;
@@ -13,7 +17,6 @@
             --border: rgba(0, 242, 255, 0.35);
             --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
             --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
-            --neon-glow: 0 0 20px #00f2ff, 0 0 40px #00f2ff, inset 0 0 20px #00f2ff;
             
             /* Label Colors */
             --c-maps: #00D2FF;
@@ -29,16 +32,10 @@
         * { margin:0; padding:0; box-sizing:border-box; }
         
         body, html { 
-            width:100%; 
-            height:100%; 
-            overflow:hidden; 
-            background:#000; 
-            font-family: 'Courier New', monospace; 
-            color:var(--cyan); 
-            touch-action: manipulation; 
+            width:100%; height:100%; overflow:hidden; background:#000; 
+            font-family: 'Courier New', monospace; color:var(--cyan); touch-action: manipulation; 
         }
 
-        /* --- Landing Page --- */
         #landing-page {
             position: fixed; inset: 0; z-index: 1000; background: #000;
             display: flex; justify-content: center; align-items: center;
@@ -50,25 +47,17 @@
             text-transform: uppercase; text-shadow: 0 0 20px var(--cyan);
             animation: pulseFade 3s infinite; pointer-events: none;
         }
-        @keyframes pulseFade {
-            0%, 100% { opacity: 0.3; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1); }
-        }
+        @keyframes pulseFade { 0%, 100% { opacity: 0.3; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
         .dissolve-effect { opacity: 0 !important; transform: scale(1.5); filter: brightness(2) blur(20px); pointer-events: none; }
 
-        /* --- Rain Effect --- */
         #rain-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
         .drop {
             position: absolute; background: linear-gradient(transparent, var(--cyan));
-            width: 1px; height: 80px; top: -100px;
-            animation: fall 1.5s linear infinite; opacity: 0.3;
+            width: 1px; height: 80px; top: -100px; animation: fall 1.5s linear infinite; opacity: 0.3;
         }
         @keyframes fall { to { transform: translateY(110vh); } }
 
-        /* --- Top Auth Button --- */
-        #auth-btn-wrapper {
-            position: fixed; top: 20px; right: 20px; z-index: 2000;
-        }
+        #auth-btn-wrapper { position: fixed; top: 20px; right: 20px; z-index: 2000; }
         .holo-btn {
             background: rgba(0, 242, 255, 0.15); border: 1px solid var(--cyan);
             padding: 8px 16px; border-radius: 8px; cursor: pointer; color: var(--cyan);
@@ -77,7 +66,6 @@
         }
         .holo-btn:active { background: var(--cyan); color: #000; }
 
-        /* --- Auth Modal --- */
         #auth-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             z-index: 4000; justify-content: center; align-items: center; backdrop-filter: blur(8px);
@@ -93,18 +81,15 @@
         }
         .auth-input:focus { border-color: var(--cyan); box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.2); }
 
-        /* --- Main UI --- */
         #container { 
             position: relative; z-index: 10; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; height: 100vh; 
-            text-align: center; padding: 20px; 
+            align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; 
         }
 
         #oracle-circle { 
             width: min(320px, 70vw); height: min(320px, 70vw); border-radius: 50%; 
             border: 9px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); 
-            position: relative; overflow: hidden; margin-bottom: 2vh; cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative; overflow: hidden; margin-bottom: 2vh; cursor: pointer; transition: 0.3s;
         }
         #oracle-circle:active { transform: scale(0.95); }
         #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
@@ -114,8 +99,7 @@
             color: var(--cyan); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: bold; 
             text-align: center; padding: 20px; opacity: 0; transition: opacity 0.6s ease; 
             text-shadow: 0 0 15px rgba(0,242,255,0.8); pointer-events: none; 
-            letter-spacing: 1px; line-height: 1.4; text-transform: uppercase; 
-            animation: textPulse 2s infinite; 
+            letter-spacing: 1px; line-height: 1.4; text-transform: uppercase; animation: textPulse 2s infinite; 
         }
         @keyframes textPulse { 0%, 100% { text-shadow: 0 0 10px rgba(0,242,255,0.8); } 50% { text-shadow: 0 0 20px rgba(0,242,255,1); } }
 
@@ -127,103 +111,65 @@
         @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
 
         #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-        #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; }
+        #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; transition: 0.3s; }
         #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; }
 
-        /* --- Dock --- */
         #bottom-dock { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            display: flex; gap: 10px; z-index: 100; background: var(--glass); 
-            padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); 
-            backdrop-filter: blur(20px); width: fit-content; max-width: 95vw;
-            overflow-x: auto; scrollbar-width: none;
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); 
+            padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); backdrop-filter: blur(20px); width: fit-content; max-width: 95vw; overflow-x: auto; scrollbar-width: none;
         }
         #bottom-dock::-webkit-scrollbar { display: none; }
-
         .dock-icon { flex-shrink: 0; width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; padding-top: 5px; }
         .dock-icon:hover { transform: scale(1.1) translateY(-5px); }
         .dock-icon svg { width: 22px; height: 22px; fill: var(--label-color); filter: drop-shadow(0 0 5px var(--label-color)); }
+        .guide-text { display: block; font-size: 8px; margin-top: 6px; text-align: center; white-space: nowrap; text-transform: lowercase; opacity: 0; animation: breatheLabel 3s infinite ease-in-out; color: var(--label-color); text-shadow: 0 0 5px var(--label-color); pointer-events: none; }
+        @keyframes breatheLabel { 0%, 100% { opacity: 0; transform: translateY(2px); } 50% { opacity: 1; transform: translateY(0px); } }
+        .dock-icon:nth-child(1) .guide-text { animation-delay: 0.0s; } .dock-icon:nth-child(2) .guide-text { animation-delay: 0.2s; }
+        .dock-icon:nth-child(3) .guide-text { animation-delay: 0.4s; } .dock-icon:nth-child(4) .guide-text { animation-delay: 0.6s; }
+        .dock-icon:nth-child(5) .guide-text { animation-delay: 0.8s; } .dock-icon:nth-child(6) .guide-text { animation-delay: 1.0s; }
+        .dock-icon:nth-child(7) .guide-text { animation-delay: 1.2s; } .dock-icon:nth-child(8) .guide-text { animation-delay: 1.4s; }
 
-        .guide-text {
-            display: block; font-size: 8px; margin-top: 6px; text-align: center;
-            white-space: nowrap; text-transform: lowercase; opacity: 0;
-            animation: breatheLabel 3s infinite ease-in-out;
-            color: var(--label-color); text-shadow: 0 0 5px var(--label-color); pointer-events: none;
-        }
-        .guide-text::first-letter { text-transform: uppercase; }
-
-        @keyframes breatheLabel {
-            0%, 100% { opacity: 0; transform: translateY(2px); }
-            50% { opacity: 1; transform: translateY(0px); }
-        }
-
-        .dock-icon:nth-child(1) .guide-text { animation-delay: 0.0s; }
-        .dock-icon:nth-child(2) .guide-text { animation-delay: 0.2s; }
-        .dock-icon:nth-child(3) .guide-text { animation-delay: 0.4s; }
-        .dock-icon:nth-child(4) .guide-text { animation-delay: 0.6s; }
-        .dock-icon:nth-child(5) .guide-text { animation-delay: 0.8s; }
-        .dock-icon:nth-child(6) .guide-text { animation-delay: 1.0s; }
-        .dock-icon:nth-child(7) .guide-text { animation-delay: 1.2s; }
-        .dock-icon:nth-child(8) .guide-text { animation-delay: 1.4s; }
-
-        /* --- Overlays --- */
-        #holo-overlay { 
-            display: none; position: fixed; inset: 5%; background: var(--glass); 
-            border: 3px solid var(--cyan); border-radius: 36px; backdrop-filter: blur(30px); 
-            z-index: 2000; flex-direction: column; overflow: hidden; 
-        }
+        #holo-overlay { display: none; position: fixed; inset: 5%; background: var(--glass); border: 3px solid var(--cyan); border-radius: 36px; backdrop-filter: blur(30px); z-index: 2000; flex-direction: column; overflow: hidden; }
         
         #text-holo-overlay {
-            display: none; position: fixed; inset: 10% 5%; background: rgba(8, 8, 25, 0.85); 
+            display: none; position: fixed; inset: 10% 5%; background: rgba(8, 8, 25, 0.95); 
             border: 2px solid var(--gold); border-radius: 20px; backdrop-filter: blur(30px); 
-            z-index: 3000; flex-direction: column; overflow: hidden; 
-            box-shadow: 0 0 50px rgba(212, 175, 55, 0.25);
+            z-index: 3000; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(212, 175, 55, 0.25);
         }
+        /* Advanced Markdown Styling for the Document Pad */
         #text-holo-content {
             flex: 1; padding: 25px; overflow-y: auto; color: var(--cyan); 
-            font-size: 1.1rem; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;
-            text-align: left; text-transform: none; text-shadow: 0 0 5px rgba(0, 242, 255, 0.4);
+            font-size: 1.1rem; line-height: 1.6; white-space: normal; word-wrap: break-word;
+            text-align: left; text-shadow: 0 0 5px rgba(0, 242, 255, 0.4);
         }
+        #text-holo-content h1, #text-holo-content h2, #text-holo-content h3 { color: var(--gold); margin-top: 15px; margin-bottom: 10px; }
+        #text-holo-content p { margin-bottom: 15px; }
+        #text-holo-content pre { background: rgba(0, 242, 255, 0.1); padding: 15px; border-radius: 8px; overflow-x: auto; margin-bottom: 15px; border: 1px solid var(--border); }
+        #text-holo-content code { font-family: 'Courier New', monospace; color: #ff3366; }
+        #text-holo-content ul, #text-holo-content ol { margin-left: 25px; margin-bottom: 15px; }
+        #text-holo-content table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        #text-holo-content th, #text-holo-content td { border: 1px solid var(--border); padding: 8px; }
 
         .holo-header { padding: 15px 20px; background: rgba(0,242,255,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0, 242, 255, 0.2); }
         .holo-title { font-weight: bold; letter-spacing: 2px; }
         .holo-close { width: 35px; height: 35px; background: #ff3366; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; font-weight: bold; font-size: 1.2rem; }
         #holo-iframe { flex: 1; border: none; }
 
-        /* --- Starblood Holographic Car Integration --- */
         #starblood-car-tab {
-            position: fixed; bottom: 25px; right: 25px; z-index: 9999;
-            width: 65px; height: 65px; border-radius: 12px;
-            background: rgba(40, 0, 0, 0.45); border: 1px solid var(--c-starblood);
-            box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(12px); transition: all 0.3s ease;
+            position: fixed; bottom: 25px; right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
+            background: rgba(40, 0, 0, 0.45); border: 1px solid var(--c-starblood); box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
         }
-        #starblood-car-tab:hover {
-            box-shadow: 0 0 25px var(--c-starblood); transform: scale(1.08); background: rgba(60, 0, 0, 0.6);
-        }
-        .holo-car-svg {
-            width: 40px; height: 40px;
-            filter: drop-shadow(0 0 6px var(--c-starblood));
-            animation: holoCarFloat 3s infinite ease-in-out;
-        }
-        @keyframes holoCarFloat {
-            0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); }
-            50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); }
-        }
+        #starblood-car-tab:hover { box-shadow: 0 0 25px var(--c-starblood); transform: scale(1.08); background: rgba(60, 0, 0, 0.6); }
+        .holo-car-svg { width: 40px; height: 40px; filter: drop-shadow(0 0 6px var(--c-starblood)); animation: holoCarFloat 3s infinite ease-in-out; }
+        @keyframes holoCarFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); } }
         
         #starblood-game-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 9998; display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.4s ease;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9998; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.4s ease;
         }
         #starblood-game-overlay.active { display: flex; opacity: 1; }
         .starblood-holoframe {
-            width: 95vw; height: 90vh; max-width: 1400px;
-            border: 2px solid var(--c-starblood); border-radius: 16px;
-            background: #000; box-shadow: 0 0 50px rgba(255, 51, 51, 0.25), inset 0 0 30px rgba(255, 51, 51, 0.2);
-            overflow: hidden; position: relative;
-            transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 95vw; height: 90vh; max-width: 1400px; border: 2px solid var(--c-starblood); border-radius: 16px; background: #000; box-shadow: 0 0 50px rgba(255, 51, 51, 0.25), inset 0 0 30px rgba(255, 51, 51, 0.2); overflow: hidden; position: relative; transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #starblood-game-overlay.active .starblood-holoframe { transform: scale(1); }
         #starblood-iframe { width: 100%; height: 100%; border: none; }
@@ -246,17 +192,13 @@
         <div id="auth-modal">
             <h3 style="color: var(--gold); margin-bottom: 5px;">TERMINAL ACCESS</h3>
             <p style="font-size: 0.8rem; color: var(--cyan); margin-bottom: 15px; opacity: 0.7;">Secure link required for memory retention.</p>
-            
             <input type="email" id="auth-email" placeholder="Identifier (Email)" class="auth-input">
             <input type="password" id="auth-pass" placeholder="Passcode" class="auth-input">
-            
             <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">
                 <button class="holo-btn" onclick="submitAuth('login')">LOGIN</button>
                 <button class="holo-btn" onclick="submitAuth('signup')">SIGN UP</button>
             </div>
-            
             <button class="holo-btn" style="border-color: #ff3366; color: #ff3366; margin-top: 10px;" onclick="closeAuthModal()">CONTINUE AS GUEST</button>
-            
             <div id="auth-error" style="color: #ff3366; font-size: 0.8rem; margin-top: 10px;"></div>
         </div>
     </div>
@@ -283,42 +225,34 @@
 
         <div id="prompt-area">
             <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
-            <button id="send-btn" onclick="sendToArtemis()">SEND</button>
+            <button id="send-btn" onclick="handleSendClick()">SEND</button>
         </div>
     </div>
 
     <div id="bottom-dock">
         <div class="dock-icon" data-url="https://rem-psi-mauve.vercel.app/" style="--label-color: var(--c-maps)">
             <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span class="guide-text">Maps</span>
         </div>
         <div class="dock-icon" data-url="https://mega-city-liard.vercel.app/" style="--label-color: var(--c-city)">
             <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V9H3v2zm0-4h18V5H3v2z"/></svg>
-            <span class="guide-text">Megacity</span>
         </div>
         <div class="dock-icon" data-url="https://axiom-repository.vercel.app/" style="--label-color: var(--c-pearl)">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-            <span class="guide-text">The pearl</span>
         </div>
         <div class="dock-icon" data-url="https://grief-gully.vercel.app/" style="--label-color: var(--c-gully)">
             <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l6 12H6l6-12z"/></svg>
-            <span class="guide-text">Grief gully</span>
         </div>
         <div class="dock-icon" data-url="https://olympian-finances.vercel.app/" style="--label-color: var(--c-finance)">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93s3.05-7.44 7-7.93V17.93zm2-13.86c3.95.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>
-            <span class="guide-text">Finances</span>
         </div>
         <div class="dock-icon" data-url="https://olympus-lac.vercel.app/" style="--label-color: var(--c-hoodie)">
             <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2zM7 5h10v2H7V5zm12 14H5v-2h14v2z"/></svg>
-            <span class="guide-text">Hoodies</span>
         </div>
         <div class="dock-icon" data-url="https://nexus-symbiote.onrender.com/" style="--label-color: var(--c-symbiote)">
             <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
-            <span class="guide-text">Symbiote Tool</span>
         </div>
         <div class="dock-icon" data-url="https://starblood.vercel.app/" style="--label-color: var(--c-starblood)">
             <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <span class="guide-text">Starblood</span>
         </div>
     </div>
 
@@ -333,7 +267,9 @@
     <div id="text-holo-overlay">
         <div class="holo-header">
             <span class="holo-title" style="color: var(--gold);">Transmission</span>
-            <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="holo-btn" id="download-txt-btn" onclick="downloadTxt()">TXT</div>
+                <div class="holo-btn" id="download-pdf-btn" onclick="downloadPdf()">PDF</div>
                 <div class="holo-btn" id="copy-btn" onclick="copyOracleText()">COPY</div>
                 <div class="holo-close" onclick="closeTextHolo()">×</div>
             </div>
@@ -362,7 +298,6 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Your exact Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDrt1J430kPVADh7Sqbdn6nOu371h3rHHI",
             authDomain: "artemis-f2d47.firebaseapp.com",
@@ -372,7 +307,6 @@
             appId: "1:60116392103:web:a75384427cce708b52a382"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -380,8 +314,11 @@
         let currentUser = null;
         let latestArtemisText = "";
         let typingTimer;
+        
+        // --- NEW: Lock Variables ---
+        let isGenerating = false;
+        let currentAbortController = null;
 
-        // --- AUTHENTICATION STATE LISTENER ---
         onAuthStateChanged(auth, (user) => {
             const topBtn = document.getElementById('top-auth-btn');
             if (user) {
@@ -398,74 +335,25 @@
             }
         });
 
-        // --- GLOBAL WINDOW FUNCTIONS ---
-        window.toggleAuthModal = function() {
-            if (currentUser) {
-                signOut(auth);
-            } else {
-                document.getElementById('auth-modal-overlay').style.display = 'flex';
-                document.getElementById('auth-error').textContent = "";
-            }
-        };
-
-        window.closeAuthModal = function() {
-            document.getElementById('auth-modal-overlay').style.display = 'none';
-        };
-
+        window.toggleAuthModal = function() { currentUser ? signOut(auth) : (document.getElementById('auth-modal-overlay').style.display = 'flex', document.getElementById('auth-error').textContent = ""); };
+        window.closeAuthModal = function() { document.getElementById('auth-modal-overlay').style.display = 'none'; };
+        
         window.submitAuth = async function(action) {
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-pass').value;
             const errorDiv = document.getElementById('auth-error');
-            
-            if (!email || !pass) {
-                errorDiv.textContent = "Email and Passcode required.";
-                return;
-            }
-            
+            if (!email || !pass) return errorDiv.textContent = "Email and Passcode required.";
             errorDiv.textContent = "Connecting to mainframe...";
-            try {
-                if (action === 'login') {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } else if (action === 'signup') {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                }
-            } catch (error) {
-                errorDiv.textContent = error.message.replace("Firebase:", "").trim();
-            }
+            try { action === 'login' ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); } 
+            catch (error) { errorDiv.textContent = error.message.replace("Firebase:", "").trim(); }
         };
 
         window.enterNexus = function() {
             const landing = document.getElementById('landing-page');
             landing.classList.add('dissolve-effect');
             document.getElementById('oracle-video').play();
-            createRain();
             setTimeout(() => { landing.style.display = 'none'; }, 1500);
         };
-
-        function createRain() {
-            const container = document.getElementById('rain-container');
-            if (container.children.length > 0) return;
-            for(let i=0; i<60; i++) {
-                const drop = document.createElement('div');
-                drop.className = 'drop';
-                drop.style.left = Math.random() * 100 + 'vw';
-                drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
-                drop.style.animationDelay = Math.random() * 2 + 's';
-                container.appendChild(drop);
-            }
-        }
-
-        setInterval(() => {
-            const stats = document.getElementById('harvest-stats');
-            const minutes = new Date().getMinutes();
-            if (minutes % 20 < 5) {
-                stats.textContent = `[SYSTEM_BREAK: COOLING]`;
-                stats.style.color = '#ff3366';
-            } else {
-                stats.textContent = `[HARVESTING: ${Math.floor(Math.random()*5)+15}/20 URLS]`;
-                stats.style.color = 'var(--cyan)';
-            }
-        }, 5000);
 
         function fadeInMessage(text) {
             const colors = ['#ff3366', '#ff6f00', '#d4af37', '#66ff66', '#00f2ff', '#3366ff', '#9933ff', '#ff33cc'];
@@ -482,13 +370,7 @@
             oracleMessage.style.opacity = 1;
             
             let i = 0;
-            function type() {
-                if (i < text.length) {
-                    oracleMessage.textContent += text.charAt(i); 
-                    i++;
-                    typingTimer = setTimeout(type, 40);
-                } 
-            }
+            function type() { if (i < text.length) { oracleMessage.textContent += text.charAt(i); i++; typingTimer = setTimeout(type, 30); } }
             setTimeout(type, 300);
         }
 
@@ -504,11 +386,54 @@
         }
 
         const cmd = document.getElementById('guest-cmd');
-        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); window.sendToArtemis(); } });
+        cmd.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); window.handleSendClick(); } });
         cmd.addEventListener('focus', function() { this.select(); });
+
+        // --- NEW: UI Lock Engine ---
+        function lockUI() {
+            isGenerating = true;
+            const btn = document.getElementById('send-btn');
+            const input = document.getElementById('guest-cmd');
+            btn.textContent = "STOP";
+            btn.style.background = "#ff3366";
+            btn.style.color = "#fff";
+            btn.style.boxShadow = "0 0 30px #ff3366";
+            input.disabled = true;
+            input.style.opacity = "0.5";
+        }
+
+        function resetUI() {
+            isGenerating = false;
+            const btn = document.getElementById('send-btn');
+            const input = document.getElementById('guest-cmd');
+            btn.textContent = "SEND";
+            btn.style.background = "linear-gradient(90deg, var(--cyan), #00aaff)";
+            btn.style.color = "#000";
+            btn.style.boxShadow = "0 0 30px var(--cyan)";
+            input.disabled = false;
+            input.style.opacity = "1";
+            input.focus();
+        }
+
+        window.handleSendClick = function() {
+            if (isGenerating) {
+                if (currentAbortController) {
+                    currentAbortController.abort();
+                    currentAbortController = null;
+                }
+                resetUI();
+                latestArtemisText = "[Transmission Aborted]";
+                fadeOutMessage(); setTimeout(() => fadeInMessage(latestArtemisText), 600);
+            } else {
+                window.sendToArtemis();
+            }
+        };
 
         window.sendToArtemis = async function() {
             const promptText = cmd.value.trim(); if (!promptText) return;
+            
+            lockUI();
+            currentAbortController = new AbortController();
             document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '0.3s');
             
             const oracleMsg = document.getElementById('oracle-message');
@@ -518,7 +443,8 @@
             try {
                 const response = await fetch('/api/transmit', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: promptText, handshake: 'CONNECTED', mode: 'council' })
+                    body: JSON.stringify({ prompt: promptText, handshake: 'CONNECTED', mode: 'council' }),
+                    signal: currentAbortController.signal
                 });
                 const data = await response.json();
                 document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
@@ -528,37 +454,33 @@
                 
                 fadeOutMessage(); setTimeout(() => fadeInMessage(aiReply), 600);
 
-                // --- SAVE TO FIRESTORE IF LOGGED IN ---
                 if (currentUser && !data.error) {
-                    try {
-                        const historyRef = collection(db, "users", currentUser.uid, "history");
-                        await addDoc(historyRef, {
-                            prompt: promptText,
-                            response: aiReply,
-                            timestamp: serverTimestamp()
-                        });
-                        console.log("Memory saved to user bucket.");
-                    } catch (dbErr) {
-                        console.error("Failed to write to Firestore:", dbErr);
-                    }
+                    const historyRef = collection(db, "users", currentUser.uid, "history");
+                    await addDoc(historyRef, { prompt: promptText, response: aiReply, timestamp: serverTimestamp() });
                 }
-
             } catch (err) {
-                document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
-                latestArtemisText = "Synaptic link unstable...";
-                fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
+                if (err.name === 'AbortError') {
+                    console.log("Transmission aborted.");
+                } else {
+                    document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
+                    latestArtemisText = "Synaptic link unstable...";
+                    fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
+                }
+            } finally {
+                if (isGenerating) resetUI();
             }
         };
 
+        // --- NEW: Document Engine ---
         window.openTextHolo = function() {
             if (!latestArtemisText) return;
-            document.getElementById('text-holo-content').textContent = latestArtemisText;
+            // Parse Markdown safely
+            document.getElementById('text-holo-content').innerHTML = marked.parse(latestArtemisText);
             document.getElementById('text-holo-overlay').style.display = 'flex';
         };
 
         window.closeTextHolo = function() {
             document.getElementById('text-holo-overlay').style.display = 'none';
-            document.getElementById('copy-btn').textContent = 'COPY'; 
         };
 
         window.copyOracleText = function() {
@@ -567,45 +489,41 @@
                 const btn = document.getElementById('copy-btn');
                 btn.textContent = 'COPIED!';
                 setTimeout(() => btn.textContent = 'COPY', 2000);
-            }).catch(err => {
-                console.error('Could not copy text: ', err);
             });
         };
 
-        window.openHolo = function(url) {
-            document.getElementById('holo-iframe').src = url;
-            document.getElementById('holo-overlay').style.display = 'flex';
-        };
-        window.closeHolo = function() {
-            document.getElementById('holo-overlay').style.display = 'none';
-            document.getElementById('holo-iframe').src = '';
+        window.downloadTxt = function() {
+            if (!latestArtemisText) return;
+            const blob = new Blob([latestArtemisText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `Artemis_Transmission_${Date.now()}.txt`;
+            a.click(); URL.revokeObjectURL(url);
         };
 
-        document.querySelectorAll('.dock-icon').forEach(icon => {
-            icon.addEventListener('click', () => {
-                const url = icon.getAttribute('data-url');
-                if (url) window.openHolo(url);
-            });
-        });
+        window.downloadPdf = function() {
+            const element = document.getElementById('text-holo-content');
+            const btn = document.getElementById('download-pdf-btn');
+            btn.textContent = "WAIT...";
+            html2pdf().set({
+                margin: 0.5, filename: `Artemis_Report_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#080819' },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            }).from(element).save().then(() => btn.textContent = "PDF");
+        };
 
+        window.openHolo = function(url) { document.getElementById('holo-iframe').src = url; document.getElementById('holo-overlay').style.display = 'flex'; };
+        window.closeHolo = function() { document.getElementById('holo-overlay').style.display = 'none'; document.getElementById('holo-iframe').src = ''; };
+        document.querySelectorAll('.dock-icon').forEach(icon => { icon.addEventListener('click', () => { const url = icon.getAttribute('data-url'); if (url) window.openHolo(url); }); });
+        
         window.toggleStarbloodGame = function(e) {
             if (e) e.stopPropagation();
             const overlay = document.getElementById('starblood-game-overlay');
-            if (overlay.classList.contains('active')) {
-                overlay.classList.remove('active');
-                setTimeout(() => { overlay.style.display = 'none'; }, 400); 
-            } else {
-                overlay.style.display = 'flex';
-                void overlay.offsetWidth;
-                overlay.classList.add('active');
-            }
+            if (overlay.classList.contains('active')) { overlay.classList.remove('active'); setTimeout(() => { overlay.style.display = 'none'; }, 400); } 
+            else { overlay.style.display = 'flex'; void overlay.offsetWidth; overlay.classList.add('active'); }
         };
-
-        window.closeStarbloodGame = function(e) {
-            if (e.target.id === 'starblood-game-overlay') {
-                window.toggleStarbloodGame();
-            }
-        };
+        window.closeStarbloodGame = function(e) { if (e.target.id === 'starblood-game-overlay') window.toggleStarbloodGame(); };
     </script>
 </body>
 </html>
