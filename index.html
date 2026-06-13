@@ -374,7 +374,7 @@
                 });
                 const data = await response.json();
                 document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
-                const aiReply = data.verdict || data.response || 'The council has spoken...';
+                const aiReply = data.verdict || data.response || data.error || 'The council has spoken...';
                 fadeOutMessage(); setTimeout(() => fadeInMessage(aiReply), 600);
             } catch (err) {
                 document.querySelectorAll('.pip').forEach(p => p.style.animationDuration = '1.5s');
