@@ -131,6 +131,7 @@
             border: 2px solid var(--gold); border-radius: 20px; backdrop-filter: blur(30px); 
             z-index: 3000; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(212, 175, 55, 0.25);
         }
+        /* Advanced Markdown Styling for the Document Pad */
         #text-holo-content {
             flex: 1; padding: 25px; overflow-y: auto; color: var(--cyan); 
             font-size: 1.1rem; line-height: 1.6; white-space: normal; word-wrap: break-word;
@@ -153,11 +154,50 @@
         #preview-code-btn { display: none; border-color: #00ff87; color: #00ff87; box-shadow: 0 0 10px rgba(0, 255, 135, 0.3); }
         #preview-code-btn:active { background: #00ff87; color: #000; }
         
+        /* DEPLOY BUTTON CSS */
         #deploy-code-btn { display: none; border-color: #A259FF; color: #A259FF; box-shadow: 0 0 10px rgba(162, 89, 255, 0.3); }
         #deploy-code-btn:active { background: #A259FF; color: #000; }
+
+        /* Starblood Game Link */
+        #starblood-car-tab {
+            position: fixed; bottom: 25px; right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
+            background: rgba(40, 0, 0, 0.45); border: 1px solid var(--c-starblood); box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
+        }
+        #starblood-car-tab:hover { box-shadow: 0 0 25px var(--c-starblood); transform: scale(1.08); background: rgba(60, 0, 0, 0.6); }
+        .holo-car-svg { width: 40px; height: 40px; filter: drop-shadow(0 0 6px var(--c-starblood)); animation: holoCarFloat 3s infinite ease-in-out; }
+        @keyframes holoCarFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); } }
     </style>
 </head>
 <body>
+
+    <!-- INSTANT ENTRY SCRIPT: Separated from Firebase to guarantee load -->
+    <script>
+        window.enterNexus = function() {
+            const landing = document.getElementById('landing-page');
+            landing.classList.add('dissolve-effect');
+            
+            // Safely play video so Safari doesn't panic
+            const v = document.getElementById('oracle-video');
+            if (v) v.play().catch(e => console.log("Video auto-play delayed."));
+            
+            createRain(); // Start the rain effect
+            setTimeout(() => { landing.style.display = 'none'; }, 1500);
+        };
+
+        function createRain() {
+            const container = document.getElementById('rain-container');
+            if (!container || container.children.length > 0) return;
+            for(let i=0; i<60; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'drop';
+                drop.style.left = Math.random() * 100 + 'vw';
+                drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(drop);
+            }
+        }
+    </script>
 
     <div id="landing-page" onclick="enterNexus()">
         <video id="landing-video" autoplay loop muted playsinline>
@@ -211,7 +251,6 @@
         </div>
     </div>
 
-    <!-- Live Execution Overlay -->
     <div id="holo-overlay">
         <div class="holo-header">
             <span class="holo-title" style="color:#00ff87;">Live Sandbox Render</span>
@@ -220,7 +259,6 @@
         <iframe id="holo-iframe"></iframe>
     </div>
 
-    <!-- Expanded Text / Code Data Pad -->
     <div id="text-holo-overlay">
         <div class="holo-header">
             <span class="holo-title" style="color: var(--gold);">Transmission</span>
@@ -236,6 +274,7 @@
         <div id="text-holo-content"></div>
     </div>
 
+    <!-- FIREBASE MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -289,13 +328,6 @@
             errorDiv.textContent = "Connecting to mainframe...";
             try { action === 'login' ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); } 
             catch (error) { errorDiv.textContent = error.message.replace("Firebase:", "").trim(); }
-        };
-
-        window.enterNexus = function() {
-            const landing = document.getElementById('landing-page');
-            landing.classList.add('dissolve-effect');
-            document.getElementById('oracle-video').play();
-            setTimeout(() => { landing.style.display = 'none'; }, 1500);
         };
 
         function fadeInMessage(text) {
@@ -429,10 +461,8 @@
         window.openTextHolo = function() {
             if (!latestArtemisText) return;
             
-            // Convert markdown, leaving code intact and readable
             document.getElementById('text-holo-content').innerHTML = marked.parse(latestArtemisText);
             
-            // Extract raw code for preview/deployment logic
             const codeBlockRegex = /
 
 
