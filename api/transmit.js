@@ -13,17 +13,38 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const trimmedPrompt = prompt.trim();
+
+    // ==========================================
+    // ROUTE 1: THE IMAGE ENGINE
+    // ==========================================
+    if (trimmedPrompt.toLowerCase().startsWith('/image ')) {
+        const imageQuery = trimmedPrompt.substring(7).trim(); // Remove "/image "
+        const encodedQuery = encodeURIComponent(imageQuery);
+        
+        // Generate the image URL using the keyless Pollinations API
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedQuery}?width=1024&height=1024&nologo=true`;
+        
+        // Return standard Markdown format so your frontend automatically renders it as a picture
+        const markdownResponse = `### Visual Render Complete\n\n![${imageQuery}](${imageUrl})\n\n*Prompt: "${imageQuery}"*`;
+        
+        return res.status(200).json({
+            verdict: markdownResponse,
+            status: 'success',
+            mode: mode || 'council'
+        });
+    }
+
+    // ==========================================
+    // ROUTE 2: THE TEXT ENGINE (Gemini)
+    // ==========================================
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is missing from Vercel environment variables.');
     }
 
-    // Initialize Native Google SDK
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // The fixed model tag
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
 
-    // Generate Response
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
 
