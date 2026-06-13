@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,7 +130,6 @@
             border: 2px solid var(--gold); border-radius: 20px; backdrop-filter: blur(30px); 
             z-index: 3000; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(212, 175, 55, 0.25);
         }
-        /* Advanced Markdown Styling for the Document Pad */
         #text-holo-content {
             flex: 1; padding: 25px; overflow-y: auto; color: var(--cyan); 
             font-size: 1.1rem; line-height: 1.6; white-space: normal; word-wrap: break-word;
@@ -154,7 +152,6 @@
         #preview-code-btn { display: none; border-color: #00ff87; color: #00ff87; box-shadow: 0 0 10px rgba(0, 255, 135, 0.3); }
         #preview-code-btn:active { background: #00ff87; color: #000; }
         
-        /* DEPLOY BUTTON CSS */
         #deploy-code-btn { display: none; border-color: #A259FF; color: #A259FF; box-shadow: 0 0 10px rgba(162, 89, 255, 0.3); }
         #deploy-code-btn:active { background: #A259FF; color: #000; }
 
@@ -171,13 +168,13 @@
 </head>
 <body>
 
-    <!-- INSTANT ENTRY SCRIPT: Separated from Firebase to guarantee load -->
+    <!-- INSTANT ENTRY SCRIPT -->
     <script>
         window.enterNexus = function() {
             const landing = document.getElementById('landing-page');
             landing.classList.add('dissolve-effect');
             
-            // Safely play video so Safari doesn't panic
+            // Safely play video
             const v = document.getElementById('oracle-video');
             if (v) v.play().catch(e => console.log("Video auto-play delayed."));
             
@@ -259,6 +256,7 @@
         <iframe id="holo-iframe"></iframe>
     </div>
 
+    <!-- Expanded Text / Code Data Pad -->
     <div id="text-holo-overlay">
         <div class="holo-header">
             <span class="holo-title" style="color: var(--gold);">Transmission</span>
@@ -274,7 +272,6 @@
         <div id="text-holo-content"></div>
     </div>
 
-    <!-- FIREBASE MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -300,6 +297,20 @@
         let currentAbortController = null;
         
         window.currentExtractedCode = "";
+
+        // --- Aesthetic Status Loop ---
+        setInterval(() => {
+            const stats = document.getElementById('harvest-stats');
+            if (!stats) return;
+            const minutes = new Date().getMinutes();
+            if (minutes % 20 < 5) {
+                stats.textContent = `[SYSTEM_BREAK: COOLING]`;
+                stats.style.color = '#ff3366';
+            } else {
+                stats.textContent = `[HARVESTING: ${Math.floor(Math.random()*5)+15}/20 URLS]`;
+                stats.style.color = 'var(--cyan)';
+            }
+        }, 5000);
 
         onAuthStateChanged(auth, (user) => {
             const topBtn = document.getElementById('top-auth-btn');
@@ -461,8 +472,10 @@
         window.openTextHolo = function() {
             if (!latestArtemisText) return;
             
+            // Format markdown text, leaving code cleanly inside blocks
             document.getElementById('text-holo-content').innerHTML = marked.parse(latestArtemisText);
             
+            // Extract code quietly in the background
             const codeBlockRegex = /
 
 
