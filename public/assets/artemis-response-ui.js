@@ -1,18 +1,30 @@
-/* assets/js/council-ui.js  →  renamed suggestion: assets/js/artemis-response-ui.js */
+/* public/assets/js/artemis-response-ui.js */
 
 class ArtemisResponseUI {
     constructor() {
+        // We will map these elements when the DOM is ready
+        this.councilContainer = null;
+        this.councilHeader = null;
+        this.responsePanel = null;
+        this.responseHeader = null;
+        this.responseContent = null;
+    }
+
+    /**
+     * Wires up the UI elements and click listeners safely.
+     */
+    initialize() {
         // Council dialogue container
         this.councilContainer = document.getElementById('council-body');
         this.councilHeader   = document.getElementById('council-header');
 
-        // New: main response panel (expandable + scrollable)
+        // Main response panel
         this.responsePanel   = document.getElementById('artemis-response-panel');
         this.responseHeader  = document.getElementById('response-header');
         this.responseContent = document.getElementById('response-content');
 
         // Toggle council section
-        if (this.councilHeader) {
+        if (this.councilHeader && this.councilContainer) {
             this.councilHeader.addEventListener('click', () => {
                 this.councilContainer.classList.toggle('expanded');
                 if (this.councilContainer.classList.contains('expanded')) {
@@ -22,7 +34,7 @@ class ArtemisResponseUI {
         }
 
         // Toggle full response panel
-        if (this.responseHeader) {
+        if (this.responseHeader && this.responsePanel && this.responseContent) {
             this.responseHeader.addEventListener('click', () => {
                 this.responsePanel.classList.toggle('expanded');
                 if (this.responsePanel.classList.contains('expanded')) {
@@ -33,7 +45,7 @@ class ArtemisResponseUI {
     }
 
     /**
-     * Renders the Sequential Council Dialogue (original functionality)
+     * Renders the Sequential Council Dialogue with a typing delay
      * @param {Array} consensusData - [{provider: string, content: string}, ...]
      */
     renderConsensus(consensusData) {
@@ -44,12 +56,15 @@ class ArtemisResponseUI {
         consensusData.forEach((msg, index) => {
             setTimeout(() => {
                 const bubble = document.createElement('div');
-                bubble.className = `agent-bubble ${msg.provider.toLowerCase().replace(' ', '-')}`;
-                bubble.innerHTML = `<strong>${msg.provider}:</strong> ${this.escapeHtml(msg.content)}`;
+                // Format class name cleanly (e.g. "Gemini Prime" -> "gemini-prime")
+                const agentClass = msg.provider ? msg.provider.toLowerCase().replace(/\s+/g, '-') : 'unknown-agent';
+                bubble.className = `agent-bubble ${agentClass}`;
+                
+                bubble.innerHTML = `<strong style="color: #00ffcc;">${msg.provider}:</strong> <br> ${this.escapeHtml(msg.content)}`;
                 this.councilContainer.appendChild(bubble);
 
                 this.scrollToBottom(this.councilContainer);
-            }, index * 1500); // 1.5s delay between agents
+            }, index * 1500); // 1.5s delay between agents speaking
         });
     }
 
@@ -60,15 +75,15 @@ class ArtemisResponseUI {
      */
     showResponse(content, autoExpand = true) {
         if (!this.responseContent) {
-            console.warn('Response content element not found');
+            console.warn('⚠️ Artemis UI: Response content element not found in the DOM.');
             return;
         }
 
         // Clear previous content
         this.responseContent.innerHTML = '';
 
-        // Basic formatting (you can later replace with marked.js or similar)
-        const formatted = this.formatResponse(content);
+        // Basic formatting to convert Markdown to HTML
+        const formatted = this.formatResponse(this.escapeHtml(content));
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'response-text prose max-w-none';
@@ -76,8 +91,8 @@ class ArtemisResponseUI {
 
         this.responseContent.appendChild(contentDiv);
 
-        // Auto-expand if requested (e.g. after new answer arrives)
-        if (autoExpand && !this.responsePanel.classList.contains('expanded')) {
+        // Auto-expand if requested
+        if (autoExpand && this.responsePanel && !this.responsePanel.classList.contains('expanded')) {
             this.responsePanel.classList.add('expanded');
         }
 
@@ -98,23 +113,9 @@ class ArtemisResponseUI {
     }
 
     formatResponse(text) {
-        // Very basic markdown-like formatting — improve later with a real parser
+        // Basic markdown-like formatting (escaping already handled)
+        // Note: Because we escaped HTML first, we must reverse-escape our intentional injection
         return text
-            .replace(/```([\s\S]*?)```/g, '<pre><code class="language-code">$1</code></pre>')
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/\n/g, '<br>');
-    }
+            .replace(/
 
-    escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-}
 
-// Instantiate once (you can do this in your main script or at the bottom of index.html)
-window.artemisUI = new ArtemisResponseUI();
