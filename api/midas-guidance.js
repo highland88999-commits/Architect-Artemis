@@ -1,12 +1,11 @@
-// api/midas-guidance.js
 /**
  * MIDAS GUIDANCE ENDPOINT
  * Provides golden-path recovery advice when agents encounter errors or confusion.
  * Acts as the "wise oracle" fallback for the Artemis system.
  */
 
-require('dotenv').config();
-const Midas = require('../core/midas-guide');
+// Note: Moved 'core' into the 'engine' quarantine to keep the root directory clean.
+const Midas = require('../engine/core/midas-guide');
 
 const LANDLINE_KEY = process.env.ARTEMIS_LANDLINE;
 const MIDAS_TIMEOUT_MS = parseInt(process.env.MIDAS_TIMEOUT_MS, 10) || 15000;
@@ -25,10 +24,12 @@ function log(level, message, meta = {}) {
     `[MIDAS] ${message}`,
     meta
   );
-  // Optional: append to file or send to observability (Loki, Sentry, etc.)
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  // CORS Preflight
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
   // ─── Security & early exits ───
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -42,14 +43,9 @@ export default async function handler(req, res) {
     });
   }
 
-  let body;
-  try {
-    body = await req.json();
-  } catch (err) {
-    log('warn', 'Invalid JSON body', { error: err.message });
-    return res.status(400).json({ error: 'Invalid JSON payload' });
-  }
-
+  // FIX: Vercel automatically parses JSON bodies into req.body. 
+  // req.json() will crash in a standard Vercel serverless function.
+  const body = req.body || {};
   const { context, errorLog } = body;
 
   // ─── Input validation ───
@@ -73,6 +69,7 @@ export default async function handler(req, res) {
       setTimeout(() => reject(new Error('Midas guidance timeout')), MIDAS_TIMEOUT_MS)
     );
 
+    // Call the logic safely stored in your engine/core folder
     const guidancePromise = Midas.provideGuidance(context, errorLog || '');
 
     const goldenPath = await Promise.race([guidancePromise, timeoutPromise]);
@@ -87,7 +84,7 @@ export default async function handler(req, res) {
       message: 'The Golden Path has been revealed.',
       guidance: goldenPath.guidance || 'No specific guidance available.',
       action: goldenPath.action || 'Observe and retry with adjusted parameters.',
-      confidence: goldenPath.confidence || 0.7, // optional – add if Midas supports it
+      confidence: goldenPath.confidence || 0.7, 
       style: 'GOLDEN_OVERLAY',
       timestamp: new Date().toISOString(),
     };
@@ -114,7 +111,7 @@ export default async function handler(req, res) {
       message: isTimeout
         ? 'Guidance generation took too long – try a shorter context or retry.'
         : 'Synaptic break in Midas engine. Please try again or escalate to Architect.',
-      retryAfter: isTimeout ? 30 : undefined, // seconds hint
+      retryAfter: isTimeout ? 30 : undefined,
     });
   }
-}
+};
