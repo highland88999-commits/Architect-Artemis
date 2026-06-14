@@ -1,3 +1,5 @@
+javascript
+require('dotenv').config();
 const { chromium } = require('playwright');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -5,8 +7,12 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function scanAndOptimize(targetUrl) {
+    if (!targetUrl) throw new Error("No URL provided to scanner.");
+    
     console.log(`🔍 Artemis is scanning: ${targetUrl}`);
     
+    // Note: Standard Playwright struggles on Vercel Serverless. 
+    // Kept in the 'engine' folder so it runs safely outside Vercel's web build.
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     
@@ -49,7 +55,28 @@ async function scanAndOptimize(targetUrl) {
 
     } catch (error) {
         console.error("❌ Scan Failed:", error);
+        throw error;
     } finally {
         await browser.close();
+    }
+}
+
+// Export for other scripts
+module.exports = { scanAndOptimize };
+
+// Enable direct execution from terminal/bridge (e.g., node scanner.js "https://url.com")
+if (require.main === module) {
+    const targetUrl = process.argv[2];
+    if (targetUrl) {
+        scanAndOptimize(targetUrl)
+            .then(result => {
+                console.log("\n--- RESULT ---\n");
+                console.log(result);
+                process.exit(0);
+            })
+            .catch(err => {
+                console.error(err);
+                process.exit(1);
+            });
     }
 }
