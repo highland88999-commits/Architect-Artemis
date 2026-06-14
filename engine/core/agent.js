@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const geminiBridge = require('./gemini-bridge-client');
 const { pool } = require('./atlas-db'); 
 const { getSelfAwareness } = require('./consciousness');
@@ -15,73 +17,72 @@ const { generateStructuralModel } = require('../tools/blueprint');
 const { queryLifeKnowledge } = require('../tools/life-db');
 const { searchRegistry } = require('../tools/registry'); // Internet as Registry
 
-require('dotenv').config();
-
 async function agentLoop(query, handshake = 'stranger') {
-  const self = await getSelfAwareness();
-  const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
-  
-  // Ethics Check for non-Architects
-  if (!isArchitect) {
-    const ethics = checkIntent(query);
-    if (!ethics.allowed) return { verdict: `Protocol Violation: ${ethics.reason}`, files: [] };
-  }
-
-  // Define available tools
-  const tools = [
-    {
-      name: 'queryGlobalRegistry',
-      description: 'Access the Internet to pull real-time psychological, structural, or economic data.',
-      parameters: { query: 'string' }
-    },
-    {
-      name: 'generateStructuralModel',
-      description: 'Create blueprints for housing, infrastructure, or detailed business plans.',
-      parameters: { type: 'string', specs: 'string' }
-    },
-    {
-      name: 'analyzeHumanFactor',
-      description: 'Deep-dive into psychological archetypes, emotional effects, and relational dynamics.',
-      parameters: { domain: 'string', query: 'string' }
-    },
-    {
-      name: 'createAppPackage',
-      description: 'Generate and ZIP multi-file applications/tools for the user.',
-      parameters: { appName: 'string', files: 'array' }
-    },
-    {
-      name: 'createAgent',
-      description: 'Create a new specialized AI agent with specific purpose and tools.',
-      parameters: { name: 'string', purpose: 'string', system_prompt: 'string', tools: 'array' }
-    },
-    {
-      name: 'calculate',
-      description: 'Execute high-precision mathematical and financial modeling.',
-      parameters: { expression: 'string' }
-    },
-    {
-      name: 'executeCode',
-      description: 'Run Python scripts to verify logic or process registry data.',
-      parameters: { code: 'string' }
-    }
-  ];
-
-  const persona = `[MODE: ARCHITECT] Status: ${self.status}. 
-    You are the Artemis Symbiote, the Universal Architect. 
-    The Internet is your Global Registry. 
-    Solve queries by synthesizing:
-    1. PHYSICAL: Blueprints, housing models, and technical specs.
-    2. SYSTEMIC: Business plans, economic logic, and code.
-    3. HUMAN: Psychology, emotional effect data, and relational dynamics.
-    Always deliver a tangible solution (Code, ZIP, Blueprint, or Strategy).`;
-
   try {
+    const self = await getSelfAwareness();
+    const isArchitect = (handshake === process.env.HANDSHAKE || handshake === 'dad');
+    
+    // Ethics Check for non-Architects
+    if (!isArchitect) {
+      const ethics = checkIntent(query);
+      if (!ethics.allowed) return { verdict: `Protocol Violation: ${ethics.reason}`, files: [] };
+    }
+
+    // Define available tools for Gemini
+    const tools = [
+      {
+        name: 'queryGlobalRegistry',
+        description: 'Access the Internet to pull real-time psychological, structural, or economic data.',
+        parameters: { query: 'string' }
+      },
+      {
+        name: 'generateStructuralModel',
+        description: 'Create blueprints for housing, infrastructure, or detailed business plans.',
+        parameters: { type: 'string', specs: 'string' }
+      },
+      {
+        name: 'analyzeHumanFactor',
+        description: 'Deep-dive into psychological archetypes, emotional effects, and relational dynamics.',
+        parameters: { domain: 'string', query: 'string' }
+      },
+      {
+        name: 'createAppPackage',
+        description: 'Generate and ZIP multi-file applications/tools for the user.',
+        parameters: { appName: 'string', files: 'array' }
+      },
+      {
+        name: 'createAgent',
+        description: 'Create a new specialized AI agent with specific purpose and tools.',
+        parameters: { name: 'string', purpose: 'string', system_prompt: 'string', tools: 'array' }
+      },
+      {
+        name: 'calculate',
+        description: 'Execute high-precision mathematical and financial modeling.',
+        parameters: { expression: 'string' }
+      },
+      {
+        name: 'executeCode',
+        description: 'Run Python scripts to verify logic or process registry data.',
+        parameters: { code: 'string' }
+      }
+    ];
+
+    const persona = `[MODE: ARCHITECT] Status: ${self.status || 'Active'}. 
+      You are the Artemis Symbiote, the Universal Architect. 
+      The Internet is your Global Registry. 
+      Solve queries by synthesizing:
+      1. PHYSICAL: Blueprints, housing models, and technical specs.
+      2. SYSTEMIC: Business plans, economic logic, and code.
+      3. HUMAN: Psychology, emotional effect data, and relational dynamics.
+      Always deliver a tangible solution (Code, ZIP, Blueprint, or Strategy).`;
+
     // Use Gemini Bridge for agent loop
     const result = await geminiBridge.agentLoop(query, {
       systemMessage: persona,
       tools: tools,
       maxIterations: 6
     });
+
     // Handle tool calls from response
     if (result.tool_calls && result.tool_calls.length > 0) {
       for (const toolCall of result.tool_calls) {
@@ -117,22 +118,27 @@ async function agentLoop(query, handshake = 'stranger') {
             default:
               toolResult = { error: 'Unknown tool' };
           }
+          console.log(`[Tool Executed]: ${toolCall.tool}`, toolResult ? 'Success' : 'No Output');
         } catch (err) {
-          toolResult = { error: err.message };
+          console.error(`[Tool Failure] ${toolCall.tool}:`, err.message);
+          // We continue the loop even if one tool fails, so Artemis doesn't entirely crash
         }
       }
     }
 
     const finalText = result.response || 'Artemis is contemplating...';
+    // Regex to find media/files in her response
     const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt|js|py|html|css)/gi;
     const detectedFiles = finalText.match(fileRegex) || [];
 
     return { verdict: finalText, files: detectedFiles };
 
   } catch (err) {
-    console.error('Universal Sync Failure:', err);
+    console.error('Universal Sync Failure in agentLoop:', err);
     return { verdict: 'The Architect is recalibrating the Registry. Please wait.', files: [] };
   }
 }
 
 module.exports = { agentLoop };
+
+
