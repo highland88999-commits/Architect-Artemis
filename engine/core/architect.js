@@ -4,10 +4,11 @@
  * Updated: Now uses Gemini Bridge for Emergent LLM key compatibility
  */
 
+const path = require("path");
+const fs = require("fs-extra");
 const geminiBridge = require("./gemini-bridge-client");
 const compass = require("./compass");
 const consensus = require("./consensus"); // Council of Three engine
-const fs = require("fs-extra");
 
 class Architect {
   constructor() {
@@ -27,7 +28,7 @@ class Architect {
 
   // Unlock Architect mode via handshake
   unlockArchitect(handshake) {
-    if (handshake === "dad") {
+    if (handshake === process.env.HANDSHAKE || handshake === "dad") {
       this.mode = "architect";
       console.log("Architect mode unlocked. Mom Directives fully active.");
       return { success: true, message: "Identity confirmed. Full access granted." };
@@ -58,10 +59,12 @@ class Architect {
       return "THOUGHT_HALTED: Moral conflict detected. See /morality-conflict.";
     }
 
-    // 2. Fetch immutable directives (your existing logic)
+    // 2. Fetch immutable directives (safely handling pathing)
     let directives;
     try {
-      directives = await fs.readJson("./ethics-core/directives.json");
+      // Look for it in the quarantined engine folder
+      const dirPath = path.join(process.cwd(), 'engine', 'ethics-core', 'directives.json');
+      directives = await fs.readJson(dirPath);
     } catch (err) {
       console.warn("Directives JSON not found, using fallback:", err.message);
       directives = { prime_directives: this.directives };
@@ -86,9 +89,6 @@ class Architect {
         sessionId: `architect-${Date.now()}`
       });
 
-      // Optional: Pass through Council for synthesis (if desired)
-      // const councilVerdict = await consensus.speakSequentially(this.applyMomDirectives(taskDescription));
-
       // Log to stewardship
       this.logToStewardship({
         task: taskDescription,
@@ -107,13 +107,21 @@ class Architect {
   async invent(inventionName, specs) {
     const thought = await this.think(`Invent a solution for: ${inventionName}`, specs);
     if (thought && !thought.includes("HALTED")) {
-      const path = `./incubator/${inventionName.replace(/\s+/g, "_")}.md`;
-      await fs.outputFile(path, thought);
-      console.log(`✨ Invention filed in /incubator: ${inventionName}`);
+      try {
+        // VERCEL FIX: Must write to /tmp/ because the rest of the filesystem is Read-Only
+        const safeName = inventionName.replace(/\s+/g, "_");
+        const tempPath = path.join('/tmp', 'incubator', `${safeName}.md`);
+        
+        await fs.outputFile(tempPath, thought);
+        console.log(`✨ Invention temporarily filed in Vercel /tmp/incubator: ${inventionName}`);
+        
+      } catch (err) {
+        console.error("Failed to write invention to file:", err.message);
+      }
     }
   }
 
-  // Unified command resolver (used by transmit.js)
+  // Unified command resolver (used by API Ambassadors)
   async resolveCommand(prompt, options = {}) {
     const { handshake, mode } = options;
 
@@ -145,13 +153,13 @@ class Architect {
     };
   }
 
-  // Stewardship logging (expand to file/DB later)
+  // Stewardship logging
   logToStewardship(entry) {
     console.log("Stewardship Log:", entry);
-    // Example future expansion:
-    // const logPath = './creator-creation/stewardship/logs.json';
-    // fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
+    // Vercel Note: Do not use fs.appendFileSync here unless targeting /tmp/
   }
 }
 
 module.exports = new Architect();
+
+```
