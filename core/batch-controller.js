@@ -1,33 +1,39 @@
 const consensus = require('./consensus');
-const archiver = require('./stewardship/archiver');
+const archiver = require('./stewardship/archiver'); // Assumes archiver is in engine/core/stewardship/
 const mailer = require('./stewardship/mail-engine');
 const { pool } = require('./atlas-db');
 
 class BatchController {
     constructor() {
-        this.batchLimit = 5; // Reasonable limit per cycle
+        // Vercel Serverless Warning: Serverless functions have execution time limits (usually 10s to 60s).
+        // A batch limit of 5 is safe, but monitor timeout logs if 'consensus' takes a long time.
+        this.batchLimit = 5; 
     }
 
     async processQueue() {
-        // Alias update for Artemis privacy
         console.log(`🚀 Atlas: Initializing Batch Mode (Limit: ${this.batchLimit})...`);
 
-        // 1. Fetch pending URLs from the Atlas DB
-        const res = await pool.query(
-            "SELECT id, url FROM web_map WHERE status = 'pending' LIMIT $1", 
-            [this.batchLimit]
-        );
+        try {
+            // 1. Fetch pending URLs from the Atlas DB
+            const res = await pool.query(
+                "SELECT id, url FROM web_map WHERE status = 'pending' LIMIT $1", 
+                [this.batchLimit]
+            );
 
-        if (res.rows.length === 0) {
-            console.log("📭 Queue empty. All seeds nurtured.");
-            return;
+            if (res.rows.length === 0) {
+                console.log("📭 Queue empty. All seeds nurtured.");
+                return;
+            }
+
+            // 2. Process the batch in parallel
+            // Promise.allSettled ensures that if one seed fails, the rest still finish processing
+            const tasks = res.rows.map(row => this.processSingleSeed(row));
+            await Promise.allSettled(tasks);
+
+            console.log("✅ Batch Cycle Complete.");
+        } catch (error) {
+            console.error("❌ Fatal Error in Batch Queue:", error.message);
         }
-
-        // 2. Process the batch in parallel
-        const tasks = res.rows.map(row => this.processSingleSeed(row));
-        await Promise.allSettled(tasks);
-
-        console.log("✅ Batch Cycle Complete.");
     }
 
     async processSingleSeed(seed) {
@@ -35,8 +41,9 @@ class BatchController {
             // A. Council Evaluation
             const result = await consensus.evaluateHarvest(seed);
 
-            if (result.approved) {
+            if (result && result.approved) {
                 // B. Save to Stewardship (Permanent Record)
+                // Note: We will wire this to Supabase later!
                 await archiver.archiveInPermanentRecord(seed, result);
                 
                 // C. Auto-outreach for high-value seeds
@@ -51,13 +58,17 @@ class BatchController {
                 console.log(`✨ Seed ${seed.url} successfully nurtured and archived.`);
                 
             } else {
-                console.log(`⚠️  Seed ${seed.url} rejected (Low Nurture Score).`);
+                console.log(`⚠️  Seed ${seed.url} rejected (Low Nurture Score or not approved).`);
                 await pool.query("UPDATE web_map SET status = 'rejected' WHERE id = $1", [seed.id]);
             }
         } catch (err) {
             console.error(`❌ Failure processing ${seed.url}:`, err.message);
+            // Optionally set status to 'error' so it doesn't get stuck in 'pending' forever
+            await pool.query("UPDATE web_map SET status = 'error' WHERE id = $1", [seed.id]).catch(e => console.error("Could not update error status", e));
         }
     }
 }
 
 module.exports = new BatchController();
+
+
