@@ -1,17 +1,16 @@
-// api/stewardship-list.js
 /**
  * STEWARDSHIP REGISTRY ENDPOINT
  * Returns the permanent stewardship log / registry for Architect view.
- * File-based persistence in creator-creation/stewardship/permanent_registry.json
+ * File-based persistence in engine/creator-creation/stewardship/permanent_registry.json
  */
 
-require('dotenv').config();
 const fs = require('fs').promises;
 const path = require('path');
 
 const LANDLINE_KEY = process.env.ARTEMIS_LANDLINE;
-const STEWARDSHIP_DIR = path.resolve(process.cwd(), 'creator-creation/stewardship');
-const REGISTRY_FILE = path.join(STEWARDSHIP_DIR, 'permanent_registry.json');
+
+// UPDATED PATH: Pointing to the registry inside the quarantined 'engine' folder
+const REGISTRY_FILE = path.join(process.cwd(), 'engine', 'creator-creation', 'stewardship', 'permanent_registry.json');
 
 // ────────────────────────────────────────────────
 // Structured logging helper
@@ -27,10 +26,12 @@ function log(level, message, meta = {}) {
     `[Stewardship-List] ${message}`,
     meta
   );
-  // Future: append to file or send to observability tool
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  // CORS Preflight
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
   // ─── Security & method check ───
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed', allowed: ['GET'] });
@@ -50,12 +51,11 @@ export default async function handler(req, res) {
   const isDesc = sort !== 'asc';
 
   try {
-    // Ensure directory exists (defensive)
-    await fs.mkdir(STEWARDSHIP_DIR, { recursive: true });
-
     let registry = [];
 
     try {
+      // NOTE: We cannot use fs.mkdir on Vercel as the filesystem is read-only.
+      // The file and folder must already exist in your GitHub repository!
       const data = await fs.readFile(REGISTRY_FILE, 'utf8');
       registry = JSON.parse(data);
 
@@ -111,4 +111,4 @@ export default async function handler(req, res) {
       message: 'Internal server error – check server logs.',
     });
   }
-}
+};
