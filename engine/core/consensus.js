@@ -80,7 +80,7 @@ class ConsensusEngine {
           agent: model.name,
           response: result,
         });
-        console.log(`${model.name} responded (first 100 chars): ${result.slice(0, 100)}...`);
+        console.log(`${model.name} responded.`);
       } catch (err) {
         console.error(`${model.name} failed:`, err.message);
         responses.push({
@@ -108,15 +108,20 @@ class ConsensusEngine {
   async artemisFinalDecision(target, opinions) {
     console.log("⚖️  Artemis: Synthesizing Council consensus...");
 
-    // Calculate Average Nurture Score
+    // Calculate Average Nurture Score safely
     const scores = opinions.map(o => {
-      const match = o.content?.match(/\[NURTURE_SCORE\]:\s*(\d+)/);
+      if (!o.content) return 0;
+      const match = o.content.match(/\[NURTURE_SCORE\]:\s*(\d+)/);
       return match ? parseInt(match[1]) : 0;
     });
-    const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+    
+    // Protect against division by zero if all models fail
+    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
 
-    // Select primary response (prefer Gemini)
-    const primary = opinions.find(o => o.provider === "Gemini Prime" && o.content) || opinions[0];
+    // Select primary response (prefer Gemini, fallback to first, or empty if all fail)
+    const primary = opinions.find(o => o.provider === "Gemini Prime" && o.content && !o.content.includes("Connection Failed")) 
+                    || opinions[0] 
+                    || { content: "Analysis missing." };
 
     // Extract structured parts
     const result = {
@@ -149,7 +154,7 @@ class ConsensusEngine {
 
   fetchClarifai(model, prompt) {
     if (!this.clarifaiAvailable || !stub) {
-      return Promise.reject(new Error("Clarifai not available in local dev mode"));
+      return Promise.reject(new Error("Clarifai not available. Missing CLARIFAI_PAT."));
     }
     
     return new Promise((resolve, reject) => {
@@ -171,19 +176,23 @@ class ConsensusEngine {
   }
 
   extract(text, tag) {
+    if (!text) return "Analysis missing.";
     const regex = new RegExp(`\\[${tag}_START\\]([\\s\\S]*?)\\[${tag}_END\\]`);
-    const match = text?.match(regex);
+    const match = text.match(regex);
     return match ? match[1].trim() : "Analysis missing.";
   }
 
   extractContactInfo(text) {
-    const lines = text?.split("\n") || [];
+    if (!text) return "No data.";
+    const lines = text.split("\n") || [];
     return (
       lines
         .filter(l => l.includes("@") || l.includes("http") || l.toLowerCase().includes("contact"))
-        .join("\n") || "No data."
+        .join("\n") || "No direct contact data harvested."
     );
   }
 }
 
 module.exports = new ConsensusEngine();
+
+
