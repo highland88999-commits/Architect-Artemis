@@ -1,31 +1,16 @@
 /**
  * STEWARDSHIP REGISTRY ENDPOINT
  * Returns the permanent stewardship log / registry for Architect view.
- * File-based persistence in engine/creator-creation/stewardship/permanent_registry.json
+ * Now wired directly to Supabase via Postgres Pool.
  */
 
-const fs = require('fs').promises;
-const path = require('path');
+// Import the database pool from the engine
+const { pool } = require('../engine/core/atlas-db');
 
 const LANDLINE_KEY = process.env.ARTEMIS_LANDLINE;
 
-// UPDATED PATH: Pointing to the registry inside the quarantined 'engine' folder
-const REGISTRY_FILE = path.join(process.cwd(), 'engine', 'creator-creation', 'stewardship', 'permanent_registry.json');
-
-// ────────────────────────────────────────────────
-// Structured logging helper
-// ────────────────────────────────────────────────
 function log(level, message, meta = {}) {
-  const entry = {
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    ...meta,
-  };
-  console[level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'](
-    `[Stewardship-List] ${message}`,
-    meta
-  );
+  console[level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'](`[Stewardship-List] ${message}`, meta);
 }
 
 module.exports = async function handler(req, res) {
@@ -39,76 +24,39 @@ module.exports = async function handler(req, res) {
 
   if (LANDLINE_KEY !== 'CONNECTED') {
     log('warn', 'Landline disconnected – access denied');
-    return res.status(503).json({
-      error: 'Access Denied',
-      message: 'Artemis Landline is not CONNECTED. Check environment variables.',
-    });
+    return res.status(503).json({ error: 'Access Denied', message: 'Artemis Landline is not CONNECTED.' });
   }
 
   // ─── Optional query params ───
   const { limit = 100, sort = 'desc' } = req.query;
-  const maxLimit = Math.min(parseInt(limit, 10) || 100, 500); // safety cap
-  const isDesc = sort !== 'asc';
+  const maxLimit = Math.min(parseInt(limit, 10) || 100, 500); 
+  const orderDirection = sort === 'asc' ? 'ASC' : 'DESC';
 
   try {
-    let registry = [];
+    // VERCEL/SUPABASE UPGRADE: Fetch directly from the DB
+    const result = await pool.query(
+      `SELECT id, task, thought, created_at as timestamp 
+       FROM stewardship_logs 
+       ORDER BY created_at ${orderDirection} 
+       LIMIT $1`,
+      [maxLimit]
+    );
 
-    try {
-      // NOTE: We cannot use fs.mkdir on Vercel as the filesystem is read-only.
-      // The file and folder must already exist in your GitHub repository!
-      const data = await fs.readFile(REGISTRY_FILE, 'utf8');
-      registry = JSON.parse(data);
-
-      // Defensive: ensure it's an array
-      if (!Array.isArray(registry)) {
-        log('warn', 'Registry file corrupted – not an array', { file: REGISTRY_FILE });
-        registry = [];
-      }
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        log('info', 'Registry file not found yet – returning empty list');
-        // Return empty array – normal first-run state
-      } else {
-        log('error', 'Failed to read registry file', {
-          error: err.message,
-          code: err.code,
-          path: REGISTRY_FILE,
-        });
-        throw err;
-      }
-    }
-
-    // ─── Sort safely ───
-    const sorted = [...registry].sort((a, b) => {
-      const aTime = a?.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const bTime = b?.timestamp ? new Date(b.timestamp).getTime() : 0;
-      return isDesc ? bTime - aTime : aTime - bTime;
-    });
-
-    // ─── Apply limit ───
-    const result = sorted.slice(0, maxLimit);
-
-    // ─── Response headers ───
-    res.setHeader('Cache-Control', 'no-store, max-age=0'); // no caching sensitive logs
+    res.setHeader('Cache-Control', 'no-store, max-age=0'); 
     res.setHeader('Content-Type', 'application/json');
 
-    log('info', 'Stewardship registry served', {
-      totalRecords: registry.length,
-      returned: result.length,
-      sort: isDesc ? 'desc' : 'asc',
+    log('info', 'Stewardship registry served from Supabase', {
+      returnedRecords: result.rows.length
     });
 
-    return res.status(200).json(result);
+    return res.status(200).json(result.rows);
 
   } catch (err) {
-    log('error', 'Stewardship list endpoint failed', {
-      error: err.message,
-      stack: err.stack?.slice(0, 300),
-    });
-
+    log('error', 'Stewardship list DB query failed', { error: err.message });
     return res.status(500).json({
       error: 'Failed to retrieve Permanent Registry',
-      message: 'Internal server error – check server logs.',
+      message: 'Database connection error. Ensure Supabase is awake.',
     });
   }
 };
+
