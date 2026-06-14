@@ -1,15 +1,27 @@
-/* core/atlas-db.js */
 const { Pool } = require('pg');
 require('dotenv').config();
+
+// Safe import for Vercel functions (prevents crash if not installed)
+let attachDatabasePool;
+try {
+  attachDatabasePool = require('@vercel/functions').attachDatabasePool;
+} catch (e) {
+  attachDatabasePool = () => { /* no-op in non-vercel environments */ };
+}
 
 // Initialize the Connection Pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // SSL is required for most hosted PostgreSQL instances (Neon, Supabase, Render)
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.NODE_ENV === 'production' 
+        ? { rejectUnauthorized: false } 
+        : false,
 });
+
+// Attach Vercel handler (prevents suspension leaks if used by an API route)
+if (typeof attachDatabasePool === 'function') {
+    attachDatabasePool(pool);
+}
 
 /**
  * Stewardship Logic: Fetches the next priority URL for Artemis to scan.
@@ -34,3 +46,4 @@ module.exports = {
     getNextWorkload,
     query: (text, params) => pool.query(text, params) // Helper for direct queries
 };
+
