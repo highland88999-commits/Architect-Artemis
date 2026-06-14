@@ -1,55 +1,62 @@
 /* public/assets/js/midas-trigger.js */
 
 /**
- * Orchestrates the Midas Intervention:
- * 1. Manifests the Oracle Ghost.
- * 2. Fetches guidance from the backend.
- * 3. Draws the Golden Thread (if start/end elements provided).
+ * Visual Orchestrator for Midas Interventions
+ * Triggers the Oracle Ghost, Golden Thread, and UI display based on 
+ * pre-processed backend state.
  */
-async function invokeMidas(startElemId = null, endElemId = null) {
+async function invokeMidas(lostId, targetId) {
     const chamber = document.getElementById('council-body');
     if (!chamber) return;
 
-    // 1. Manifest the Oracle Ghost
+    // 1. Manifest the Oracle Ghost (Oracle Frame Video)
     if (window.ArtemisGhost) {
         window.ArtemisGhost.manifest(6000);
     }
 
-    // 2. Draw the Golden Thread
-    if (window.MidasThread && startElemId && endElemId) {
-        const start = document.getElementById(startElemId);
-        const end = document.getElementById(endElemId);
-        window.MidasThread.draw(start, end);
+    // 2. Draw the Golden Thread (Line of sight correction)
+    // Note: We use the IDs passed from the Observer
+    if (window.MidasThread) {
+        const start = document.getElementById(lostId);
+        const end = document.getElementById(targetId);
+        if (start && end) {
+            window.MidasThread.draw(start, end);
+        }
     }
 
-    // 3. Create the status overlay
+    // 3. Create the status overlay (The Guidance UI)
     const midasBox = document.createElement('div');
     midasBox.className = 'midas-overlay midas-active';
-    midasBox.style.cssText = "padding: 15px; border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); margin: 10px 0;";
+    midasBox.style.cssText = "padding: 15px; border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); margin: 10px 0; border-radius: 8px;";
     
     midasBox.innerHTML = `
-        <div class="midas-icon" style="font-size: 1.5em;">👑</div>
-        <div class="midas-text" style="font-family: monospace;">Midas is calculating the Golden Path...</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 1.5em;">👑</div>
+            <div style="font-family: monospace;">Midas is manifesting the Golden Path...</div>
+        </div>
     `;
     
     chamber.prepend(midasBox);
 
+    // 4. Final Guidance Reveal
+    // Since the backend already logged the guidance, we fetch the latest record 
+    // to display the text within the intervention UI.
     try {
-        // 4. Call the API
-        const response = await fetch('/api/midas-guidance');
+        const response = await fetch('/api/get-latest-midas-guidance');
         const data = await response.json();
 
-        // 5. Reveal the Guidance
         midasBox.innerHTML = `
             <div style="font-family: monospace;">
                 <strong style="color: #FFD700;">MIDAS GUIDANCE:</strong><br>
-                ${data.guidance}
+                ${data.guidance || "Path correction applied."}
             </div>
         `;
     } catch (error) {
-        midasBox.innerHTML = `<strong style="color: #ff3366;">MIDAS ERROR:</strong> Path unstable.`;
-        console.error("❌ Midas Trigger Failed:", error);
+        midasBox.innerHTML = `<strong style="color: #ff3366;">MIDAS ERROR:</strong> Guidance manifest failed.`;
     }
 }
+
+// Ensure it's globally available
+window.executeMidasIntervention = invokeMidas;
 
 
