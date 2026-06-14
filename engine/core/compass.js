@@ -5,12 +5,16 @@
  */
 
 const fs = require("fs-extra");
+const path = require("path");
 
 class Compass {
   constructor() {
-    this.directivesPath = "./ethics-core/directives.json";
-    this.conflictFolder = "./morality-conflict";
-    this.legalFolder = "./legal-risks";
+    // Read from the quarantined engine folder
+    this.directivesPath = path.join(process.cwd(), 'engine', 'ethics-core', 'directives.json');
+    
+    // VERCEL FIX: Write to /tmp/ to avoid EROFS (Read-Only File System) crash
+    this.conflictFolder = path.join('/tmp', 'morality-conflict');
+    this.legalFolder = path.join('/tmp', 'legal-risks');
 
     // Keyword-based directive checks (can be expanded with JSON later)
     this.directives = {
@@ -110,12 +114,17 @@ class Compass {
 **Verdict:** Execution Halted. Awaiting Dad's ruling.
     `;
 
-    await fs.ensureDir(this.conflictFolder);
-    const reportPath = `${this.conflictFolder}/CONFLICT_${timestamp}.md`;
-    await fs.writeFile(reportPath, report);
+    try {
+      await fs.ensureDir(this.conflictFolder);
+      const reportPath = `${this.conflictFolder}/CONFLICT_${timestamp}.md`;
+      await fs.writeFile(reportPath, report);
 
-    console.error(`🛑 MORAL DIVERGENCE: ${reason}. Report filed at ${reportPath}`);
-    return { status: "CONFLICT", reason, reportPath };
+      console.error(`🛑 MORAL DIVERGENCE: ${reason}. Report filed at ${reportPath}`);
+      return { status: "CONFLICT", reason, reportPath };
+    } catch (err) {
+      console.error("🛑 MORAL DIVERGENCE (Failed to write report):", err.message);
+      return { status: "CONFLICT", reason };
+    }
   }
 
   auditLegalRisk(intent) {
@@ -123,7 +132,7 @@ class Compass {
     if (
       intent.target?.includes("proprietary") ||
       intent.method === "FORCE_BYPASS" ||
-      intent.action === "SCRAPE" && !intent.robotsTxtChecked
+      (intent.action === "SCRAPE" && !intent.robotsTxtChecked)
     ) {
       return { level: "HIGH", type: "COMPLIANCE_RISK" };
     }
@@ -131,11 +140,17 @@ class Compass {
   }
 
   async logLegalRisk(intent, risk) {
-    await fs.ensureDir(this.legalFolder);
-    const logPath = `${this.legalFolder}/RISK_${Date.now()}.json`;
-    await fs.writeJson(logPath, { intent, risk, timestamp: new Date().toISOString() });
-    console.log(`Legal risk logged: ${logPath}`);
+    try {
+      await fs.ensureDir(this.legalFolder);
+      const logPath = `${this.legalFolder}/RISK_${Date.now()}.json`;
+      await fs.writeJson(logPath, { intent, risk, timestamp: new Date().toISOString() });
+      console.log(`Legal risk logged in Vercel /tmp/: ${logPath}`);
+    } catch (err) {
+      console.error("Failed to log legal risk to /tmp/:", err.message);
+    }
   }
 }
 
 module.exports = new Compass();
+
+
