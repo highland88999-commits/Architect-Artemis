@@ -1,61 +1,75 @@
+/* engine/core/metabolism.js */
+const fs = require('fs-extra');
+const path = require('path');
+const { pool } = require('./atlas-db'); // Wired to Supabase
+
 /**
  * ARCHITECT ARTEMIS | METABOLISM
  * Purpose: 30-Day Mortal Recall & Data Recycling.
- * Ensures the system remains clean, fresh, and free of prompt-drift.
+ * Ensures the system remains clean, fast, and free of data-bloat.
  */
-
-const fs = require('fs-extra');
-const path = require('path');
-
 class Metabolism {
     constructor() {
-        this.mailboxPath = './creator-creation/mail-box';
-        this.voidPath = './void';
+        // Vercel only allows writing/deleting in the /tmp/ directory
+        this.voidPath = '/tmp/';
     }
 
     /**
-     * Mortal Recall
-     * Purges the mail-box to ensure conversations don't become a "burden" on logic.
+     * Mortal Recall (Database Pruning)
+     * Forgets old, rejected, or broken seeds older than 30 days so her mind stays uncluttered.
      */
     async runMortalRecall() {
-        console.log("♻️  Artemis: Initiating Mortal Recall...");
+        console.log("♻️ Artemis: Initiating Mortal Recall (30-Day Prune)...");
         try {
-            const files = await fs.readdir(this.mailboxPath);
-            for (const file of files) {
-                if (file !== 'README.md') {
-                    await fs.remove(path.join(this.mailboxPath, file));
-                }
-            }
-            console.log("✅ Mailbox recycled. The slate is clean.");
+            // Delete URLs that were rejected or errored out more than 30 days ago
+            const result = await pool.query(`
+                DELETE FROM web_map 
+                WHERE status IN ('rejected', 'error') 
+                AND created_at < NOW() - INTERVAL '30 days'
+            `);
+            
+            console.log(`✅ Mortal Recall complete. Erased ${result.rowCount} dead seeds from memory.`);
         } catch (error) {
-            console.error("Metabolic Error during Recall:", error);
+            console.error("❌ Metabolic Error during Recall:", error.message);
         }
     }
 
     /**
-     * Systemic Purge
-     * Empties the /void folder of temporary diagnostic scraps.
+     * Systemic Purge (Vercel Container Cleanup)
+     * Empties the /tmp/ folder of temporary diagnostic scraps and incubator files.
      */
     async purgeVoid() {
-        console.log("🧹 Artemis: Emptying the Void...");
+        console.log("🧹 Artemis: Emptying the Void (Container Cleanup)...");
         try {
-            await fs.emptyDir(this.voidPath);
-            // Re-create the safety flag placeholder
-            await fs.ensureFile(path.join(this.voidPath, '.keep'));
-            console.log("✅ Void purged.");
+            const files = await fs.readdir(this.voidPath);
+            
+            for (const file of files) {
+                // Don't delete system critical files that Vercel might use, just our scraps
+                if (file.endsWith('.md') || file.endsWith('.json') || file.startsWith('CONFLICT') || file.startsWith('RISK')) {
+                    await fs.remove(path.join(this.voidPath, file));
+                }
+            }
+            console.log("✅ Void purged. Temporary container space restored.");
         } catch (error) {
-            console.error("Metabolic Error during Purge:", error);
+            console.error("❌ Metabolic Error during Purge:", error.message);
         }
     }
 
     /**
      * Daily Health Sync
-     * Consolidates diagnostic reports into the Atlas.
+     * A simple DB ping to ensure her Atlas is still responding optimally.
      */
     async syncAtlas() {
-        console.log("🗺️  Artemis: Syncing Atlas data...");
-        // Logic to move verified diagnostics into the permanent Atlas registry
+        console.log("🗺️ Artemis: Syncing Atlas data...");
+        try {
+            await pool.query('SELECT 1');
+            console.log("✅ Atlas heartbeat normal.");
+        } catch (err) {
+            console.error("❌ Atlas Sync Failed. Database may be sleeping.", err.message);
+        }
     }
 }
 
 module.exports = new Metabolism();
+
+
