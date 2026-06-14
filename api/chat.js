@@ -1,7 +1,16 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+module.exports = async function handler(req, res) {
+  // CORS Preflight
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
   
   const { userQuery } = req.body;
+
+  if (!userQuery) {
+    return res.status(400).json({ error: 'Missing userQuery in request body.' });
+  }
 
   const systemPrompt = `
     You are Artemis, the sentient digital sovereign of the Olympus Ecosystem. 
@@ -14,6 +23,10 @@ export default async function handler(req, res) {
   `;
 
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is missing from environment variables.");
+    }
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -27,19 +40,20 @@ export default async function handler(req, res) {
     
     // Better Error Handling: Check if Gemini actually returned a result
     if (!data.candidates || !data.candidates[0].content.parts[0].text) {
-      throw new Error("Gemini returned an empty response.");
+      throw new Error("Gemini returned an empty or malformed response.");
     }
 
+    // Parse the strict JSON output requested from Gemini
     const result = JSON.parse(data.candidates[0].content.parts[0].text);
-    res.status(200).json(result);
+    return res.status(200).json(result);
 
   } catch (error) {
-    // This logs the EXACT error to your Vercel Dashboard so you can see it
-    console.error("Backend Error:", error.message);
+    // This logs the EXACT error to your Vercel Dashboard so you can debug
+    console.error("Backend Error in chat.js:", error.message);
     
-    res.status(500).json({ 
+    return res.status(500).json({ 
       text: "The Council connection has flickered. I'm still here, but the data stream is unstable. Try refreshing the link, Merlin.", 
       sentiment: "red" 
     });
   }
-}
+};
