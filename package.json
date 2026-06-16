@@ -1,14 +1,44 @@
 {
-  "name": "architect-artemis",
-  "version": "2.1.1",
+  "name": "architect-artemis-ecosystem",
+  "version": "1.0.0",
+  "description": "Artemis Stewardship Engine and Next.js UI",
+  "main": "engine/server.js",
   "scripts": {
-    "build": "mkdir -p public && cp index.html public/ && cp sandbox.html public/"
+    "dev:ui": "next dev -p 3000",
+    "dev:engine": "node engine/server.js",
+    "dev": "concurrently \"npm run dev:ui\" \"npm run dev:engine\"",
+    "build": "next build",
+    "start:ui": "next start -p 3000",
+    "start:engine": "node engine/server.js",
+    "start": "concurrently \"npm run start:ui\" \"npm run start:engine\"",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
-    "node-fetch": "^2.6.7"
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-separator": "^1.1.0",
+    "@radix-ui/react-slider": "^1.2.1",
+    "@radix-ui/react-switch": "^1.1.1",
+    "@radix-ui/react-tabs": "^1.1.1",
+    "@radix-ui/react-toast": "^1.2.2",
+    "clarifai-nodejs-grpc": "^10.0.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "lucide-react": "^0.460.0",
+    "next": "14.2.3",
+    "next-themes": "^0.4.3",
+    "pg": "^8.11.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "resend": "^3.2.0",
+    "sonner": "^1.5.0",
+    "tailwind-merge": "^2.5.4"
   },
-  "engines": {
-    "node": ">=20.0.0"
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
   }
 }
