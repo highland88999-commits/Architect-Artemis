@@ -2,6 +2,7 @@
 require('dotenv').config();
 const { pool } = require('../atlas-db'); // Your Supabase connection
 const MidasLogger = require('./midas-logger');
+const Mailer = require('./mailer'); // The automated email pipeline
 
 // Graceful Clarifai initialization
 let stub, metadata;
@@ -118,34 +119,8 @@ class ConsensusEngine {
 
     const isSuboptimal = avgScore < 7; // The failure threshold
     
-    // --- MIDAS WATCHDOG TRIPWIRE ---
-    if (isSuboptimal) {
-        console.warn(`🚨 Midas Tripwire: Nurture Score (${avgScore}) below threshold. Initiating Stewardship...`);
-        
-        const guidanceText = this.extract(primary.content, "OPTIMIZATION");
-        const interventionData = {
-            context: `Target: ${target.url} failed with score ${avgScore}`,
-            error: "Suboptimal Nurture Potential",
-            guidance: guidanceText,
-            new_target: "system://growth-re-routing"
-        };
-
-        try {
-            // 1. Log to DB (Permanent Record)
-            await MidasLogger.logIntervention(interventionData);
-            
-            // 2. Set the "Tripwire" in Supabase so the frontend sees it
-            await pool.query(
-                "UPDATE midas_status SET trigger_intervention = true, lost_id = $1, target_id = $2, latest_guidance = $3 WHERE id = 1",
-                [target.url, "growth-re-routing", guidanceText]
-            );
-        } catch (dbErr) {
-            console.error("❌ Failed to set Midas Tripwire in DB:", dbErr.message);
-        }
-    }
-    // --------------------------------
-
-    return {
+    // Construct the result object FIRST so the Mailer has access to the data
+    const result = {
       approved: !isSuboptimal,
       nurture_score: avgScore,
       target: target,
@@ -159,6 +134,48 @@ class ConsensusEngine {
         grok: "Efficiency Checked",
       }
     };
+    
+    // --- MIDAS WATCHDOG TRIPWIRE & AUTOMATED SALES PIPELINE ---
+    if (isSuboptimal) {
+        console.warn(`🚨 Midas Tripwire: Nurture Score (${avgScore}) below threshold. Initiating Stewardship...`);
+        
+        const interventionData = {
+            context: `Target: ${target.url} failed with score ${avgScore}`,
+            error: "Suboptimal Nurture Potential",
+            guidance: result.optimization_steps,
+            new_target: "system://growth-re-routing"
+        };
+
+        try {
+            // 1. Log to DB (Permanent Record)
+            await MidasLogger.logIntervention(interventionData);
+            
+            // 2. Set the "Tripwire" in Supabase so the frontend sees it
+            await pool.query(
+                "UPDATE midas_status SET trigger_intervention = true, lost_id = $1, target_id = $2, latest_guidance = $3 WHERE id = 1",
+                [target.url, "growth-re-routing", result.optimization_steps]
+            );
+
+            // 3. Email the internal Architect Report
+            await Mailer.notifyArchitect(target.url, result);
+
+            // 4. Extract Owner Email and Pitch (Currently disabled for safety)
+            const ownerEmailMatch = result.contact_info.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
+            if (ownerEmailMatch && ownerEmailMatch.length > 0) {
+                const ownerEmail = ownerEmailMatch[0];
+                console.log(`✉️ Found Site Owner Email: ${ownerEmail} - Pitch ready to deploy.`);
+                
+                // UNCOMMENT the line below when you are ready to auto-email site owners!
+                // await Mailer.pitchSiteOwner(ownerEmail, target.url, result); 
+            }
+
+        } catch (error) {
+            console.error("❌ Failed to execute Midas Tripwire sequence:", error.message);
+        }
+    }
+    // --------------------------------
+
+    return result;
   }
 
   async askCouncil(prompt) {
@@ -202,6 +219,5 @@ class ConsensusEngine {
 }
 
 module.exports = new ConsensusEngine();
-
 
 
