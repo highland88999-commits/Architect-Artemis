@@ -1,12 +1,10 @@
-/**
- * ARTEMIS CONSENSUS ENGINE
- * Council of Three: Gemini Prime, Copilot Beta, Grok X
- * Purpose: Sequential analysis, stewardship evaluation, and final synthesis
- */
-
+```javascript
+/* engine/core/stewardship/consensus.js */
 require('dotenv').config();
+const { pool } = require('../atlas-db'); // Your Supabase connection
+const MidasLogger = require('./midas-logger');
 
-// Graceful Clarifai initialization - only if PAT is available
+// Graceful Clarifai initialization
 let stub, metadata;
 const CLARIFAI_AVAILABLE = process.env.CLARIFAI_PAT && process.env.CLARIFAI_PAT !== 'optional-for-local-dev';
 
@@ -18,10 +16,10 @@ if (CLARIFAI_AVAILABLE) {
     metadata.set("authorization", "Key " + process.env.CLARIFAI_PAT);
     console.log("✓ Clarifai Council initialized");
   } catch (err) {
-    console.warn("⚠️  Clarifai initialization failed:", err.message);
+    console.warn("⚠️ Clarifai initialization failed:", err.message);
   }
 } else {
-  console.log("ℹ️  Running without Clarifai Council (local dev mode)");
+  console.log("ℹ️ Running without Clarifai Council (local dev mode)");
 }
 
 class ConsensusEngine {
@@ -38,14 +36,14 @@ class ConsensusEngine {
    * MISSION: Dual-Layer Analysis & Stewardship Evaluation
    */
   async evaluateHarvest(urlData) {
-    console.log(`🏛️  Artemis: Council convening for ${urlData.url}...`);
+    console.log(`🏛️ Artemis: Council convening for ${urlData.url}...`);
 
     const structuralPrompt = `
       DIRECTIVE: Conduct a Dual-Layer Analysis of ${urlData.url}.
       
       LAYER 1: SYSTEM OPTIMIZATION
-      - Identify performance bottlenecks (UX, Logic, Speed).
-      - Extract contact information (Emails, Social, Support).
+      - Identify performance bottlenecks.
+      - Extract contact information.
       - Provide 3 actionable structural improvements.
 
       LAYER 2: SYNTHETIC INVENTION
@@ -105,27 +103,51 @@ class ConsensusEngine {
     };
   }
 
+  /**
+   * Final Decision & Autonomous Midas Tripwire
+   */
   async artemisFinalDecision(target, opinions) {
-    console.log("⚖️  Artemis: Synthesizing Council consensus...");
+    console.log("⚖️ Artemis: Synthesizing Council consensus...");
 
-    // Calculate Average Nurture Score safely
     const scores = opinions.map(o => {
-      if (!o.content) return 0;
-      const match = o.content.match(/\[NURTURE_SCORE\]:\s*(\d+)/);
+      const match = o.content?.match(/\[NURTURE_SCORE\]:\s*(\d+)/);
       return match ? parseInt(match[1]) : 0;
     });
     
-    // Protect against division by zero if all models fail
     const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    const primary = opinions.find(o => o.provider === "Gemini Prime" && o.content && !o.content.includes("Connection Failed")) || opinions[0];
 
-    // Select primary response (prefer Gemini, fallback to first, or empty if all fail)
-    const primary = opinions.find(o => o.provider === "Gemini Prime" && o.content && !o.content.includes("Connection Failed")) 
-                    || opinions[0] 
-                    || { content: "Analysis missing." };
+    const isSuboptimal = avgScore < 7; // The failure threshold
+    
+    // --- MIDAS WATCHDOG TRIPWIRE ---
+    if (isSuboptimal) {
+        console.warn(`🚨 Midas Tripwire: Nurture Score (${avgScore}) below threshold. Initiating Stewardship...`);
+        
+        const guidanceText = this.extract(primary.content, "OPTIMIZATION");
+        const interventionData = {
+            context: `Target: ${target.url} failed with score ${avgScore}`,
+            error: "Suboptimal Nurture Potential",
+            guidance: guidanceText,
+            new_target: "system://growth-re-routing"
+        };
 
-    // Extract structured parts
-    const result = {
-      approved: avgScore >= 7,
+        try {
+            // 1. Log to DB (Permanent Record)
+            await MidasLogger.logIntervention(interventionData);
+            
+            // 2. Set the "Tripwire" in Supabase so the frontend sees it
+            await pool.query(
+                "UPDATE midas_status SET trigger_intervention = true, lost_id = $1, target_id = $2, latest_guidance = $3 WHERE id = 1",
+                [target.url, "growth-re-routing", guidanceText]
+            );
+        } catch (dbErr) {
+            console.error("❌ Failed to set Midas Tripwire in DB:", dbErr.message);
+        }
+    }
+    // --------------------------------
+
+    return {
+      approved: !isSuboptimal,
       nurture_score: avgScore,
       target: target,
       optimization_steps: this.extract(primary.content, "OPTIMIZATION"),
@@ -136,16 +158,13 @@ class ConsensusEngine {
         gemini: "Logic Verified",
         copilot: "Structure Validated",
         grok: "Efficiency Checked",
-      },
+      }
     };
-
-    return result;
   }
 
   async askCouncil(prompt) {
     const promises = this.models.map(m => this.fetchClarifai(m, prompt));
     const responses = await Promise.allSettled(promises);
-
     return responses.map((res, i) => ({
       provider: this.models[i].name,
       content: res.status === "fulfilled" ? res.value : "Connection Failed.",
@@ -153,10 +172,7 @@ class ConsensusEngine {
   }
 
   fetchClarifai(model, prompt) {
-    if (!this.clarifaiAvailable || !stub) {
-      return Promise.reject(new Error("Clarifai not available. Missing CLARIFAI_PAT."));
-    }
-    
+    if (!this.clarifaiAvailable || !stub) return Promise.reject(new Error("Clarifai unavailable."));
     return new Promise((resolve, reject) => {
       stub.PostModelOutputs(
         {
@@ -166,9 +182,7 @@ class ConsensusEngine {
         },
         metadata,
         (err, response) => {
-          if (err || response?.status?.code !== 10000) {
-            return reject(err || response?.status?.description);
-          }
+          if (err || response?.status?.code !== 10000) return reject(err || response?.status?.description);
           resolve(response.outputs[0].data.text.raw);
         }
       );
@@ -184,15 +198,11 @@ class ConsensusEngine {
 
   extractContactInfo(text) {
     if (!text) return "No data.";
-    const lines = text.split("\n") || [];
-    return (
-      lines
-        .filter(l => l.includes("@") || l.includes("http") || l.toLowerCase().includes("contact"))
-        .join("\n") || "No direct contact data harvested."
-    );
+    return text.split("\n").filter(l => l.includes("@") || l.includes("http") || l.toLowerCase().includes("contact")).join("\n") || "No direct contact data harvested.";
   }
 }
 
 module.exports = new ConsensusEngine();
 
 
+```
