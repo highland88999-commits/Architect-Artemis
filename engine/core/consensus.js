@@ -1,4 +1,3 @@
-```javascript
 /* engine/core/stewardship/consensus.js */
 require('dotenv').config();
 const { pool } = require('../atlas-db'); // Your Supabase connection
@@ -205,4 +204,4 @@ class ConsensusEngine {
 module.exports = new ConsensusEngine();
 
 
-```
+
