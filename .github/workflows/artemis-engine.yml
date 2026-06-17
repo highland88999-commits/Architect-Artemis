@@ -1,0 +1,50 @@
+```yaml
+name: Artemis Autonomous Engine
+
+# THE TRIGGERS: This dictates WHEN the engine runs
+on:
+  schedule:
+    # 1. THE AUTONOMOUS LOOP: Runs every 15 minutes automatically
+    - cron: '*/15 * * * *'
+  
+  repository_dispatch:
+    # 2. THE USER INTERACTION: Runs instantly when Vercel sends the "wake_artemis" signal
+    types: [wake_artemis]
+
+  workflow_dispatch:
+    # 3. MANUAL OVERRIDE: Gives you a "Run workflow" button in the GitHub UI
+
+jobs:
+  execute-engine:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Acknowledging Trigger Source
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "⏰ Triggered by 15-Minute Cron Schedule."
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "👤 Triggered by User Interaction."
+          else
+            echo "🔧 Triggered Manually."
+          fi
+
+      - name: Ping Artemis Core (Vercel API)
+        run: |
+          echo "Initiating synaptic ping to Artemis Core on Vercel..."
+          
+          # This pings your Vercel /api/cron endpoint to run the actual JS logic
+          HTTP_RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://${{ secrets.ARTEMIS_DOMAIN }}/api/cron" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          
+          if [ $HTTP_RESPONSE -ne 200 ]; then
+            echo "❌ Engine execution failed with HTTP Status: $HTTP_RESPONSE"
+            cat response.txt
+            exit 1
+          else
+            echo "✅ Engine execution successful."
+            cat response.txt
+          fi
+
+```
