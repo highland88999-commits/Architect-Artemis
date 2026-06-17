@@ -23,7 +23,6 @@ psycopg2-binary
 pysqlite3
 jq>=1.6.0
 typer>=0.9.0
-emergentintegrations==0.1.0
 pytest>=8.0.0
 black>=24.1.1
 isort>=5.13.2
