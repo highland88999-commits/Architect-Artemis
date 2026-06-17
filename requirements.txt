@@ -1,4 +1,4 @@
-# --- Core Python Engine ---
+--- Core Python Engine ---
 google-generativeai==0.8.0
 fastapi==0.110.1
 uvicorn==0.25.0
@@ -25,10 +25,14 @@ pysqlite3
 jq>=1.6.0
 typer>=0.9.0
 emergentintegrations==0.1.0
-
-# --- Development/Quality Tools (Optional: Keep if you need them for local dev) ---
+--- Development/Quality Tools ---
 pytest>=8.0.0
 black>=24.1.1
 isort>=5.13.2
 flake8>=7.0.0
 mypy>=1.8.0
+--- Heavy AI & Quantum Layers ---
+numpy
+qutip
+transformers
+torch
