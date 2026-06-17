@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,6 +193,13 @@
             if (v) v.play().catch(e => console.log("Video auto-play delayed."));
             
             createRain(); 
+
+            // WAKE UP GITHUB ACTIONS: Start warming up the backend engine instantly
+            fetch('/api/wake-engine', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => console.log("Artemis Engine Warming Up...", data))
+                .catch(err => console.error("Engine Wake Failed:", err));
+            
             setTimeout(() => { landing.style.display = 'none'; }, 1500);
         };
 
@@ -430,7 +438,13 @@
                 latestArtemisText = "[Transmission Aborted]";
                 fadeOutMessage(); setTimeout(() => fadeInMessage(latestArtemisText), 600);
             } else {
-                window.sendToArtemis();
+                // WAKE UP GITHUB ACTIONS: Execute Engine securely in the background
+                fetch('/api/wake-engine', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => console.log("Engine Awakened:", data))
+                    .catch(err => console.error("Engine Wake Failed:", err));
+                    
+                window.sendToArtemis(); // Continue with normal frontend transmission
             }
         };
 
@@ -550,4 +564,4 @@
 </html>
 
 
-
+```
