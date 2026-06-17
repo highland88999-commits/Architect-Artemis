@@ -1,0 +1,6 @@
+**/*.py
+requirements.txt
+.env
+.env.local
+.git
+engine/server.js
