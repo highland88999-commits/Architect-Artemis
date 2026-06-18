@@ -1,4 +1,3 @@
-```javascript
 // /api/cron.js
 import ConsensusEngine from '../engine/core/stewardship/consensus.js';
 import MidasLogger from '../engine/core/stewardship/midas-logger.js';
@@ -35,4 +34,3 @@ export default async function handler(req, res) {
 }
 
 
-```
