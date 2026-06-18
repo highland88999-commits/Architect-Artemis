@@ -1,4 +1,3 @@
-```javascript
 /* api/reset-midas-status.js */
 const { pool } = require('../engine/core/atlas-db');
 
@@ -14,4 +13,4 @@ export default async function handler(req, res) {
     }
 }
 
-```
+
