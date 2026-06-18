@@ -23,6 +23,11 @@ class PhysicsPayload(BaseModel):
     law: str
     params: dict
 
+class MathPayload(BaseModel):
+    category: str
+    operation: str
+    params: dict
+
 @app.get("/")
 def read_root():
     return {"status": "Artemis AI Matrix is Online.", "quantum_state": "Superposition"}
@@ -81,4 +86,20 @@ def calculate_physics(payload: PhysicsPayload):
     except Exception as e:
         logging.error(f"Physics Calculation Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/math/calculate")
+def calculate_math(payload: MathPayload):
+    """
+    Provides Artemis with comprehensive mathematical capabilities.
+    """
+    try:
+        from .math_node import MathEngine
+        engine = MathEngine()
+        result = engine.execute(payload.category, payload.operation, payload.params)
+        return {"success": True, "category": payload.category, "operation": payload.operation, "result": result}
+    except Exception as e:
+        logging.error(f"Math Calculation Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
