@@ -3,7 +3,6 @@
  * Connects the Vercel Node.js Server to the Render Python Matrix
  */
 
-// Uses the Render URL if defined in Vercel, otherwise defaults to your specific URL
 const PYTHON_API_URL = process.env.PYTHON_ENGINE_URL || "https://architect-artemis.onrender.com";
 
 /**
@@ -17,13 +16,9 @@ async function triggerSentimentAnalysis(text) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: text })
         });
-
-        if (!response.ok) {
-            throw new Error(`Python Engine Error: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data; // Returns { success, label, score }
+        
+        if (!response.ok) throw new Error(`Python Engine Error: ${response.statusText}`);
+        return await response.json(); 
     } catch (error) {
         console.error("❌ Synaptic Bridge Failed (ML Node):", error);
         return { success: false, error: error.message };
@@ -41,21 +36,62 @@ async function triggerQuantumSimulation(operationType) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ operation: operationType })
         });
-
-        if (!response.ok) {
-            throw new Error(`Python Engine Error: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data; // Returns { success, operation, state_matrix }
+        
+        if (!response.ok) throw new Error(`Python Engine Error: ${response.statusText}`);
+        return await response.json(); 
     } catch (error) {
         console.error("❌ Synaptic Bridge Failed (Quantum Node):", error);
         return { success: false, error: error.message };
     }
 }
 
+/**
+ * Accesses Artemis's Physics Engine to calculate reality
+ */
+async function triggerPhysicsCalculation(law, parameters) {
+    try {
+        console.log(`⚛️ Routing Physics Matrix (${law})...`);
+        const response = await fetch(`${PYTHON_API_URL}/physics/calculate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ law: law, params: parameters })
+        });
+        
+        if (!response.ok) throw new Error(`Python Engine Error: ${response.statusText}`);
+        return await response.json(); 
+    } catch (error) {
+        console.error("❌ Synaptic Bridge Failed (Physics Node):", error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Accesses Artemis's Math Engine for comprehensive calculations
+ */
+async function triggerMathCalculation(category, operation, parameters) {
+    try {
+        console.log(`📐 Routing Math Matrix (${category} -> ${operation})...`);
+        const response = await fetch(`${PYTHON_API_URL}/math/calculate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category: category, operation: operation, params: parameters })
+        });
+        
+        if (!response.ok) throw new Error(`Python Engine Error: ${response.statusText}`);
+        return await response.json(); 
+    } catch (error) {
+        console.error("❌ Synaptic Bridge Failed (Math Node):", error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Single, clean export for all functions
 module.exports = {
     triggerSentimentAnalysis,
-    triggerQuantumSimulation
+    triggerQuantumSimulation,
+    triggerPhysicsCalculation,
+    triggerMathCalculation
 };
+
+
 
