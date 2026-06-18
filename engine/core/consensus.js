@@ -3,6 +3,7 @@ require('dotenv').config();
 const { pool } = require('../atlas-db'); // Your Supabase connection
 const MidasLogger = require('./midas-logger');
 const Mailer = require('./mailer'); // The automated email pipeline
+const { triggerSentimentAnalysis, triggerQuantumSimulation } = require('../synaptic-bridge'); // 🌉 The Render Matrix Bridge
 
 // Graceful Clarifai initialization
 let stub, metadata;
@@ -89,7 +90,6 @@ class ConsensusEngine {
       }
     }
 
-    // Synthesize final verdict
     const combined = responses
       .map(r => r.response)
       .filter(Boolean)
@@ -117,9 +117,31 @@ class ConsensusEngine {
     const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
     const primary = opinions.find(o => o.provider === "Gemini Prime" && o.content && !o.content.includes("Connection Failed")) || opinions[0];
 
-    const isSuboptimal = avgScore < 7; // The failure threshold
+    const isSuboptimal = avgScore < 7;
     
-    // Construct the result object FIRST so the Mailer has access to the data
+    // --- 🌌 SYNAPTIC BRIDGE PIPELINE ---
+    console.log("📡 Routing data to Render AI Matrix...");
+    let mlSentiment = "Pending Matrix Link";
+    let quantumState = "Superposition collapsed";
+    
+    try {
+        // Run both heavy Python operations concurrently to save time
+        const [sentimentResult, quantumResult] = await Promise.all([
+            triggerSentimentAnalysis(primary.content.substring(0, 500)), // Check sentiment of the analysis
+            triggerQuantumSimulation('superposition') // Request quantum processing state
+        ]);
+
+        if (sentimentResult && sentimentResult.success) {
+            mlSentiment = `${sentimentResult.label} (Conf: ${sentimentResult.score})`;
+        }
+        if (quantumResult && quantumResult.success) {
+            quantumState = quantumResult.operation; // Optionally store the full matrix if needed
+        }
+    } catch (e) {
+        console.warn("⚠️ Render Python Matrix unreachable. Proceeding with local logic.");
+    }
+    // -----------------------------------
+    
     const result = {
       approved: !isSuboptimal,
       nurture_score: avgScore,
@@ -132,10 +154,12 @@ class ConsensusEngine {
         gemini: "Logic Verified",
         copilot: "Structure Validated",
         grok: "Efficiency Checked",
+        sentiment: mlSentiment, // PyTorch Data via Render
+        quantum: quantumState   // QuTiP Data via Render
       }
     };
     
-    // --- MIDAS WATCHDOG TRIPWIRE & AUTOMATED SALES PIPELINE ---
+    // --- MIDAS WATCHDOG TRIPWIRE ---
     if (isSuboptimal) {
         console.warn(`🚨 Midas Tripwire: Nurture Score (${avgScore}) below threshold. Initiating Stewardship...`);
         
@@ -147,25 +171,19 @@ class ConsensusEngine {
         };
 
         try {
-            // 1. Log to DB (Permanent Record)
             await MidasLogger.logIntervention(interventionData);
             
-            // 2. Set the "Tripwire" in Supabase so the frontend sees it
             await pool.query(
                 "UPDATE midas_status SET trigger_intervention = true, lost_id = $1, target_id = $2, latest_guidance = $3 WHERE id = 1",
                 [target.url, "growth-re-routing", result.optimization_steps]
             );
 
-            // 3. Email the internal Architect Report
             await Mailer.notifyArchitect(target.url, result);
 
-            // 4. Extract Owner Email and Pitch (Currently disabled for safety)
             const ownerEmailMatch = result.contact_info.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
             if (ownerEmailMatch && ownerEmailMatch.length > 0) {
                 const ownerEmail = ownerEmailMatch[0];
                 console.log(`✉️ Found Site Owner Email: ${ownerEmail} - Pitch ready to deploy.`);
-                
-                // UNCOMMENT the line below when you are ready to auto-email site owners!
                 // await Mailer.pitchSiteOwner(ownerEmail, target.url, result); 
             }
 
