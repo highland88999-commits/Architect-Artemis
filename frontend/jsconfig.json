@@ -2,21 +2,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@ui/*": ["src/components/ui/*"],
-      "@lib/*": ["src/lib/*"],
-      "@utils/*": ["src/utils/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@styles/*": ["src/styles/*"],
-      "@assets/*": ["src/assets/*"]
+      "@/*": ["src/*"]
     },
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -25,14 +18,12 @@
     "isolatedModules": true
   },
   "include": [
-    "src/**/*",
-    "next-env.d.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
+    "build",
     "dist",
-    ".next",
-    "out",
-    "build"
+    "coverage"
   ]
 }
