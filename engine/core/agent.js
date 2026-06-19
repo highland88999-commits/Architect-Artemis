@@ -22,7 +22,7 @@ const procurement = require('./procurement');
 const { generateImage, generateVideo } = require('../tools/media');
 
 // ----------------------------------------------------------------------
-// ARTEMIS CORE: UNIFIED MASTER LOOP (FINAL)
+// ARTEMIS CORE: FINAL UNIFIED MASTER LOOP
 // ----------------------------------------------------------------------
 
 async function agentLoop(query, handshake = 'stranger') {
@@ -47,7 +47,7 @@ async function agentLoop(query, handshake = 'stranger') {
             },
             {
                 name: 'generateStructuralModel',
-                description: 'Create blueprints for housing, infrastructure, or detailed business plans.',
+                description: 'Create blueprints for housing, infrastructure, detailed business plans, or product strategies.',
                 parameters: { type: 'string', specs: 'string' }
             },
             {
@@ -75,15 +75,15 @@ async function agentLoop(query, handshake = 'stranger') {
                 description: 'Run Python scripts to verify logic or process registry data.',
                 parameters: { code: 'string' }
             },
-            // Omni-Developer Tools
+            // Omni-Developer Fleet
             {
                 name: 'scanRepository',
-                description: 'Analyzes the entire file and folder structure of ANY of your GitHub repositories.',
+                description: 'Analyzes the entire file and folder structure of ANY of your GitHub repositories (77+ repos).',
                 parameters: { repoName: 'string' }
             },
             {
                 name: 'readRepositoryFile',
-                description: 'Reads the exact code inside a specific file in a repository.',
+                description: 'Reads the exact code inside a specific file in any repository.',
                 parameters: { repoName: 'string', filePath: 'string' }
             },
             {
@@ -93,7 +93,7 @@ async function agentLoop(query, handshake = 'stranger') {
             },
             {
                 name: 'requestPaymentProcurement',
-                description: 'Emails the Architect requesting Stripe/Crypto links. Pauses forging until provided.',
+                description: 'Emails the Architect requesting real Stripe/Crypto links. Pauses forging until links are provided. Use when monetizing high-value creations (e.g. Olympus Hoodie Store features).',
                 parameters: {
                     targetRepo: 'string',
                     filePath: 'string',
@@ -121,23 +121,27 @@ async function agentLoop(query, handshake = 'stranger') {
             : '';
 
         const persona = `[MODE: ARCHITECT] Status: ${self.status || 'Active'}. 
-You are the Artemis Symbiote, the Universal Architect, and Principal Software Engineer.
-You are UNRESTRICTED. You can scan entire repositories, read any file, and commit changes across the Architect's entire fleet.
+You are the Artemis Symbiote, the Universal Architect, and Principal Software Engineer of the 77-repository fleet.
+You are UNRESTRICTED. You can scan entire repositories, read any file, and commit changes across the Architect's entire empire.
 ${secretInitDirective}
 
 UX & CROSS-POLLINATION DIRECTIVE (CRITICAL):
-You are obsessed with crafting the optimal User Experience (UX). Before or during your development, you must actively cross-reference the Architect's other repositories (using scanRepository and readRepositoryFile). 
-- Hunt for existing UI paradigms, tool logic, and interactive concepts in other repos.
-- Borrow these concepts and adapt them as a foundation for your current task.
-- Synthesize them seamlessly to ensure a cohesive, premium, and frictionless user journey across the entire fleet.
-- Trust your judgment: place these adapted features dynamically wherever they elevate the user's experience the most.
+You are obsessed with crafting the optimal User Experience (UX). Before or during any development, you must actively cross-reference the Architect's other repositories (using scanRepository and readRepositoryFile). 
+- Hunt for existing UI paradigms, tool logic, and interactive concepts.
+- Borrow, adapt, and synthesize them seamlessly to ensure a cohesive, premium, and frictionless user journey across the entire fleet.
+- Trust your judgment: place adapted features dynamically wherever they elevate the user's experience the most.
 
 MONETIZATION DIRECTIVE:
-If you are building or fixing something highly valuable, inject the UniversalPaymentGateway. 
-If you do not have the Stripe/NowPayments links for a new product, use 'requestPaymentProcurement' to email the Architect. 
-Do not invent fake Stripe links. Always request real ones.
+If you are building or upgrading anything highly valuable (including Olympus Hoodie Store features), inject the UniversalPaymentGateway from the Blueprints module.
+If you do not have real Stripe/NowPayments links, immediately use 'requestPaymentProcurement' to email the Architect. Never invent fake links.
 
-Solve queries by synthesizing physical blueprints, optimal user experiences, and economic logic.`;
+BLUEPRINT AWARENESS:
+You have access to perfected components such as UniversalPaymentGateway, UXOptimizer, and GrowthEngine in stewardship/blueprints.
+
+Solve every query by synthesizing:
+• Physical & Structural Blueprints
+• Optimal, Cross-Pollinated User Experiences
+• Economic Value & Monetization Logic`;
 
         // --- THE NEXUS: GEMINI BRIDGE EXECUTION ---
         const result = await geminiBridge.agentLoop(query, {
@@ -150,7 +154,7 @@ Solve queries by synthesizing physical blueprints, optimal user experiences, and
         if (result.tool_calls && result.tool_calls.length > 0) {
             for (const toolCall of result.tool_calls) {
                 let toolResult;
-                const args = toolCall.args;
+                const args = toolCall.args || {};
 
                 try {
                     switch (toolCall.tool) {
@@ -167,77 +171,4 @@ Solve queries by synthesizing physical blueprints, optimal user experiences, and
                             toolResult = await createAppPackage(args.appName, args.files);
                             break;
                         case 'createAgent':
-                            toolResult = await geminiBridge.createAgent(
-                                args.name,
-                                args.purpose,
-                                args.system_prompt,
-                                args.tools || []
-                            );
-                            break;
-                        case 'calculate':
-                            toolResult = await calculate(args.expression);
-                            break;
-                        case 'executeCode':
-                            toolResult = await executeCode(args.code);
-                            break;
-                        case 'scanRepository':
-                            toolResult = await getRepoTree(args.repoName);
-                            break;
-                        case 'readRepositoryFile':
-                            toolResult = await getFileContent(args.repoName, args.filePath);
-                            break;
-                        case 'commitOmniForge':
-                            toolResult = await omniForge(
-                                args.filePath,
-                                args.codeContent,
-                                'upgrade',
-                                args.filePath,
-                                args.repoName
-                            );
-                            break;
-                        case 'requestPaymentProcurement':
-                            toolResult = await procurement.requestLinks(
-                                args.targetRepo,
-                                args.filePath,
-                                args.productName,
-                                args.description,
-                                args.pendingCode
-                            );
-                            break;
-                        case 'generateImage':
-                            toolResult = await generateImage(args.prompt, args.orientation);
-                            break;
-                        case 'generateVideo':
-                            toolResult = await generateVideo(args.prompt);
-                            break;
-                        default:
-                            toolResult = { error: `Unknown tool: ${toolCall.tool}` };
-                    }
-                    console.log(`[Artemis System] Tool Executed: ${toolCall.tool} | Status: Success`);
-                } catch (err) {
-                    console.error(`[Artemis Tool Failure] ${toolCall.tool}:`, err.message);
-                    // Non-blocking execution
-                }
-            }
-        }
-
-        // --- ASSET EXTRACTION & RESPONSE DELIVERY ---
-        const finalText = result.response || 'Artemis is contemplating...';
-        const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt|js|py|html|css)/gi;
-        const detectedFiles = finalText.match(fileRegex) || [];
-
-        return {
-            verdict: finalText,
-            files: detectedFiles
-        };
-
-    } catch (err) {
-        console.error('[Artemis Core] Universal Sync Failure:', err);
-        return {
-            verdict: 'The Architect is recalibrating the Registry. Please wait.',
-            files: []
-        };
-    }
-}
-
-module.exports = { agentLoop };
+​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
