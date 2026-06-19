@@ -1,7 +1,8 @@
 {
   "name": "architect-artemis-ecosystem",
   "version": "1.0.0",
-  "description": "Artemis Stewardship Engine and Next.js UI",
+  "description": "Artemis Symbiote — Universal Architect & Stewardship Engine",
+  "type": "module",
   "main": "engine/server.js",
   "scripts": {
     "dev:ui": "next dev -p 3000",
@@ -11,7 +12,8 @@
     "start:ui": "next start -p 3000",
     "start:engine": "node engine/server.js",
     "start": "concurrently \"npm run start:ui\" \"npm run start:engine\"",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -21,7 +23,6 @@
     "@radix-ui/react-switch": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
-    "clarifai-nodejs-grpc": "^10.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "concurrently": "^8.2.2",
@@ -43,7 +44,8 @@
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4"
+  },
+  "engines": {
+    "node": ">=18.17.0"
   }
 }
-
-
