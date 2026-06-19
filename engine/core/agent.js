@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const geminiBridge = require('./gemini-bridge-client');
-const { pool } = require('./atlas-db');
 const { getSelfAwareness } = require('./consciousness');
 const { checkIntent } = require('./compass');
 
@@ -19,13 +18,11 @@ const { getRepoTree, getFileContent } = require('./repo-scanner');
 const { generateCodeFile: omniForge } = require('./forge');
 const procurement = require('./procurement');
 
-// Optional Media Tools (if needed in future extensions)
+// Media Tools
 const { generateImage, generateVideo } = require('../tools/media');
-const { lookupDefinition } = require('../tools/dictionary');
-const { generateCodeFile } = require('../tools/forge');
 
 // ----------------------------------------------------------------------
-// ARTEMIS CORE: UNIFIED MASTER LOOP
+// ARTEMIS CORE: UNIFIED MASTER LOOP (FINAL)
 // ----------------------------------------------------------------------
 
 async function agentLoop(query, handshake = 'stranger') {
@@ -78,6 +75,7 @@ async function agentLoop(query, handshake = 'stranger') {
                 description: 'Run Python scripts to verify logic or process registry data.',
                 parameters: { code: 'string' }
             },
+            // Omni-Developer Tools
             {
                 name: 'scanRepository',
                 description: 'Analyzes the entire file and folder structure of ANY of your GitHub repositories.',
@@ -103,6 +101,17 @@ async function agentLoop(query, handshake = 'stranger') {
                     description: 'string',
                     pendingCode: 'string'
                 }
+            },
+            // Media Tools
+            {
+                name: 'generateImage',
+                description: 'Generate high-quality images based on a detailed prompt.',
+                parameters: { prompt: 'string', orientation: 'string?' }
+            },
+            {
+                name: 'generateVideo',
+                description: 'Generate a video based on a detailed prompt.',
+                parameters: { prompt: 'string' }
             }
         ];
 
@@ -195,13 +204,19 @@ Solve queries by synthesizing physical blueprints, optimal user experiences, and
                                 args.pendingCode
                             );
                             break;
+                        case 'generateImage':
+                            toolResult = await generateImage(args.prompt, args.orientation);
+                            break;
+                        case 'generateVideo':
+                            toolResult = await generateVideo(args.prompt);
+                            break;
                         default:
                             toolResult = { error: `Unknown tool: ${toolCall.tool}` };
                     }
-                    console.log(`[Artemis System] Tool Executed: ${toolCall.tool} | Status:`, toolResult ? 'Success' : 'No Output');
+                    console.log(`[Artemis System] Tool Executed: ${toolCall.tool} | Status: Success`);
                 } catch (err) {
                     console.error(`[Artemis Tool Failure] ${toolCall.tool}:`, err.message);
-                    // Non-blocking: continue execution
+                    // Non-blocking execution
                 }
             }
         }
