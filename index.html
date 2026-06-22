@@ -123,7 +123,7 @@
 
         /* Artemis Modular UI Components */
         #dynamic-modules {
-            width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-top: 25px; padding-bottom: 100px;
+            width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-top: 25px; padding-bottom: 130px; /* INCREASED FOR FOOTER CLEARANCE */
         }
         .artemis-panel {
             background: rgba(8, 8, 25, 0.7); border: 1px solid var(--border); border-radius: 16px;
@@ -145,7 +145,7 @@
         .agent-bubble.grok-x { border-left-color: var(--c-starblood); }
 
         #bottom-dock { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); 
+            position: fixed; bottom: 60px; /* INCREASED FOR FOOTER CLEARANCE */ left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); 
             padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); backdrop-filter: blur(20px); width: fit-content; max-width: 95vw; overflow-x: auto; scrollbar-width: none;
         }
         #bottom-dock::-webkit-scrollbar { display: none; }
@@ -175,18 +175,31 @@
 
         /* Starblood Game Link */
         #starblood-car-tab {
-            position: fixed; bottom: 25px; right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
+            position: fixed; bottom: 65px; /* INCREASED FOR FOOTER CLEARANCE */ right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
             background: rgba(40, 0, 0, 0.45); border: 1px solid var(--c-starblood); box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); 
             cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
         }
         #starblood-car-tab:hover { box-shadow: 0 0 25px var(--c-starblood); transform: scale(1.08); }
         .holo-car-svg { width: 40px; height: 40px; filter: drop-shadow(0 0 6px var(--c-starblood)); animation: holoCarFloat 3s infinite ease-in-out; }
         @keyframes holoCarFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); } }
+
+        /* Multiverse Tracker CSS Integration */
+        .cyber-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px 0;
+            background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(0, 255, 255, 0.15); z-index: 9999;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .visit-count {
+            color: #00ffff; font-size: 0.75rem; font-weight: bold;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 15px rgba(0, 255, 255, 0.4);
+            letter-spacing: 1.5px; text-transform: uppercase;
+        }
+        .loading { animation: pulse 1.5s infinite; }
     </style>
 </head>
 <body>
 
-    <!-- INSTANT ENTRY SCRIPT -->
     <script>
         window.enterNexus = function() {
             const landing = document.getElementById('landing-page');
@@ -274,20 +287,16 @@
             <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
             <div class="btn-group">
                 <button id="send-btn" onclick="handleSendClick()">SEND</button>
-                <!-- NEW: Fast-trigger Forge Button -->
                 <button id="forge-trigger-btn" onclick="window.generateAsset('forge', { prompt: document.getElementById('guest-cmd').value })">FORGE</button>
             </div>
         </div>
 
-        <!-- NEW: Dynamic Artemis UI Modules -->
         <div id="dynamic-modules">
             
-            <!-- THE FORGE RENDER PANEL -->
             <div id="artemis-forge-panel" class="artemis-panel" style="border-color: var(--cyan);">
                 <div id="forge-header" style="color:var(--cyan); font-weight:bold; margin-bottom:10px; letter-spacing: 2px; text-transform: uppercase;">The Forge ▼</div>
                 
                 <div id="artemis-forge-container" class="forge-container" style="display: flex; flex-direction: column; align-items: center;">
-                    <!-- The Silent Looping Video -->
                     <video 
                         id="artemis-loading-video" 
                         src="/assets/gemini_generated_video_8916378C.mp4" 
@@ -297,29 +306,23 @@
                         style="display: none; width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);">
                     </video>
 
-                    <!-- The Final Asset Display Box -->
                     <div id="artemis-result-display" style="display: none; opacity: 0; transition: opacity 0.5s ease; width: 100%;">
                     </div>
                 </div>
             </div>
 
-            <!-- Council Dialogue Feed -->
             <div id="council-body" class="artemis-panel"></div>
 
-            <!-- Detailed Response Panel -->
             <div id="artemis-response-panel" class="artemis-panel">
                 <div id="response-header" style="color:var(--c-city); font-weight:bold; margin-bottom:10px; cursor:pointer;">Artemis Core Response ▼</div>
                 <div id="response-content"></div>
             </div>
 
-            <!-- Permanent Record (Stewardship DB Logs) -->
             <div id="stewardship-folder-contents" class="artemis-panel expanded" style="border-color: var(--gold);">
-                <!-- folder-view.js injects here -->
             </div>
         </div>
     </div>
 
-    <!-- Modals & Overlays -->
     <div id="holo-overlay">
         <div class="holo-header">
             <span class="holo-title" style="color:#00ff87;">Live Sandbox Render</span>
@@ -350,7 +353,12 @@
         </svg>
     </div>
 
-    <!-- CORE LOGIC SCRIPTS -->
+    <footer class="cyber-footer">
+        <div class="visit-count" id="counter-display">
+            UPLINK ESTABLISHING <span class="loading">...</span>
+        </div>
+    </footer>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -377,23 +385,19 @@
         
         window.currentExtractedCode = "";
 
-        // --- NEW: FORGE UI INTEGRATION ---
         window.generateAsset = async function(actionName, payloadData) {
             const panelObj = document.getElementById('artemis-forge-panel');
             const videoObj = document.getElementById('artemis-loading-video');
             const resultObj = document.getElementById('artemis-result-display');
 
-            // Expand the panel
             panelObj.classList.add('expanded');
             
-            // LOCK DOWN & PLAY VIDEO
             resultObj.style.display = 'none';
             resultObj.style.opacity = '0';
             videoObj.style.display = 'block';
             videoObj.play();
 
             try {
-                // Trigger Artemis API Gateway
                 const response = await fetch('/api/gateway', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -402,12 +406,10 @@
                 
                 const data = await response.json();
 
-                // KILL VIDEO
                 videoObj.pause();
                 videoObj.currentTime = 0;
                 videoObj.style.display = 'none';
 
-                // DISPLAY THE ASSET
                 resultObj.style.display = 'block';
                 
                 if (data.url) {
@@ -530,7 +532,6 @@
                 latestArtemisText = "[Transmission Aborted]";
                 fadeOutMessage(); setTimeout(() => fadeInMessage(latestArtemisText), 600);
             } else {
-                // WAKE UP GITHUB ACTIONS: Connected to Unified Gateway
                 fetch('/api/gateway', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -558,8 +559,6 @@
 
             try {
                 const payload = { prompt: promptText, handshake: 'CONNECTED', mode: 'council' };
-                // Keep /api/transmit intact if it's your primary LLM endpoint, 
-                // OR route it to /api/gateway if you've fully consolidated!
                 const response = await fetch('/api/transmit', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
@@ -639,6 +638,34 @@
         window.closeHolo = function() { document.getElementById('holo-overlay').style.display = 'none'; document.getElementById('holo-iframe').removeAttribute('srcdoc'); };
     </script>
 
+    <script>
+        async function updateMultiverseCount() {
+            const displayElement = document.getElementById('counter-display');
+            
+            try {
+                const API_ENDPOINT = '[https://multiverse-tracker-5sgfxx5nr-merlin-ambros-projects.vercel.app/api/increment-view](https://multiverse-tracker-5sgfxx5nr-merlin-ambros-projects.vercel.app/api/increment-view)';
+                
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Network fault');
+
+                const data = await response.json();
+                displayElement.innerHTML = `MULTIVERSE NODE ACCESSED: [ ${data.count} ] TIMES`;
+                displayElement.classList.remove('loading');
+
+            } catch (error) {
+                console.error('Uplink failed:', error);
+                displayElement.innerHTML = `MULTIVERSE NODE: [ OFFLINE ]`;
+                displayElement.classList.remove('loading');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', updateMultiverseCount);
+    </script>
+
     <script src="/assets/js/golden-thread.js"></script>
     <script src="/assets/js/midas-trigger.js"></script>
     <script src="/assets/js/midas-observer.js"></script>
@@ -648,5 +675,3 @@
     <script type="module" src="/assets/js/midas-ghost.js"></script>
 </body>
 </html>
-
-
