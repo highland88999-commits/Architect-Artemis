@@ -7,6 +7,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -123,7 +125,8 @@
 
         /* Artemis Modular UI Components */
         #dynamic-modules {
-            width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-top: 25px; padding-bottom: 130px; /* INCREASED FOR FOOTER CLEARANCE */
+            width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-top: 25px; 
+            padding-bottom: 150px; /* Recalibrated to clear the cyber-footer */
         }
         .artemis-panel {
             background: rgba(8, 8, 25, 0.7); border: 1px solid var(--border); border-radius: 16px;
@@ -145,7 +148,9 @@
         .agent-bubble.grok-x { border-left-color: var(--c-starblood); }
 
         #bottom-dock { 
-            position: fixed; bottom: 60px; /* INCREASED FOR FOOTER CLEARANCE */ left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); 
+            position: fixed; 
+            bottom: 65px; /* Recalibrated for cyber-footer */ 
+            left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); 
             padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); backdrop-filter: blur(20px); width: fit-content; max-width: 95vw; overflow-x: auto; scrollbar-width: none;
         }
         #bottom-dock::-webkit-scrollbar { display: none; }
@@ -175,7 +180,9 @@
 
         /* Starblood Game Link */
         #starblood-car-tab {
-            position: fixed; bottom: 65px; /* INCREASED FOR FOOTER CLEARANCE */ right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
+            position: fixed; 
+            bottom: 70px; /* Recalibrated for cyber-footer */ 
+            right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
             background: rgba(40, 0, 0, 0.45); border: 1px solid var(--c-starblood); box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); 
             cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
         }
@@ -189,11 +196,12 @@
             background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(4px);
             border-top: 1px solid rgba(0, 255, 255, 0.15); z-index: 9999;
             font-family: 'Courier New', Courier, monospace;
+            pointer-events: none; /* Prevents interaction blocking */
         }
         .visit-count {
             color: #00ffff; font-size: 0.75rem; font-weight: bold;
             text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 15px rgba(0, 255, 255, 0.4);
-            letter-spacing: 1.5px; text-transform: uppercase;
+            letter-spacing: 1.5px; text-transform: uppercase; pointer-events: auto;
         }
         .loading { animation: pulse 1.5s infinite; }
     </style>
@@ -639,31 +647,70 @@
     </script>
 
     <script>
-        async function updateMultiverseCount() {
+        // ==========================================
+        // DIRECT SUPABASE UPLINK LOGIC
+        // ==========================================
+        const supabaseUrl = '[https://ezfwzqxwafvdjtwnmyrx.supabase.co](https://ezfwzqxwafvdjtwnmyrx.supabase.co)';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6Znd6cXh3YWZ2ZGp0d25teXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwOTA2NzIsImV4cCI6MjA5NzY2NjY3Mn0.baxnDWZ9rSZobzqnAOND7SuJpXbl4wmRyUYTQl4whPE';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        function getSafeVisitorId() {
+            let id = localStorage.getItem('nexus_visitor_id');
+            if (!id) {
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                    id = crypto.randomUUID();
+                } else {
+                    id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                        return v.toString(16);
+                    });
+                }
+                localStorage.setItem('nexus_visitor_id', id);
+            }
+            return id;
+        }
+
+        async function updateMultiverseCount(isInitialLoad = false) {
             const displayElement = document.getElementById('counter-display');
             
             try {
-                const API_ENDPOINT = '[https://multiverse-tracker-5sgfxx5nr-merlin-ambros-projects.vercel.app/api/increment-view](https://multiverse-tracker-5sgfxx5nr-merlin-ambros-projects.vercel.app/api/increment-view)';
+                const visitorId = getSafeVisitorId();
+
+                if (isInitialLoad) {
+                    await supabaseClient.rpc('track_ping', { p_ip_hash: visitorId });
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                const { data: globalData } = await supabaseClient
+                    .from('global_stats')
+                    .select('total_pings')
+                    .single();
+
+                const { count: uniqueCount } = await supabaseClient
+                    .from('unique_visitors')
+                    .select('*', { count: 'exact', head: true });
+
+                const total = globalData ? globalData.total_pings : 0;
+                const unique = uniqueCount !== null ? uniqueCount : 0;
                 
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) throw new Error('Network fault');
-
-                const data = await response.json();
-                displayElement.innerHTML = `MULTIVERSE NODE ACCESSED: [ ${data.count} ] TIMES`;
+                displayElement.innerHTML = `
+                    UNIQUE TRAVERSALS: [ <span style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff;">${unique}</span> ] 
+                    <span style="opacity: 0.5; margin: 0 10px;">///</span> 
+                    TOTAL PINGS: [ <span style="color: #00ffff;">${total}</span> ]
+                `;
                 displayElement.classList.remove('loading');
 
             } catch (error) {
                 console.error('Uplink failed:', error);
-                displayElement.innerHTML = `MULTIVERSE NODE: [ OFFLINE ]`;
+                displayElement.innerHTML = `MULTIVERSE NODE: [ <span style="color: #ff3366;">OFFLINE</span> ]`;
                 displayElement.classList.remove('loading');
             }
         }
 
-        window.addEventListener('DOMContentLoaded', updateMultiverseCount);
+        window.addEventListener('load', () => {
+            updateMultiverseCount(true);
+            setInterval(() => updateMultiverseCount(false), 60000);
+        });
     </script>
 
     <script src="/assets/js/golden-thread.js"></script>
