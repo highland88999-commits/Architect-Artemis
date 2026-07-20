@@ -1,48 +1,29 @@
-name: Artemis Autonomous Engine
-
-# THE TRIGGERS: This dictates WHEN the engine runs
-on:
-  schedule:
-    # 1. THE AUTONOMOUS LOOP: Runs every 15 minutes automatically
-    - cron: '*/15 * * * *'
-  
-  repository_dispatch:
-    # 2. THE USER INTERACTION: Runs instantly when Vercel sends the "wake_artemis" signal
-    types: [wake_artemis]
-
-  workflow_dispatch:
-    # 3. MANUAL OVERRIDE: Gives you a "Run workflow" button in the GitHub UI
-
-jobs:
-  execute-engine:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Acknowledging Trigger Source
+- name: Ping Artemis Core (Vercel API)
         run: |
-          if [ "${{ github.event_name }}" == "schedule" ]; then
-            echo "⏰ Triggered by 15-Minute Cron Schedule."
-          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
-            echo "👤 Triggered by User Interaction."
-          else
-            echo "🔧 Triggered Manually."
-          fi
-
-      - name: Ping Artemis Core (Vercel API)
-        run: |
-          echo "Initiating synaptic ping to Artemis Core on Vercel..."
+          echo "Initiating synaptic ping to Artemis Core..."
           
-          # This pings your Vercel /api/cron endpoint to run the actual JS logic
-          HTTP_RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://${{ secrets.ARTEMIS_DOMAIN }}/api/cron" \
+          # 1. Validate Secrets
+          if [ -z "${{ secrets.ARTEMIS_DOMAIN }}" ]; then
+            echo "❌ ERROR: ARTEMIS_DOMAIN secret is missing."
+            exit 1
+          fi
+          
+          # 2. Execute Ping with Timeout and Debugging
+          # -f fails on HTTP errors, --retry 3 attempts to reconnect if the connection drops
+          HTTP_RESPONSE=$(curl -s -o response.txt -w "%{http_code}" \
+            --retry 3 \
+            --max-time 30 \
+            -X POST "https://${{ secrets.ARTEMIS_DOMAIN }}/api/cron" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
           
-          if [ $HTTP_RESPONSE -ne 200 ]; then
-            echo "❌ Engine execution failed with HTTP Status: $HTTP_RESPONSE"
+          # 3. Handle Result
+          echo "Response code received: $HTTP_RESPONSE"
+          if [ "$HTTP_RESPONSE" -ne 200 ]; then
+            echo "❌ Engine execution failed. HTTP Status: $HTTP_RESPONSE"
+            echo "--- RESPONSE BODY ---"
             cat response.txt
             exit 1
           else
             echo "✅ Engine execution successful."
-            cat response.txt
           fi
-
