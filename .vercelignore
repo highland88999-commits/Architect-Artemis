@@ -1,6 +1,25 @@
+# Local-only runtime and tooling that should never be deployed to Vercel
+engine/
+backend/
+frontend/
+creator-creation/
+memory/
+data/
+system-files/
+harvesting/
+incubator/
+tests/
+tools/
+scripts/
+generated/
+api/gemini/
 **/*.py
+**/*.pyc
+**/*.pyo
+**/*.pyd
 requirements.txt
+requirements.lock.txt
 .env
-.env.local
+.env.*
 .git
-engine/server.js
+.gitignore

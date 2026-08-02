@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "framework": "other",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "node -e \"console.log('Static deployment only; no build step required')\"",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
