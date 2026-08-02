@@ -16,7 +16,7 @@
     "symbiote-ping": "node -e \"console.log('Symbiote ping OK')\"",
     "crawler": "node -e \"import('./harvesting/recursive_harvest.js').then(({ recursiveHarvest }) => recursiveHarvest('https://example.com').then(r => { console.log(JSON.stringify({ stats: r.stats, reason: r.reason }, null, 2)); }).catch(err => { console.error(err); process.exit(1); })).catch(err => { console.error(err); process.exit(1); });\"",
     "test": "pytest",
-    "postinstall": "node -e \"const {existsSync}=require('fs'); const {execSync}=require('child_process'); const prismaBin=process.platform==='win32'?'node_modules/.bin/prisma.cmd':'node_modules/.bin/prisma'; if (existsSync(prismaBin)) { execSync(prismaBin + ' generate', {stdio:'inherit'}); } else { console.log('Prisma CLI not present; skipping generate step.'); }\""
+    "postinstall": "node -e \"const {existsSync}=require('fs'); const {execSync}=require('child_process'); const schemaCandidates=['./prisma/schema.prisma','./schema.prisma']; const hasSchema=schemaCandidates.some((p)=>existsSync(p)); const prismaBin=process.platform==='win32'?'node_modules/.bin/prisma.cmd':'node_modules/.bin/prisma'; if (!hasSchema) { console.log('Prisma schema not found; skipping generate step.'); process.exit(0); } if (!existsSync(prismaBin)) { console.log('Prisma CLI not present; skipping generate step.'); process.exit(0); } execSync(prismaBin + ' generate', {stdio:'inherit'});\""
   },
   "dependencies": {
     "@google/genai": "^2.12.0",
