@@ -7,6 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -19,6 +20,7 @@
             --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
             --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
             
+            /* Label Colors */
             --c-maps: #00D2FF;
             --c-city: #A259FF;
             --c-pearl: #FFF5E1;
@@ -36,10 +38,18 @@
             font-family: 'Courier New', monospace; color:var(--cyan); touch-action: manipulation; 
         }
 
+        /* --- NEW: Background Video CSS --- */
         #bg-matrix-video {
-            position: fixed; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 0; opacity: 0.35; pointer-events: none;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures it adapts/fills the screen */
+            z-index: 0; /* Keeps it behind the rain (z-index 1) */
+            opacity: 0.35; /* Dims the video so rain & text stay readable */
+            pointer-events: none; /* Clicks pass through */
         }
+        /* --------------------------------- */
 
         #landing-page {
             position: fixed; inset: 0; z-index: 1000; background: #000;
@@ -126,9 +136,10 @@
         #forge-trigger-btn { padding: 14px 30px; background: rgba(0, 242, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); border-radius: 999px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         #forge-trigger-btn:hover { background: rgba(0, 242, 255, 0.3); }
 
+        /* Artemis Modular UI Components */
         #dynamic-modules {
             width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-top: 25px; 
-            padding-bottom: 150px;
+            padding-bottom: 150px; /* Recalibrated to clear the cyber-footer */
         }
         .artemis-panel {
             background: rgba(8, 8, 25, 0.7); border: 1px solid var(--border); border-radius: 16px;
@@ -138,6 +149,25 @@
         .artemis-panel.expanded { display: block; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        #council-header { cursor: pointer; transition: 0.2s; }
+        #council-header:hover { text-shadow: 0 0 10px var(--cyan); }
+        
+        .agent-bubble {
+            margin-bottom: 10px; padding: 12px; border-radius: 8px; background: rgba(0, 242, 255, 0.05);
+            border-left: 3px solid var(--cyan); font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.4;
+        }
+        .agent-bubble.gemini-prime { border-left-color: var(--cyan); }
+        .agent-bubble.copilot-beta { border-left-color: var(--c-city); }
+        .agent-bubble.grok-x { border-left-color: var(--c-starblood); }
+
+        #bottom-dock { 
+            position: fixed; 
+            bottom: 65px; /* Recalibrated for cyber-footer */ 
+            left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; background: var(--glass); 
+            padding: 12px 18px; border-radius: 60px; border: 1px solid var(--border); backdrop-filter: blur(20px); width: fit-content; max-width: 95vw; overflow-x: auto; scrollbar-width: none;
+        }
+        #bottom-dock::-webkit-scrollbar { display: none; }
+        
         #holo-overlay { display: none; position: fixed; inset: 5%; background: var(--glass); border: 3px solid var(--cyan); border-radius: 36px; backdrop-filter: blur(30px); z-index: 4000; flex-direction: column; overflow: hidden; }
         
         #text-holo-overlay {
@@ -161,8 +191,11 @@
         #preview-code-btn { display: none; border-color: #00ff87; color: #00ff87; box-shadow: 0 0 10px rgba(0, 255, 135, 0.3); }
         #deploy-code-btn { display: none; border-color: #A259FF; color: #A259FF; box-shadow: 0 0 10px rgba(162, 89, 255, 0.3); }
 
+        /* Starblood Game Link */
         #starblood-car-tab {
-            position: fixed; bottom: 70px; right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
+            position: fixed; 
+            bottom: 70px; /* Recalibrated for cyber-footer */ 
+            right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
             background: rgba(40, 0, 0, 0.45); border: 1px solid var(--c-starblood); box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); 
             cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
         }
@@ -170,11 +203,13 @@
         .holo-car-svg { width: 40px; height: 40px; filter: drop-shadow(0 0 6px var(--c-starblood)); animation: holoCarFloat 3s infinite ease-in-out; }
         @keyframes holoCarFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); } }
 
+        /* Multiverse Tracker CSS Integration */
         .cyber-footer {
             position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px 0;
             background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(4px);
             border-top: 1px solid rgba(0, 255, 255, 0.15); z-index: 9999;
-            font-family: 'Courier New', Courier, monospace; pointer-events: none;
+            font-family: 'Courier New', Courier, monospace;
+            pointer-events: none; /* Prevents interaction blocking */
         }
         .visit-count {
             color: #00ffff; font-size: 0.75rem; font-weight: bold;
@@ -196,6 +231,7 @@
             
             createRain(); 
 
+            // WAKE UP GITHUB ACTIONS: Connected to Unified Gateway
             fetch('/api/gateway', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -229,6 +265,7 @@
         <div id="landing-prompt">Click anywhere to enter</div>
     </div>
 
+    <!-- NEW: Background Matrix Video behind the Rain -->
     <video id="bg-matrix-video" autoplay loop muted playsinline>
         <source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4">
     </video>
@@ -252,6 +289,7 @@
         </div>
     </div>
 
+    <!-- The Rain Layer (Sitting perfectly on top of the new background video) -->
     <div id="rain-container"></div>
 
     <div id="container">
@@ -281,11 +319,22 @@
         </div>
 
         <div id="dynamic-modules">
+            
             <div id="artemis-forge-panel" class="artemis-panel" style="border-color: var(--cyan);">
                 <div id="forge-header" style="color:var(--cyan); font-weight:bold; margin-bottom:10px; letter-spacing: 2px; text-transform: uppercase;">The Forge ▼</div>
+                
                 <div id="artemis-forge-container" class="forge-container" style="display: flex; flex-direction: column; align-items: center;">
-                    <video id="artemis-loading-video" src="/assets/gemini_generated_video_8916378C.mp4" muted loop playsinline style="display: none; width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);"></video>
-                    <div id="artemis-result-display" style="display: none; opacity: 0; transition: opacity 0.5s ease; width: 100%;"></div>
+                    <video 
+                        id="artemis-loading-video" 
+                        src="/assets/gemini_generated_video_8916378C.mp4" 
+                        muted 
+                        loop 
+                        playsinline
+                        style="display: none; width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);">
+                    </video>
+
+                    <div id="artemis-result-display" style="display: none; opacity: 0; transition: opacity 0.5s ease; width: 100%;">
+                    </div>
                 </div>
             </div>
 
@@ -296,7 +345,8 @@
                 <div id="response-content"></div>
             </div>
 
-            <div id="stewardship-folder-contents" class="artemis-panel expanded" style="border-color: var(--gold);"></div>
+            <div id="stewardship-folder-contents" class="artemis-panel expanded" style="border-color: var(--gold);">
+            </div>
         </div>
     </div>
 
@@ -362,29 +412,13 @@
         
         window.currentExtractedCode = "";
 
-        window.toggleAuthModal = function() {
-            const modal = document.getElementById('auth-modal-overlay');
-            if (currentUser) {
-                signOut(auth).then(() => {
-                    console.log("Signed out successfully");
-                }).catch((error) => {
-                    console.error("Sign out error", error);
-                });
-            } else {
-                modal.style.display = 'flex';
-            }
-        };
-
-        window.closeAuthModal = function() {
-            document.getElementById('auth-modal-overlay').style.display = 'none';
-        };
-
         window.generateAsset = async function(actionName, payloadData) {
             const panelObj = document.getElementById('artemis-forge-panel');
             const videoObj = document.getElementById('artemis-loading-video');
             const resultObj = document.getElementById('artemis-result-display');
 
             panelObj.classList.add('expanded');
+            
             resultObj.style.display = 'none';
             resultObj.style.opacity = '0';
             videoObj.style.display = 'block';
@@ -398,9 +432,11 @@
                 });
                 
                 const data = await response.json();
+
                 videoObj.pause();
                 videoObj.currentTime = 0;
                 videoObj.style.display = 'none';
+
                 resultObj.style.display = 'block';
                 
                 if (data.url) {
@@ -409,7 +445,7 @@
                             <h3 style="color: #0ff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Forge Complete</h3>
                             <p style="color: #fff; font-family: monospace;">Asset [${data.filename || 'data-module'}] successfully materialized.</p>
                             <a href="${data.url}" download="${data.filename || 'download'}" 
-                               style="display: inline-block; padding: 10px 20px; background: linear-gradient(90deg, #00f2ff, #00aaff); color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; margin-top: 15px; box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);">
+                               style="display: inline-block; padding: 10px 20px; background: linear-gradient(90deg, #00f2ff, #00aaff); color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; margin-top: 15px; box-shadow: 0 0 15px rgba(0, 242, 255, 0.4); transition: transform 0.2s;">
                                [ DOWNLOAD ASSET ]
                             </a>
                         </div>
@@ -417,7 +453,9 @@
                 } else {
                     resultObj.innerHTML = `<pre style="white-space: pre-wrap; font-size: 12px; color: #0ff; text-align: left; padding: 10px;">${JSON.stringify(data, null, 2)}</pre>`;
                 }
+
                 setTimeout(() => resultObj.style.opacity = '1', 50);
+
             } catch (error) {
                 videoObj.pause();
                 videoObj.style.display = 'none';
@@ -462,15 +500,8 @@
             const errorDiv = document.getElementById('auth-error');
             if (!email || !pass) return errorDiv.textContent = "Email and Passcode required.";
             errorDiv.textContent = "Connecting to mainframe...";
-            try { 
-                if (action === 'login') {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } else {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                }
-            } catch (error) { 
-                errorDiv.textContent = error.message.replace("Firebase:", "").trim(); 
-            }
+            try { action === 'login' ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass); } 
+            catch (error) { errorDiv.textContent = error.message.replace("Firebase:", "").trim(); }
         };
 
         function fadeInMessage(text) {
@@ -532,12 +563,16 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'wake' })
-                }).catch(() => {});
+                })
+                .then(res => res.json())
+                .then(data => console.log("Engine Awakened:", data))
+                .catch(err => console.error("Engine Wake Failed:", err));
+                    
                 window.sendToArtemis(); 
             }
         };
 
-        window.sendToArtemis = async function(isPolling = false) {
+        window.sendToArtemis = async function(isPolling = false, pollingJobId = null) {
             const promptText = isPolling ? "" : cmd.value.trim(); 
             if (!promptText && !isPolling) return;
             
@@ -563,7 +598,7 @@
                 
                 fadeOutMessage(); setTimeout(() => fadeInMessage('Analysis Complete.'), 600);
 
-                if (window.artemisUI && typeof window.artemisUI.showResponse === 'function') {
+                if (window.artemisUI) {
                     window.artemisUI.showResponse(aiReply, true);
                 }
 
@@ -574,8 +609,8 @@
                 }
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    latestArtemisText = "Synaptic link active locally...";
-                    fadeOutMessage(); setTimeout(() => fadeInMessage('Analysis Complete.'), 600);
+                    latestArtemisText = "Synaptic link unstable...";
+                    fadeOutMessage(); setTimeout(() => fadeInMessage('Synaptic link unstable...'), 600);
                 }
             } finally {
                 if (isGenerating && !isPolling) resetUI();
@@ -583,10 +618,23 @@
         };
 
         window.openTextHolo = function() {
-            if (!latestArtemisText) {
-                latestArtemisText = "Artemis Core Online. Systems nominal. Standing by for command input.";
-            }
+            if (!latestArtemisText) return;
             document.getElementById('text-holo-content').innerHTML = marked.parse(latestArtemisText);
+            
+            const codeBlockRegex = /(?:html|css|javascript|js)?\n([\s\S]*?)```/gi;
+            let combinedCode = "";
+            let match;
+            while ((match = codeBlockRegex.exec(latestArtemisText)) !== null) { combinedCode += match[1] + "\n"; }
+            
+            if (combinedCode.trim().length > 0) {
+                document.getElementById('preview-code-btn').style.display = 'block';
+                document.getElementById('deploy-code-btn').style.display = 'block';
+                window.currentExtractedCode = combinedCode;
+            } else {
+                document.getElementById('preview-code-btn').style.display = 'none';
+                document.getElementById('deploy-code-btn').style.display = 'none';
+                window.currentExtractedCode = "";
+            }
             document.getElementById('text-holo-overlay').style.display = 'flex';
         };
 
@@ -615,30 +663,13 @@
 
         window.closeTextHolo = function() { document.getElementById('text-holo-overlay').style.display = 'none'; };
         window.closeHolo = function() { document.getElementById('holo-overlay').style.display = 'none'; document.getElementById('holo-iframe').removeAttribute('srcdoc'); };
-
-        window.downloadTxt = function() {
-            const blob = new Blob([latestArtemisText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'artemis-transmission.txt';
-            a.click();
-        };
-
-        window.downloadPdf = function() {
-            const element = document.getElementById('text-holo-content');
-            html2pdf().from(element).save('artemis-transmission.pdf');
-        };
-
-        window.copyOracleText = function() {
-            navigator.clipboard.writeText(latestArtemisText);
-            alert("Transmission copied to clipboard.");
-        };
     </script>
 
     <script>
-        // FIXED SUPABASE UPLINK LOGIC (Removed markdown wrappers)
-        const supabaseUrl = 'https://ezfwzqxwafvdjtwnmyrx.supabase.co';
+        // ==========================================
+        // DIRECT SUPABASE UPLINK LOGIC
+        // ==========================================
+        const supabaseUrl = '[https://ezfwzqxwafvdjtwnmyrx.supabase.co](https://ezfwzqxwafvdjtwnmyrx.supabase.co)';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6Znd6cXh3YWZ2ZGp0d25teXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwOTA2NzIsImV4cCI6MjA5NzY2NjY3Mn0.baxnDWZ9rSZobzqnAOND7SuJpXbl4wmRyUYTQl4whPE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
@@ -660,10 +691,12 @@
 
         async function updateMultiverseCount(isInitialLoad = false) {
             const displayElement = document.getElementById('counter-display');
+            
             try {
                 const visitorId = getSafeVisitorId();
+
                 if (isInitialLoad) {
-                    await supabaseClient.rpc('track_ping', { p_ip_hash: visitorId }).catch(() => {});
+                    await supabaseClient.rpc('track_ping', { p_ip_hash: visitorId });
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
 
@@ -676,8 +709,8 @@
                     .from('unique_visitors')
                     .select('*', { count: 'exact', head: true });
 
-                const total = globalData ? globalData.total_pings : 1;
-                const unique = uniqueCount !== null ? uniqueCount : 1;
+                const total = globalData ? globalData.total_pings : 0;
+                const unique = uniqueCount !== null ? uniqueCount : 0;
                 
                 displayElement.innerHTML = `
                     UNIQUE TRAVERSALS: [ <span style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff;">${unique}</span> ] 
@@ -685,8 +718,10 @@
                     TOTAL PINGS: [ <span style="color: #00ffff;">${total}</span> ]
                 `;
                 displayElement.classList.remove('loading');
+
             } catch (error) {
-                displayElement.innerHTML = `MULTIVERSE NODE: [ <span style="color: #00ff87;">ONLINE (SECURE)</span> ]`;
+                console.error('Uplink failed:', error);
+                displayElement.innerHTML = `MULTIVERSE NODE: [ <span style="color: #ff3366;">OFFLINE</span> ]`;
                 displayElement.classList.remove('loading');
             }
         }
@@ -696,5 +731,13 @@
             setInterval(() => updateMultiverseCount(false), 60000);
         });
     </script>
+
+    <script src="/assets/js/golden-thread.js"></script>
+    <script src="/assets/js/midas-trigger.js"></script>
+    <script src="/assets/js/midas-observer.js"></script>
+    <script src="/assets/js/artemis-gavel.js"></script>
+    <script src="/assets/js/artemis-response-ui.js"></script>
+    <script src="/assets/js/folder-view.js"></script>
+    <script type="module" src="/assets/js/midas-ghost.js"></script>
 </body>
 </html>
