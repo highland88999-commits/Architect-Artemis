@@ -47,8 +47,8 @@ def analyze_sentiment(payload: TextPayload):
 @app.post("/quantum/simulate")
 def quantum_simulate(payload: QuantumPayload):
     try:
-        from .quantum_learner import QuantumLearner
-        artemis_q = QuantumLearner()
+        from .quantumengine import QuantumEngine
+        artemis_q = QuantumEngine()
         if payload.operation == "superposition":
             return {"success": True, "operation": "superposition", "state_matrix": str(artemis_q.simulate_superposition())}
         elif payload.operation == "entanglement":
@@ -65,7 +65,7 @@ def calculate_physics(payload: PhysicsPayload):
     Provides Artemis with an understanding of physical laws.
     """
     try:
-        from .physics_node import PhysicsEngine
+        from .physicsengine import PhysicsEngine
         engine = PhysicsEngine()
         
         if payload.law == "relativity":
@@ -93,7 +93,7 @@ def calculate_math(payload: MathPayload):
     Provides Artemis with comprehensive mathematical capabilities.
     """
     try:
-        from .math_node import MathEngine
+        from .mathengine import MathEngine
         engine = MathEngine()
         result = engine.execute(payload.category, payload.operation, payload.params)
         return {"success": True, "category": payload.category, "operation": payload.operation, "result": result}
