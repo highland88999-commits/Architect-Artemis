@@ -100,7 +100,8 @@
             flex-shrink: 0;
         }
         #oracle-circle:active { transform: scale(0.95); }
-        #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+        /* Added opacity: 0.65 to make it semi-transparent */
+        #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0.65; }
         #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
         #oracle-message { 
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
@@ -255,7 +256,8 @@
 
     <div id="landing-page" onclick="enterNexus()">
         <video id="landing-video" autoplay loop muted playsinline>
-            <source src="https://files.catbox.moe/jhxjmx.mp4" type="video/mp4">
+            <!-- REPLACED LANDING VIDEO -->
+            <source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4">
         </video>
         <div id="landing-prompt">Click anywhere to enter</div>
     </div>
@@ -288,7 +290,8 @@
     <div id="container">
         <div id="oracle-circle" onclick="openTextHolo()">
             <video id="oracle-video" loop muted playsinline>
-                <source src="https://files.catbox.moe/no2e76.mp4" type="video/mp4">
+                <!-- REPLACED ORACLE VIDEO -->
+                <source src="https://files.catbox.moe/juj3w9.mov" type="video/quicktime">
             </video>
             <div id="shader-overlay"></div>
             <div id="oracle-message"></div>
