@@ -100,8 +100,22 @@
             flex-shrink: 0;
         }
         #oracle-circle:active { transform: scale(0.95); }
-        /* Added opacity: 0.65 to make it semi-transparent */
-        #oracle-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0.65; }
+        
+        /* 
+           FIX 1: ORACLE VIDEO ZOOMED & SEMI-TRANSPARENT 
+           object-fit: cover forces it to fill the circle (hiding squares)
+           transform: scale(1.3) zooms in perfectly to the logo 
+        */
+        #oracle-video { 
+            position: absolute; 
+            inset: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transform: scale(1.3); 
+            opacity: 0.65; 
+        }
+
         #shader-overlay { position: absolute; inset: 0; background: var(--purple-shader); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
         #oracle-message { 
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
@@ -160,9 +174,6 @@
         .holo-close:hover { transform: scale(1.1); }
         #holo-iframe { flex: 1; border: none; width: 100%; height: 100%; background: #fff; }
         
-        #preview-code-btn { display: none; border-color: #00ff87; color: #00ff87; box-shadow: 0 0 10px rgba(0, 255, 135, 0.3); }
-        #deploy-code-btn { display: none; border-color: #A259FF; color: #A259FF; box-shadow: 0 0 10px rgba(162, 89, 255, 0.3); }
-
         /* Starblood Game Link (Bottom Right) */
         #starblood-car-tab {
             position: fixed; bottom: 70px; right: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
@@ -173,18 +184,20 @@
         .holo-car-svg { width: 40px; height: 40px; filter: drop-shadow(0 0 6px var(--c-starblood)); animation: holoCarFloat 3s infinite ease-in-out; }
         @keyframes holoCarFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); } }
 
-        /* MULTIVERSE HUD LINK (Bottom Left) */
+        /* 
+           FIX 3 & 4: MULTIVERSE HUD & VIDEO BUTTONS
+        */
         #ecosystem-nav-icon {
             position: fixed; bottom: 70px; left: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
-            background: rgba(0, 25, 40, 0.45); border: 1px solid var(--cyan); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+            background: rgba(0, 25, 40, 0.45); border: 2px solid var(--cyan); box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
             cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
+            overflow: hidden; padding: 0; /* Ensures video fills the icon perfectly */
         }
         #ecosystem-nav-icon:hover { box-shadow: 0 0 25px var(--cyan); transform: scale(1.08); }
-        .holo-nav-svg { width: 35px; height: 35px; filter: drop-shadow(0 0 6px var(--cyan)); animation: holoNavFloat 3s infinite ease-in-out; }
-        @keyframes holoNavFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--cyan)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--cyan)); } }
-
+        #ecosystem-nav-icon video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0.9; }
+        
         #ecosystem-hud-panel {
-            position: fixed; bottom: 145px; left: 25px; z-index: 9998; width: 300px;
+            position: fixed; bottom: 145px; left: 25px; z-index: 9998; width: 300px; max-height: 70vh;
             background: rgba(8, 8, 25, 0.95); border: 2px solid var(--cyan); border-radius: 16px;
             box-shadow: 0 0 30px rgba(0, 242, 255, 0.3); backdrop-filter: blur(20px);
             transform-origin: bottom left; transform: scale(0); opacity: 0; pointer-events: none;
@@ -194,13 +207,32 @@
         #ecosystem-hud-panel.open {
             transform: scale(1); opacity: 1; pointer-events: auto;
         }
-        .cyber-link-btn {
-            display: inline-block; padding: 12px 20px; background: rgba(0, 242, 255, 0.1); 
-            color: var(--cyan); text-decoration: none; border-radius: 6px; border: 1px solid var(--cyan);
-            font-family: 'Courier New', monospace; font-weight: bold; text-align: center; 
-            transition: all 0.2s ease; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 8px;
+
+        .hud-scroll-area {
+            padding: 15px; display: flex; flex-direction: column; overflow-y: auto; flex: 1; gap: 10px;
+            scrollbar-width: thin; scrollbar-color: var(--cyan) transparent;
         }
-        .cyber-link-btn:hover { background: var(--cyan); color: #000; box-shadow: 0 0 15px var(--cyan); }
+        .hud-scroll-area::-webkit-scrollbar { width: 4px; }
+        .hud-scroll-area::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
+
+        .video-btn {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            min-height: 60px; border-radius: 8px; overflow: hidden; text-decoration: none;
+            border: 1px solid var(--border); box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+            transition: all 0.3s ease; flex-shrink: 0; background: #000;
+        }
+        .video-btn:hover { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); transform: scale(1.02); }
+        .video-btn video {
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+            z-index: 0; opacity: 0.4; transition: opacity 0.3s ease; pointer-events: none;
+        }
+        .video-btn:hover video { opacity: 0.8; }
+        .video-btn span {
+            position: relative; z-index: 1; color: #fff; font-family: 'Courier New', monospace;
+            font-weight: bold; font-size: 0.8rem; text-transform: uppercase;
+            text-shadow: 1px 1px 5px #000, 0 0 10px var(--cyan); letter-spacing: 1px;
+            text-align: center; padding: 0 10px; pointer-events: none;
+        }
 
         .cyber-footer {
             position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px 0;
@@ -256,7 +288,6 @@
 
     <div id="landing-page" onclick="enterNexus()">
         <video id="landing-video" autoplay loop muted playsinline>
-            <!-- REPLACED LANDING VIDEO -->
             <source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4">
         </video>
         <div id="landing-prompt">Click anywhere to enter</div>
@@ -290,7 +321,6 @@
     <div id="container">
         <div id="oracle-circle" onclick="openTextHolo()">
             <video id="oracle-video" loop muted playsinline>
-                <!-- REPLACED ORACLE VIDEO -->
                 <source src="https://files.catbox.moe/juj3w9.mov" type="video/quicktime">
             </video>
             <div id="shader-overlay"></div>
@@ -330,7 +360,8 @@
                 <div id="response-content"></div>
             </div>
 
-            <div id="stewardship-folder-contents" class="artemis-panel expanded" style="border-color: var(--gold);"></div>
+            <!-- FIX 2: Removed 'expanded' so it hides by default -->
+            <div id="stewardship-folder-contents" class="artemis-panel" style="border-color: var(--gold);"></div>
         </div>
     </div>
 
@@ -357,33 +388,130 @@
         <div id="text-holo-content"></div>
     </div>
 
-    <!-- ECOSYSTEM NAV HUD (Bottom Left) -->
+    <!-- ECOSYSTEM NAV HUD TRIGGER (Floating Icon Video) -->
     <div id="ecosystem-nav-icon" onclick="toggleEcosystemHUD()">
-        <svg class="holo-nav-svg" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            <path d="M2 12h20"></path>
-        </svg>
+        <video autoplay loop muted playsinline>
+            <source src="https://file.garden/alXjUY_coXedLaNA/gemini_generated_video_69CBAF0E.mp4" type="video/mp4">
+        </video>
     </div>
 
+    <!-- ECOSYSTEM NAV HUD PANEL (Video Buttons) -->
     <div id="ecosystem-hud-panel">
         <div class="holo-header" style="padding: 12px; font-size: 0.9rem; background: rgba(0,242,255,0.1);">
             <span class="holo-title" style="color: var(--cyan); font-family: monospace;">ECOSYSTEM LINKS</span>
             <div class="holo-close" style="width: 25px; height: 25px; font-size: 1.2rem; line-height: 0;" onclick="toggleEcosystemHUD()">−</div>
         </div>
-        <div style="padding: 15px; display: flex; flex-direction: column;">
+        
+        <div class="hud-scroll-area">
             
-            <a href="https://file.garden/alXjUY_coXedLaNA/gemini_generated_video_69CBAF0E.mp4" target="_blank" 
-               style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-weight: bold; text-align: center; margin-bottom: 12px; border: 1px solid #0056b3;">
-               View Generated Video
+            <a href="https://nexusvortex.ca" target="_blank" class="video-btn" style="border-color: var(--gold);">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span style="color: var(--gold);">[ NEXUS VORTEX ]</span>
+            </a>
+
+            <a href="https://architect-artemis-merlin-ambros-projects.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>[ LIVE ARTEMIS CORE ]</span>
             </a>
             
-            <a href="https://nexusvortex.ca" target="_blank" class="cyber-link-btn" style="border-color: var(--gold); color: var(--gold);">
-                [ Nexus Vortex ]
+            <a href="https://meet-the-gods.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>OMEGA ECOSYSTEM</span>
             </a>
-            
-            <a href="https://architect-artemis-merlin-ambros-projects.vercel.app" target="_blank" class="cyber-link-btn">
-                [ Live Artemis Core ]
+
+            <a href="https://georgia-aquarium.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>OMEGA AQUARIUM</span>
+            </a>
+
+            <a href="https://colossus-xi.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>NATIVE GAMING CONSOLE</span>
+            </a>
+
+            <a href="https://olympus-lac.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>HOODIES</span>
+            </a>
+
+            <a href="https://valkyries-of-olympus.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>VALKYRIE PROGRAM</span>
+            </a>
+
+            <a href="https://persymphony.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>SHOW ENGINE</span>
+            </a>
+
+            <a href="https://olympus-social.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>OMEGA SOCIAL</span>
+            </a>
+
+            <a href="https://fortress-of-solitude.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>FORTRESS OF SOLITUDE</span>
+            </a>
+
+            <a href="https://medusas-lair.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>MEDUSA’S LAIR</span>
+            </a>
+
+            <a href="https://hermes-landing-nu.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>OMEGA ONLINE MALL</span>
+            </a>
+
+            <a href="https://rem-psi-mauve.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>R.E.M.</span>
+            </a>
+
+            <a href="https://the-flying-dutchman.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>THE FLYING DUTCHMAN</span>
+            </a>
+
+            <a href="https://light-particle-engine.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>LIGHT PARTICLE ENGINE</span>
+            </a>
+
+            <a href="https://bc-1-nine.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>BROWSERS CASTLE</span>
+            </a>
+
+            <a href="https://olympus-blueprint-protocol.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>OLYMPUS BLUEPRINT PROTOCOL</span>
+            </a>
+
+            <a href="https://magic-mirror-puce.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>THE MAGIC MIRROR</span>
+            </a>
+
+            <a href="https://alexandria-gules-seven.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>ALEXANDRIA</span>
+            </a>
+
+            <a href="https://olympus-b2-b.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>B2B SERVICES</span>
+            </a>
+
+            <a href="https://the-big-bang-teal.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>BIG BANG SIMULATION</span>
+            </a>
+
+            <a href="https://multiverse-tracker-api.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>OMEGA TRAFFIC COUNT</span>
             </a>
 
         </div>
@@ -712,7 +840,6 @@
     </script>
 
     <script>
-        // FIXED SUPABASE UPLINK LOGIC
         const supabaseUrl = 'https://ezfwzqxwafvdjtwnmyrx.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6Znd6cXh3YWZ2ZGp0d25teXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwOTA2NzIsImV4cCI6MjA5NzY2NjY3Mn0.baxnDWZ9rSZobzqnAOND7SuJpXbl4wmRyUYTQl4whPE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
