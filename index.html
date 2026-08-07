@@ -101,11 +101,6 @@
         }
         #oracle-circle:active { transform: scale(0.95); }
         
-        /* 
-           FIX 1: ORACLE VIDEO ZOOMED & SEMI-TRANSPARENT 
-           object-fit: cover forces it to fill the circle (hiding squares)
-           transform: scale(1.3) zooms in perfectly to the logo 
-        */
         #oracle-video { 
             position: absolute; 
             inset: 0; 
@@ -136,6 +131,19 @@
         #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 18px; flex-shrink: 0; }
         #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; transition: 0.3s; }
         
+        /* Forge Radio Selectors */
+        #forge-type-selector { display: flex; gap: 10px; margin-top: 5px; justify-content: center; width: 100%; }
+        .forge-radio input { display: none; }
+        .forge-radio span {
+            padding: 6px 14px; border: 1px solid var(--border); border-radius: 4px;
+            color: var(--cyan); font-size: 0.8rem; cursor: pointer;
+            transition: 0.3s; background: rgba(0, 242, 255, 0.05);
+        }
+        .forge-radio input:checked + span {
+            background: var(--cyan); color: #000;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.5); font-weight: bold;
+        }
+
         .btn-group { display: flex; gap: 10px; width: 100%; justify-content: center; }
         #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; }
         #forge-trigger-btn { padding: 14px 30px; background: rgba(0, 242, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); border-radius: 999px; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -152,6 +160,23 @@
         }
         .artemis-panel.expanded { display: block; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Forge Result Outputs */
+        .forge-asset-container {
+            padding: 20px; border: 1px solid rgba(0, 242, 255, 0.4);
+            border-radius: 8px; text-align: center; background: rgba(0,242,255,0.05);
+        }
+        .forge-asset-title {
+            color: var(--cyan); margin-bottom: 15px;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+        .forge-img { width: 100%; border-radius: 8px; border: 1px solid var(--cyan); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
+        .forge-video { width: 100%; border-radius: 8px; border: 1px solid var(--c-city); }
+        .forge-audio { width: 100%; margin-top: 10px; }
+        .forge-code {
+            background: rgba(0, 242, 255, 0.1); padding: 15px; border-radius: 8px;
+            border: 1px solid var(--border); overflow-x: auto; color: #ff3366; text-align: left;
+        }
 
         #holo-overlay { display: none; position: fixed; inset: 5%; background: var(--glass); border: 3px solid var(--cyan); border-radius: 36px; backdrop-filter: blur(30px); z-index: 4000; flex-direction: column; overflow: hidden; }
         
@@ -184,14 +209,11 @@
         .holo-car-svg { width: 40px; height: 40px; filter: drop-shadow(0 0 6px var(--c-starblood)); animation: holoCarFloat 3s infinite ease-in-out; }
         @keyframes holoCarFloat { 0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 4px var(--c-starblood)); } 50% { transform: translateY(-4px) scale(1.03); filter: drop-shadow(0 0 15px var(--c-starblood)); } }
 
-        /* 
-           FIX 3 & 4: MULTIVERSE HUD & VIDEO BUTTONS
-        */
         #ecosystem-nav-icon {
             position: fixed; bottom: 70px; left: 25px; z-index: 9999; width: 65px; height: 65px; border-radius: 12px;
             background: rgba(0, 25, 40, 0.45); border: 2px solid var(--cyan); box-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
             cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.3s ease;
-            overflow: hidden; padding: 0; /* Ensures video fills the icon perfectly */
+            overflow: hidden; padding: 0; 
         }
         #ecosystem-nav-icon:hover { box-shadow: 0 0 25px var(--cyan); transform: scale(1.08); }
         #ecosystem-nav-icon video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0.9; }
@@ -338,9 +360,17 @@
 
         <div id="prompt-area">
             <input type="text" id="guest-cmd" placeholder="Speak to Artemis..." autocomplete="off"/>
+            
+            <div id="forge-type-selector">
+                <label class="forge-radio"><input type="radio" name="asset-type" value="image" checked><span>IMAGE</span></label>
+                <label class="forge-radio"><input type="radio" name="asset-type" value="video"><span>VIDEO</span></label>
+                <label class="forge-radio"><input type="radio" name="asset-type" value="code"><span>CODE</span></label>
+                <label class="forge-radio"><input type="radio" name="asset-type" value="audio"><span>AUDIO</span></label>
+            </div>
+
             <div class="btn-group">
                 <button id="send-btn" onclick="handleSendClick()">SEND</button>
-                <button id="forge-trigger-btn" onclick="window.generateAsset('forge', { prompt: document.getElementById('guest-cmd').value })">FORGE</button>
+                <button id="forge-trigger-btn">FORGE</button>
             </div>
         </div>
 
@@ -360,7 +390,6 @@
                 <div id="response-content"></div>
             </div>
 
-            <!-- FIX 2: Removed 'expanded' so it hides by default -->
             <div id="stewardship-folder-contents" class="artemis-panel" style="border-color: var(--gold);"></div>
         </div>
     </div>
@@ -388,14 +417,14 @@
         <div id="text-holo-content"></div>
     </div>
 
-    <!-- ECOSYSTEM NAV HUD TRIGGER (Floating Icon Video) -->
+    <!-- ECOSYSTEM NAV HUD TRIGGER -->
     <div id="ecosystem-nav-icon" onclick="toggleEcosystemHUD()">
         <video autoplay loop muted playsinline>
             <source src="https://file.garden/alXjUY_coXedLaNA/gemini_generated_video_69CBAF0E.mp4" type="video/mp4">
         </video>
     </div>
 
-    <!-- ECOSYSTEM NAV HUD PANEL (Video Buttons) -->
+    <!-- ECOSYSTEM NAV HUD PANEL -->
     <div id="ecosystem-hud-panel">
         <div class="holo-header" style="padding: 12px; font-size: 0.9rem; background: rgba(0,242,255,0.1);">
             <span class="holo-title" style="color: var(--cyan); font-family: monospace;">ECOSYSTEM LINKS</span>
@@ -517,7 +546,7 @@
         </div>
     </div>
 
-    <!-- STARBLOOD CAR TAB (Bottom Right) -->
+    <!-- STARBLOOD CAR TAB -->
     <div id="starblood-car-tab">
         <svg class="holo-car-svg" viewBox="0 0 24 24" fill="none" stroke="var(--c-starblood)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
@@ -532,7 +561,6 @@
     </footer>
 
     <script>
-        // HUD Toggle Logic
         window.toggleEcosystemHUD = function() {
             const panel = document.getElementById('ecosystem-hud-panel');
             panel.classList.toggle('open');
@@ -582,16 +610,42 @@
             document.getElementById('auth-modal-overlay').style.display = 'none';
         };
 
-        window.generateAsset = async function(actionName, payloadData) {
-            const panelObj = document.getElementById('artemis-forge-panel');
-            const videoObj = document.getElementById('artemis-loading-video');
-            const resultObj = document.getElementById('artemis-result-display');
+        // FORGE EVENT LISTENER
+        document.getElementById('forge-trigger-btn').addEventListener('click', () => {
+            const cmdInput = document.getElementById('guest-cmd');
+            const selectedType = document.querySelector('input[name="asset-type"]:checked').value;
+            
+            if (!cmdInput.value.trim()) {
+                cmdInput.placeholder = "Enter a prompt first...";
+                cmdInput.focus();
+                return;
+            }
+            
+            window.generateAsset('forge', { 
+                prompt: cmdInput.value.trim(),
+                type: selectedType 
+            });
+        });
 
-            panelObj.classList.add('expanded');
-            resultObj.style.display = 'none';
-            resultObj.style.opacity = '0';
-            videoObj.style.display = 'block';
-            videoObj.play();
+        window.generateAsset = async function(actionName, payloadData) {
+            const ui = {
+                panel: document.getElementById('artemis-forge-panel'),
+                video: document.getElementById('artemis-loading-video'),
+                result: document.getElementById('artemis-result-display'),
+                btn: document.getElementById('forge-trigger-btn')
+            };
+
+            ui.btn.disabled = true;
+            ui.btn.textContent = "FORGING...";
+            ui.btn.style.opacity = "0.5";
+            ui.btn.style.cursor = "not-allowed";
+            
+            ui.panel.classList.add('expanded');
+            ui.result.style.opacity = '0';
+            ui.result.style.display = 'none';
+            
+            ui.video.style.display = 'block';
+            ui.video.play().catch(e => console.warn("Video playback blocked by browser.", e));
 
             try {
                 const response = await fetch('/api/gateway', {
@@ -600,33 +654,56 @@
                     body: JSON.stringify({ action: actionName, payload: payloadData })
                 });
                 
+                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
                 const data = await response.json();
-                videoObj.pause();
-                videoObj.currentTime = 0;
-                videoObj.style.display = 'none';
-                resultObj.style.display = 'block';
                 
-                if (data.url) {
-                    resultObj.innerHTML = `
-                        <div style="padding: 20px; border: 1px solid rgba(0, 242, 255, 0.4); border-radius: 8px; text-align: center; background: rgba(0,242,255,0.05);">
-                            <h3 style="color: #0ff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Forge Complete</h3>
-                            <p style="color: #fff; font-family: monospace;">Asset [${data.filename || 'data-module'}] successfully materialized.</p>
-                            <a href="${data.url}" download="${data.filename || 'download'}" 
-                               style="display: inline-block; padding: 10px 20px; background: linear-gradient(90deg, #00f2ff, #00aaff); color: #000; text-decoration: none; font-weight: bold; border-radius: 4px; margin-top: 15px; box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);">
-                               [ DOWNLOAD ASSET ]
-                            </a>
-                        </div>
-                    `;
-                } else {
-                    resultObj.innerHTML = `<pre style="white-space: pre-wrap; font-size: 12px; color: #0ff; text-align: left; padding: 10px;">${JSON.stringify(data, null, 2)}</pre>`;
+                const assetType = data.type || payloadData.type; 
+                let assetHtml = '';
+
+                switch(assetType) {
+                    case 'image':
+                        assetHtml = `<img src="${data.url}" class="forge-img" alt="Forged Image">`;
+                        break;
+                    case 'video':
+                        assetHtml = `<video src="${data.url}" autoplay loop muted controls class="forge-video"></video>`;
+                        break;
+                    case 'audio':
+                        assetHtml = `<audio src="${data.url}" controls class="forge-audio"></audio>`;
+                        break;
+                    case 'code':
+                        const rawCode = data.content || data.code || '';
+                        const safeCode = rawCode.replace(/[&<>'"]/g, tag => ({
+                            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+                        }[tag]));
+                        assetHtml = `<pre class="forge-code"><code>${safeCode}</code></pre>`;
+                        break;
+                    default:
+                        assetHtml = `<a href="${data.url}" download="${data.filename || 'download'}" class="holo-btn" style="text-decoration: none; display: inline-block; margin-top: 15px;">[ DOWNLOAD ASSET ]</a>`;
                 }
-                setTimeout(() => resultObj.style.opacity = '1', 50);
+
+                ui.result.innerHTML = `
+                    <div class="forge-asset-container">
+                        <h3 class="forge-asset-title">Asset Materialized</h3>
+                        ${assetHtml}
+                    </div>
+                `;
+
             } catch (error) {
-                videoObj.pause();
-                videoObj.style.display = 'none';
-                resultObj.style.display = 'block';
-                resultObj.style.opacity = '1';
-                resultObj.innerHTML = `<p style="color: #ff3366; border: 1px solid #ff3366; padding: 10px; border-radius: 8px;">⚠️ Matrix Sync Failed: ${error.message}</p>`;
+                ui.result.innerHTML = `<p style="color: #ff3366; border: 1px solid #ff3366; padding: 10px; border-radius: 8px;">⚠️ Matrix Sync Failed: ${error.message}</p>`;
+            } finally {
+                ui.video.pause();
+                ui.video.currentTime = 0;
+                ui.video.style.display = 'none';
+                
+                ui.result.style.display = 'block';
+                requestAnimationFrame(() => {
+                    ui.result.style.opacity = '1';
+                });
+                
+                ui.btn.disabled = false;
+                ui.btn.textContent = "FORGE";
+                ui.btn.style.opacity = "1";
+                ui.btn.style.cursor = "pointer";
             }
         };
 
