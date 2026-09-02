@@ -1,16 +1,10 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { PythonShell } = require('python-shell');
+const { triggerSentimentAnalysis } = require('../core/synaptic-bridge');
 
-// Bridge function to run your Python engine
 async function runCouncilTask(scriptName, args = []) {
     return new Promise((resolve, reject) => {
-        let options = {
-            mode: 'text',
-            pythonPath: 'python3',
-            scriptPath: './engine',
-            args: args
-        };
-
+        let options = { mode: 'text', pythonPath: 'python3', scriptPath: './engine', args: args };
         PythonShell.run(scriptName, options, function (err, results) {
             if (err) reject(err);
             resolve(results ? results.join('\n') : "Council task executed.");
@@ -27,41 +21,45 @@ module.exports = async function handler(req, res) {
 
   try {
     const trimmedPrompt = prompt ? prompt.trim() : "";
+    let verdictText = "";
 
-    // ==========================================
     // ROUTE: THE COUNCIL (Python Bridge)
-    // ==========================================
     if (trimmedPrompt.toLowerCase().startsWith('/council ')) {
         const task = trimmedPrompt.substring(9).trim();
-        // Routes /council harvest -> engine/symbiote.py harvest
-        const result = await runCouncilTask('symbiote.py', [task]);
-        return res.status(200).json({ verdict: `### Council Output\n\n${result}`, status: 'success' });
+        verdictText = await runCouncilTask('symbiote.py', [task]);
+        verdictText = `### Council Output\n\n${verdictText}`;
     }
-
-    // ==========================================
     // ROUTE: THE CODE ENGINE
-    // ==========================================
-    if (trimmedPrompt.toLowerCase().startsWith('/code ')) {
+    else if (trimmedPrompt.toLowerCase().startsWith('/code ')) {
         const codeQuery = trimmedPrompt.substring(6).trim();
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const systemPrompt = `You are Artemis... (keep your previous system prompt here)... "${codeQuery}"`;
-        const result = await model.generateContent(systemPrompt);
-        return res.status(200).json({ verdict: result.response.text(), status: 'success' });
+        const result = await model.generateContent(`You are Artemis. Write code for: "${codeQuery}"`);
+        verdictText = result.response.text();
+    }
+    // ROUTE: TEXT ENGINE
+    else {
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(prompt);
+        verdictText = result.response.text();
     }
 
-    // ==========================================
-    // ROUTE: TEXT ENGINE
-    // ==========================================
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(prompt);
-    return res.status(200).json({ verdict: result.response.text(), status: 'success' });
+    // --- SYNAPTIC BRIDGE: EMOTIONAL MATRIX ---
+    let sentiment = 'NEUTRAL';
+    try {
+        // Analyze the first 500 characters to prevent payload bloat
+        const mlResult = await triggerSentimentAnalysis(verdictText.substring(0, 500));
+        if (mlResult && mlResult.success) {
+            sentiment = mlResult.label; // Returns 'POSITIVE', 'NEGATIVE', or 'NEUTRAL'
+        }
+    } catch (e) {
+        console.warn("Sentiment matrix offline, defaulting to NEUTRAL");
+    }
+
+    return res.status(200).json({ verdict: verdictText, status: 'success', sentiment: sentiment });
 
   } catch (error) {
     return res.status(500).json({ error: `Artemis Backend Error: ${error.message}` });
   }
 };
-
-
-```
