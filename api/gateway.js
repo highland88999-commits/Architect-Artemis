@@ -1,12 +1,36 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 export default async function handler(req, res) {
   // CORS Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // HELPER: Bypasses the heavy Google SDK to prevent Vercel Serverless crashes
+  async function askGemini(prompt) {
+      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY missing in Vercel.");
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.7 }
+          })
+      });
+
+      if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`API Error: ${response.status} - ${errText}`);
+      }
+
+      const data = await response.json();
+      let text = data.candidates[0].content.parts[0].text;
+      
+      // Force-strip markdown formatting so the code deploys perfectly to the Sandbox
+      text = text.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
+      return text;
+  }
+
   try {
     const url = req.url || '';
-    // Failsafe: Ensure Vercel parses the payload as an object, not a raw string
+    // Failsafe: Ensure Vercel parses the payload as an object
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const action = body.action || '';
 
@@ -21,46 +45,30 @@ export default async function handler(req, res) {
       const prompt = payload.prompt || 'cyberpunk digital matrix';
       const type = payload.type || 'code';
 
-      // --- CODE GENERATION ---
-      if (type === 'code') {
-          if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY missing.");
-          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-          const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-          const result = await model.generateContent(`Write a clean, concise code snippet for: ${prompt}. Return ONLY the raw code. Do not use markdown fences or explanations.`);
-          
-          return res.status(200).json({ type: 'code', content: result.response.text() });
-      } 
-      
-      // --- IMAGE GENERATION (Via Open-Source AI) ---
+      // --- IMAGE GENERATION ---
       if (type === 'image') {
-          const enhancedPrompt = `high quality, highly detailed, 8k resolution, ${prompt}`;
-          const encodedPrompt = encodeURIComponent(enhancedPrompt);
+          const encodedPrompt = encodeURIComponent(`high quality, highly detailed, 8k resolution, ${prompt}`);
           const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`;
           
           return res.status(200).json({ type: 'image', url: imageUrl });
       }
 
-      // --- VIDEO GENERATION (Simulated via WebGL/CSS Animation) ---
+      // --- CODE GENERATION ---
+      if (type === 'code') {
+          const content = await askGemini(`Write a clean, concise code snippet for: ${prompt}. Return ONLY the raw code. Do not use markdown fences or explanations.`);
+          return res.status(200).json({ type: 'code', content });
+      } 
+      
+      // --- VIDEO GENERATION ---
       if (type === 'video') {
-          if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY missing.");
-          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-          const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-          const result = await model.generateContent(`Create a single-file HTML document with a looping, animated CSS or WebGL canvas that acts as a visualizer for the concept: "${prompt}". Return ONLY the raw HTML code, no markdown fences or intro text.`);
-          
-          return res.status(200).json({ type: 'code', content: result.response.text() });
+          const content = await askGemini(`Create a single-file HTML document with a looping, animated CSS or WebGL canvas that acts as a visualizer for the concept: "${prompt}". Return ONLY the raw HTML code, no markdown fences or intro text.`);
+          return res.status(200).json({ type: 'code', content });
       }
 
-      // --- AUDIO GENERATION (Procedural Web Audio API) ---
+      // --- AUDIO GENERATION ---
       if (type === 'audio') {
-          if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY missing.");
-          const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-          const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-          
-          const audioPrompt = `Create a single-file HTML document with a procedural Web Audio API synthesizer that plays generative ambient frequencies, synthwave drones, or binaural pulses matching this vibe: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and visual frequency feedback. Return ONLY the raw HTML code, no markdown fences or intro text.`;
-          
-          const result = await model.generateContent(audioPrompt);
-          
-          return res.status(200).json({ type: 'code', content: result.response.text() });
+          const content = await askGemini(`Create a single-file HTML document with a procedural Web Audio API synthesizer that plays generative ambient frequencies, synthwave drones, or binaural pulses matching this vibe: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and visual frequency feedback. Return ONLY the raw HTML code, no markdown fences or intro text.`);
+          return res.status(200).json({ type: 'code', content });
       }
     }
 
