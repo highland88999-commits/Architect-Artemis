@@ -2,24 +2,32 @@
 export const maxDuration = 60;
 
 export default async function handler(req, res) {
+  // CORS Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   // HELPER: Native fetch bypasses Google SDK bloat and catches empty/blocked responses
   async function askGemini(prompt) {
-      const apiKey = process.env.GEMINI_API_KEY || process.env.EMERGENT_LLM_KEY;
-      if (!apiKey) throw new Error("GEMINI_API_KEY missing in Vercel.");
+      const rawKey = process.env.GEMINI_API_KEY;
+      if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel.");
       
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      // Sanitize the key to prevent trailing newlines from causing 404 URL routing errors
+      const apiKey = rawKey.trim();
+      
+      // Upgraded to -latest to prevent 404 Model Not Found errors on restricted API tiers
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+      
+      const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
               contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.7 }
+              generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
           })
       });
 
       if (!response.ok) {
-          throw new Error(`Google API rejected the request: ${response.status}`);
+          const errText = await response.text();
+          throw new Error(`Google API (Status ${response.status}): ${errText}`);
       }
 
       const data = await response.json();
@@ -29,6 +37,7 @@ export default async function handler(req, res) {
           throw new Error("Gemini safety filters blocked this prompt (Binary file requests like .glb or .obj are not supported by text models).");
       }
       
+      // Force-strip markdown formatting so the code deploys perfectly to the Sandbox
       return text.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
   }
 
@@ -80,7 +89,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Gateway Error:', error.message);
-    // Return 200 with an error string so the UI can handle it gracefully instead of crashing
     return res.status(200).json({ 
         type: 'code', 
         content: `// [SYSTEM ERROR] Forge Matrix Sync Failed.\n// Reason: ${error.message}` 
