@@ -1,31 +1,40 @@
+// Increase Vercel Serverless timeout from 10s to 60s (Maximum allowed for free tiers)
+export const maxDuration = 60;
+
 export default async function handler(req, res) {
   // CORS Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // HELPER: Bypasses the heavy Google SDK to prevent Vercel Serverless crashes
+  // HELPER: Bypasses the heavy Google SDK to prevent Vercel Serverless memory crashes
   async function askGemini(prompt) {
-      if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY missing in Vercel.");
+      // Safely checks for both potential variable names
+      const apiKey = process.env.GEMINI_API_KEY || process.env.EMERGENT_LLM_KEY;
+      if (!apiKey) throw new Error("GEMINI_API_KEY missing in Vercel environment.");
       
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
               contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.7 }
+              generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
           })
       });
 
       if (!response.ok) {
           const errText = await response.text();
-          throw new Error(`API Error: ${response.status} - ${errText}`);
+          throw new Error(`Google API Error: ${response.status} - ${errText}`);
       }
 
       const data = await response.json();
-      let text = data.candidates[0].content.parts[0].text;
+      
+      // Failsafe: Prevent crash if Gemini blocks the prompt or returns empty
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+          throw new Error("Gemini blocked the prompt or returned an empty response. Try a different query.");
+      }
       
       // Force-strip markdown formatting so the code deploys perfectly to the Sandbox
-      text = text.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
-      return text;
+      return text.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
   }
 
   try {
@@ -49,7 +58,6 @@ export default async function handler(req, res) {
       if (type === 'image') {
           const encodedPrompt = encodeURIComponent(`high quality, highly detailed, 8k resolution, ${prompt}`);
           const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`;
-          
           return res.status(200).json({ type: 'image', url: imageUrl });
       }
 
@@ -78,7 +86,7 @@ export default async function handler(req, res) {
 
     return res.status(404).json({ error: 'Endpoint Not Found' });
   } catch (error) {
-    console.error('Gateway Error:', error);
+    console.error('Gateway Error:', error.message);
     return res.status(500).json({ error: `Gateway Crash: ${error.message}` });
   }
 }
