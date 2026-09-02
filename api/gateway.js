@@ -1,12 +1,13 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
     const url = req.url || '';
-    const body = req.body || {};
+    // Failsafe: Ensure Vercel parses the payload as an object, not a raw string
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const action = body.action || '';
 
     // 1. WAKE COMMAND
@@ -72,4 +73,4 @@ module.exports = async function handler(req, res) {
     console.error('Gateway Error:', error);
     return res.status(500).json({ error: `Gateway Crash: ${error.message}` });
   }
-};
+}
