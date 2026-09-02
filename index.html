@@ -255,19 +255,6 @@
             text-shadow: 1px 1px 5px #000, 0 0 10px var(--cyan); letter-spacing: 1px;
             text-align: center; padding: 0 10px; pointer-events: none;
         }
-
-        .cyber-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 12px 0;
-            background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(4px);
-            border-top: 1px solid rgba(0, 255, 255, 0.15); z-index: 9999;
-            font-family: 'Courier New', Courier, monospace; pointer-events: none;
-        }
-        .visit-count {
-            color: #00ffff; font-size: 0.75rem; font-weight: bold;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 15px rgba(0, 255, 255, 0.4);
-            letter-spacing: 1.5px; text-transform: uppercase; pointer-events: auto;
-        }
-        .loading { animation: pulse 1.5s infinite; }
     </style>
     
     <!-- OMEGA MIND TELEMETRY UPLINK -->
@@ -622,12 +609,6 @@
         </svg>
     </div>
 
-    <footer class="cyber-footer">
-        <div class="visit-count" id="counter-display">
-            UPLINK ESTABLISHING <span class="loading">...</span>
-        </div>
-    </footer>
-
     <script>
         window.toggleEcosystemHUD = function() {
             const panel = document.getElementById('ecosystem-hud-panel');
@@ -869,8 +850,8 @@
             document.getElementById('guest-cmd').disabled = false;
         }
 
-        window.handleSendClick = function() {
-            if (isGenerating) {
+        window.handleSendClick = async function(isPolling = false) {
+            if (isGenerating && !isPolling) {
                 if (currentAbortController) currentAbortController.abort();
                 resetUI();
                 latestArtemisText = "[Transmission Aborted]";
@@ -881,52 +862,70 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'wake' })
                 }).catch(() => {});
-                window.sendToArtemis(); 
-            }
-        };
-
-        window.sendToArtemis = async function(isPolling = false) {
-            const promptText = isPolling ? "" : cmd.value.trim(); 
-            if (!promptText && !isPolling) return;
-            
-            if (!isPolling) {
-                lockUI();
-                currentAbortController = new AbortController();
-                const oracleMsg = document.getElementById('oracle-message');
-                oracleMsg.textContent = 'Artemis is awakening the council...';
-                oracleMsg.style.opacity = 1; 
-            }
-
-            try {
-                const payload = { prompt: promptText, handshake: 'CONNECTED', mode: 'council' };
-                const response = await fetch('/api/transmit', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    signal: currentAbortController.signal
-                });
-                const data = await response.json();
                 
-                const aiReply = data.verdict || data.response || data.error || 'The council has spoken...';
-                latestArtemisText = aiReply; 
+                const promptText = isPolling ? "" : cmd.value.trim(); 
+                if (!promptText && !isPolling) return;
                 
-                fadeOutMessage(); setTimeout(() => fadeInMessage('Analysis Complete.'), 600);
-
-                if (window.artemisUI && typeof window.artemisUI.showResponse === 'function') {
-                    window.artemisUI.showResponse(aiReply, true);
+                if (!isPolling) {
+                    lockUI();
+                    currentAbortController = new AbortController();
+                    const oracleMsg = document.getElementById('oracle-message');
+                    oracleMsg.textContent = 'Artemis is awakening the council...';
+                    oracleMsg.style.opacity = 1; 
                 }
 
-                if (currentUser && !data.error && !isPolling) {
-                    await addDoc(collection(db, "users", currentUser.uid, "history"), { 
-                        prompt: promptText, response: aiReply, timestamp: serverTimestamp() 
+                try {
+                    const payload = { prompt: promptText, handshake: 'CONNECTED', mode: 'council' };
+                    const response = await fetch('/api/transmit', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        signal: currentAbortController.signal
                     });
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    latestArtemisText = "Synaptic link active locally...";
+                    const data = await response.json();
+                    
+                    const aiReply = data.verdict || data.response || data.error || 'The council has spoken...';
+                    latestArtemisText = aiReply; 
+                    
+                    // --- SENTIMENT REACTIVE SHADER MATRIX ---
+                    if (data.sentiment) {
+                        const root = document.documentElement;
+                        if (data.sentiment.includes('POSITIVE')) {
+                            root.style.setProperty('--cyan', '#00ff87');
+                            root.style.setProperty('--gold', '#d4af37');
+                            root.style.setProperty('--purple-shader', 'rgba(0, 51, 26, 0.82)');
+                            root.style.setProperty('--glow-c', '0 0 40px rgba(0, 255, 135, 0.75)');
+                        } else if (data.sentiment.includes('NEGATIVE')) {
+                            root.style.setProperty('--cyan', '#ff3366');
+                            root.style.setProperty('--gold', '#ff8c00');
+                            root.style.setProperty('--purple-shader', 'rgba(51, 0, 10, 0.82)');
+                            root.style.setProperty('--glow-c', '0 0 40px rgba(255, 51, 102, 0.75)');
+                        } else {
+                            root.style.setProperty('--cyan', '#00f2ff');
+                            root.style.setProperty('--gold', '#d4af37');
+                            root.style.setProperty('--purple-shader', 'rgba(26, 0, 51, 0.82)');
+                            root.style.setProperty('--glow-c', '0 0 40px rgba(0, 242, 255, 0.75)');
+                        }
+                    }
+                    
                     fadeOutMessage(); setTimeout(() => fadeInMessage('Analysis Complete.'), 600);
+
+                    if (window.artemisUI && typeof window.artemisUI.showResponse === 'function') {
+                        window.artemisUI.showResponse(aiReply, true);
+                    }
+
+                    if (currentUser && !data.error && !isPolling) {
+                        await addDoc(collection(db, "users", currentUser.uid, "history"), { 
+                            prompt: promptText, response: aiReply, timestamp: serverTimestamp() 
+                        });
+                    }
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        latestArtemisText = "Synaptic link active locally...";
+                        fadeOutMessage(); setTimeout(() => fadeInMessage('Analysis Complete.'), 600);
+                    }
+                } finally {
+                    if (isGenerating && !isPolling) resetUI();
                 }
-            } finally {
-                if (isGenerating && !isPolling) resetUI();
             }
         };
 
@@ -985,7 +984,6 @@
     </script>
 
     <script>
-        // Use the globally initialized window.omegaClient for the Ping Counter
         function getSafeVisitorId() {
             let id = localStorage.getItem('nexus_visitor_id');
             if (!id) {
@@ -1003,41 +1001,26 @@
         }
 
         async function updateMultiverseCount(isInitialLoad = false) {
-            const displayElement = document.getElementById('counter-display');
             try {
                 const visitorId = getSafeVisitorId();
                 if (isInitialLoad) {
                     await window.omegaClient.rpc('track_ping', { p_ip_hash: visitorId }).catch(() => {});
-                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
-
-                const { data: globalData } = await window.omegaClient
-                    .from('global_stats')
-                    .select('total_pings')
-                    .single();
-
-                const { count: uniqueCount } = await window.omegaClient
-                    .from('unique_visitors')
-                    .select('*', { count: 'exact', head: true });
-
-                const total = globalData ? globalData.total_pings : 1;
-                const unique = uniqueCount !== null ? uniqueCount : 1;
-                
-                displayElement.innerHTML = `
-                    UNIQUE TRAVERSALS: [ <span style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff;">${unique}</span> ] 
-                    <span style="opacity: 0.5; margin: 0 10px;">///</span> 
-                    TOTAL PINGS: [ <span style="color: #00ffff;">${total}</span> ]
-                `;
-                displayElement.classList.remove('loading');
             } catch (error) {
-                displayElement.innerHTML = `MULTIVERSE NODE: [ <span style="color: #00ff87;">ONLINE (SECURE)</span> ]`;
-                displayElement.classList.remove('loading');
+                // Silent catch
             }
         }
 
         window.addEventListener('load', () => {
+            // Initial data pull (background tracking only)
             updateMultiverseCount(true);
-            setInterval(() => updateMultiverseCount(false), 60000);
+            
+            // Subscribe to live Omega Mind telemetry across all 140 nodes
+            window.omegaClient.channel('omega-live-telemetry')
+              .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'central_telemetry' }, payload => {
+                console.log('⚡ Fleet Signal Detected:', payload.new);
+              })
+              .subscribe();
         });
     </script>
 </body>
