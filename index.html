@@ -273,14 +273,13 @@
     <!-- OMEGA MIND TELEMETRY UPLINK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      (function() {
-        const SUPABASE_URL = 'https://amulgdbdvxpikpmldyoq.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtdWxnZGJkdnhwaWtwbWxkeW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDU3MzgsImV4cCI6MjEwMTk4MTczOH0.0eZ3SfWhUEzSLpDDKEE_3vp5siXF00akRp5jX1dM-dA';
-        
-        // Auto-detect repository name or fallback to domain
-        const REPO_NAME = window.OMEGA_REPO_NAME || window.location.hostname || 'Unknown-Node';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Single global instantiation of the Omega Mind client
+      window.OMEGA_SUPABASE_URL = 'https://amulgdbdvxpikpmldyoq.supabase.co';
+      window.OMEGA_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtdWxnZGJkdnhwaWtwbWxkeW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDU3MzgsImV4cCI6MjEwMTk4MTczOH0.0eZ3SfWhUEzSLpDDKEE_3vp5siXF00akRp5jX1dM-dA';
+      window.omegaClient = window.supabase.createClient(window.OMEGA_SUPABASE_URL, window.OMEGA_SUPABASE_ANON_KEY);
 
+      (function() {
+        const REPO_NAME = window.OMEGA_REPO_NAME || window.location.hostname || 'Unknown-Node';
         let clientIP = 'Detecting...';
 
         // 1. Fetch Client IP
@@ -292,7 +291,7 @@
         // 2. Core Telemetry Logging Function
         window.logBrainAction = async function(actionType, details = {}) {
           try {
-            await supabase.from('central_telemetry').insert([{
+            await window.omegaClient.from('central_telemetry').insert([{
               repository_name: REPO_NAME,
               action_type: actionType,
               details: {
@@ -311,7 +310,7 @@
         // 3. Register Node into Target Vector Dropdown
         async function registerNode() {
           try {
-            await supabase.from('connected_repos').upsert(
+            await window.omegaClient.from('connected_repos').upsert(
               { repo_name: REPO_NAME, status: 'active' },
               { onConflict: 'repo_name' }
             );
@@ -986,10 +985,7 @@
     </script>
 
     <script>
-        const supabaseUrl = 'https://ezfwzqxwafvdjtwnmyrx.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6Znd6cXh3YWZ2ZGp0d25teXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwOTA2NzIsImV4cCI6MjA5NzY2NjY3Mn0.baxnDWZ9rSZobzqnAOND7SuJpXbl4wmRyUYTQl4whPE';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
+        // Use the globally initialized window.omegaClient for the Ping Counter
         function getSafeVisitorId() {
             let id = localStorage.getItem('nexus_visitor_id');
             if (!id) {
@@ -1011,16 +1007,16 @@
             try {
                 const visitorId = getSafeVisitorId();
                 if (isInitialLoad) {
-                    await supabaseClient.rpc('track_ping', { p_ip_hash: visitorId }).catch(() => {});
+                    await window.omegaClient.rpc('track_ping', { p_ip_hash: visitorId }).catch(() => {});
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
 
-                const { data: globalData } = await supabaseClient
+                const { data: globalData } = await window.omegaClient
                     .from('global_stats')
                     .select('total_pings')
                     .single();
 
-                const { count: uniqueCount } = await supabaseClient
+                const { count: uniqueCount } = await window.omegaClient
                     .from('unique_visitors')
                     .select('*', { count: 'exact', head: true });
 
