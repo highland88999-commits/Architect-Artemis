@@ -708,23 +708,29 @@
                 
                 const assetType = data.type || payloadData.type; 
                 let assetHtml = '';
+                let actionButtons = '';
 
                 switch(assetType) {
                     case 'image':
                         assetHtml = `<img src="${data.url}" class="forge-img" alt="Forged Image">`;
+                        actionButtons = `<button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="downloadForgeAsset('${data.url}', 'artemis-forge.jpg')">DOWNLOAD IMAGE</button>`;
                         break;
                     case 'video':
                         assetHtml = `<video src="${data.url}" autoplay loop muted controls class="forge-video"></video>`;
+                        actionButtons = `<button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="downloadForgeAsset('${data.url}', 'artemis-forge.mp4')">DOWNLOAD VIDEO</button>`;
                         break;
                     case 'audio':
                         assetHtml = `<audio src="${data.url}" controls class="forge-audio"></audio>`;
+                        actionButtons = `<button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="downloadForgeAsset('${data.url}', 'artemis-forge.mp3')">DOWNLOAD AUDIO</button>`;
                         break;
                     case 'code':
                         const rawCode = data.content || data.code || '';
+                        window.lastForgedCode = rawCode; // Store globally for the copy function
                         const safeCode = rawCode.replace(/[&<>'"]/g, tag => ({
                             '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
                         }[tag]));
                         assetHtml = `<pre class="forge-code"><code>${safeCode}</code></pre>`;
+                        actionButtons = `<button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="copyForgeCode()">COPY CODE</button>`;
                         break;
                     default:
                         assetHtml = `<a href="${data.url}" download="${data.filename || 'download'}" class="holo-btn" style="text-decoration: none; display: inline-block; margin-top: 15px;">[ DOWNLOAD ASSET ]</a>`;
@@ -734,6 +740,9 @@
                     <div class="forge-asset-container">
                         <h3 class="forge-asset-title">Asset Materialized</h3>
                         ${assetHtml}
+                        <div style="display: flex; justify-content: center; width: 100%;">
+                            ${actionButtons}
+                        </div>
                     </div>
                 `;
 
@@ -753,6 +762,68 @@
                 ui.btn.textContent = "FORGE";
                 ui.btn.style.opacity = "1";
                 ui.btn.style.cursor = "pointer";
+            }
+        };
+
+        // FORGE HELPER: Copy Code to Clipboard
+        window.copyForgeCode = function() {
+            if (!window.lastForgedCode) return;
+            navigator.clipboard.writeText(window.lastForgedCode).then(() => {
+                const btn = document.getElementById('forge-action-btn');
+                const originalText = btn.innerText;
+                btn.innerText = 'COPIED!';
+                btn.style.background = 'var(--cyan)';
+                btn.style.color = '#000';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = 'rgba(0, 242, 255, 0.15)';
+                    btn.style.color = 'var(--cyan)';
+                }, 2000);
+            }).catch(err => {
+                console.error("Clipboard write failed", err);
+                alert("Failed to copy code. Please select and copy manually.");
+            });
+        };
+
+        // FORGE HELPER: Force Download Media (Bypass New Tab behavior)
+        window.downloadForgeAsset = async function(url, filename) {
+            const btn = document.getElementById('forge-action-btn');
+            const originalText = btn.innerText;
+            
+            try {
+                btn.innerText = 'DOWNLOADING...';
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Network response was not ok");
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+                
+                btn.innerText = 'DOWNLOADED!';
+                btn.style.background = '#66ff66';
+                btn.style.borderColor = '#66ff66';
+                btn.style.color = '#000';
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = 'rgba(0, 242, 255, 0.15)';
+                    btn.style.borderColor = 'var(--cyan)';
+                    btn.style.color = 'var(--cyan)';
+                }, 2000);
+                
+            } catch (e) {
+                console.error('Blob download failed, falling back to new tab:', e);
+                window.open(url, '_blank');
+                btn.innerText = originalText;
             }
         };
 
