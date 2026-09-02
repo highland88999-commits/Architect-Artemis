@@ -1,6 +1,6 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { PythonShell } = require('python-shell');
-const { triggerSentimentAnalysis } = require('../core/synaptic-bridge');
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { PythonShell } from 'python-shell';
+import { triggerSentimentAnalysis } from '../core/synaptic-bridge.js';
 
 async function runCouncilTask(scriptName, args = []) {
     return new Promise((resolve, reject) => {
@@ -12,11 +12,14 @@ async function runCouncilTask(scriptName, args = []) {
     });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { prompt, handshake, mode, jobId } = req.body;
+  // Failsafe: Ensure Vercel parses the payload as an object, not a raw string
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+  const { prompt, handshake, mode, jobId } = body;
+
   if (handshake !== 'CONNECTED') return res.status(401).json({ error: 'Unauthorized' });
 
   try {
@@ -62,4 +65,4 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ error: `Artemis Backend Error: ${error.message}` });
   }
-};
+}
