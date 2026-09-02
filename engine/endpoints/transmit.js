@@ -15,13 +15,13 @@ async function runCouncilTask(scriptName, args = []) {
     });
 }
 
-// Helper to safely call Gemini and prevent 500 crashes on blocked/empty prompts
+// Helper to safely call Gemini directly without Emergent
 async function safeGeminiCall(prompt) {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.EMERGENT_LLM_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY missing.");
+    const rawKey = process.env.GEMINI_API_KEY;
+    if (!rawKey) throw new Error("GEMINI_API_KEY missing.");
     
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const genAI = new GoogleGenerativeAI(rawKey.trim());
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
     
     const result = await model.generateContent(prompt);
     const text = result.response?.candidates?.[0]?.content?.parts?.[0]?.text;
