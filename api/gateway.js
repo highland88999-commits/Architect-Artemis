@@ -1,54 +1,46 @@
-// Increase Vercel Serverless timeout from 10s to 60s (Maximum allowed for free tiers)
+// Increase Vercel Serverless timeout to the maximum 60 seconds
 export const maxDuration = 60;
 
 export default async function handler(req, res) {
-  // CORS Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // HELPER: Bypasses the heavy Google SDK to prevent Vercel Serverless memory crashes
+  // HELPER: Native fetch bypasses Google SDK bloat and catches empty/blocked responses
   async function askGemini(prompt) {
-      // Safely checks for both potential variable names
       const apiKey = process.env.GEMINI_API_KEY || process.env.EMERGENT_LLM_KEY;
-      if (!apiKey) throw new Error("GEMINI_API_KEY missing in Vercel environment.");
+      if (!apiKey) throw new Error("GEMINI_API_KEY missing in Vercel.");
       
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
               contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
+              generationConfig: { temperature: 0.7 }
           })
       });
 
       if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`Google API Error: ${response.status} - ${errText}`);
+          throw new Error(`Google API rejected the request: ${response.status}`);
       }
 
       const data = await response.json();
-      
-      // Failsafe: Prevent crash if Gemini blocks the prompt or returns empty
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
       if (!text) {
-          throw new Error("Gemini blocked the prompt or returned an empty response. Try a different query.");
+          throw new Error("Gemini safety filters blocked this prompt (Binary file requests like .glb or .obj are not supported by text models).");
       }
       
-      // Force-strip markdown formatting so the code deploys perfectly to the Sandbox
       return text.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
   }
 
   try {
     const url = req.url || '';
-    // Failsafe: Ensure Vercel parses the payload as an object
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const action = body.action || '';
 
     // 1. WAKE COMMAND
-    if (action === 'wake') {
-      return res.status(200).json({ message: 'Artemis Matrix Awake' });
-    }
+    if (action === 'wake') return res.status(200).json({ message: 'Artemis Matrix Awake' });
 
-    // 2. THE FORGE (Media & Code Generation)
+    // 2. THE FORGE
     if (action === 'forge') {
       const payload = body.payload || {};
       const prompt = payload.prompt || 'cyberpunk digital matrix';
@@ -85,8 +77,13 @@ export default async function handler(req, res) {
     if (url.includes('check-midas-status')) return res.status(200).json({ trigger_intervention: false });
 
     return res.status(404).json({ error: 'Endpoint Not Found' });
+
   } catch (error) {
     console.error('Gateway Error:', error.message);
-    return res.status(500).json({ error: `Gateway Crash: ${error.message}` });
+    // Return 200 with an error string so the UI can handle it gracefully instead of crashing
+    return res.status(200).json({ 
+        type: 'code', 
+        content: `// [SYSTEM ERROR] Forge Matrix Sync Failed.\n// Reason: ${error.message}` 
+    });
   }
 }
