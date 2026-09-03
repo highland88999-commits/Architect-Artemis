@@ -1,9 +1,9 @@
 /* engine/core/stewardship/consensus.js */
 require('dotenv').config();
-const { pool } = require('../atlas-db'); // Your Supabase connection
+const { pool } = require('../atlas-db'); 
 const MidasLogger = require('./midas-logger');
-const Mailer = require('./mailer'); // The automated email pipeline
-const { triggerSentimentAnalysis, triggerQuantumSimulation } = require('../synaptic-bridge'); // 🌉 The Render Matrix Bridge
+const Mailer = require('./mailer'); 
+const { triggerSentimentAnalysis, triggerQuantumSimulation } = require('../synaptic-bridge'); 
 
 // Graceful Clarifai initialization
 let stub, metadata;
@@ -26,7 +26,8 @@ if (CLARIFAI_AVAILABLE) {
 class ConsensusEngine {
   constructor() {
     this.models = [
-      { name: "Gemini Prime", id: "gemini-1-5-pro", user: "google", app: "generative-ai" },
+      // Matrix Fleet Update: Clarifai's format uses dashes instead of periods
+      { name: "Gemini Prime", id: "gemini-3-8-flash", user: "google", app: "generative-ai" },
       { name: "Copilot Beta", id: "gpt-4", user: "openai", app: "chat-completion" },
       { name: "Grok X", id: "grok-1", user: "x-ai", app: "completion" },
     ];
@@ -125,17 +126,16 @@ class ConsensusEngine {
     let quantumState = "Superposition collapsed";
     
     try {
-        // Run both heavy Python operations concurrently to save time
         const [sentimentResult, quantumResult] = await Promise.all([
-            triggerSentimentAnalysis(primary.content.substring(0, 500)), // Check sentiment of the analysis
-            triggerQuantumSimulation('superposition') // Request quantum processing state
+            triggerSentimentAnalysis(primary.content.substring(0, 500)), 
+            triggerQuantumSimulation('superposition') 
         ]);
 
         if (sentimentResult && sentimentResult.success) {
             mlSentiment = `${sentimentResult.label} (Conf: ${sentimentResult.score})`;
         }
         if (quantumResult && quantumResult.success) {
-            quantumState = quantumResult.operation; // Optionally store the full matrix if needed
+            quantumState = quantumResult.operation; 
         }
     } catch (e) {
         console.warn("⚠️ Render Python Matrix unreachable. Proceeding with local logic.");
@@ -154,8 +154,8 @@ class ConsensusEngine {
         gemini: "Logic Verified",
         copilot: "Structure Validated",
         grok: "Efficiency Checked",
-        sentiment: mlSentiment, // PyTorch Data via Render
-        quantum: quantumState   // QuTiP Data via Render
+        sentiment: mlSentiment, 
+        quantum: quantumState   
       }
     };
     
@@ -184,7 +184,6 @@ class ConsensusEngine {
             if (ownerEmailMatch && ownerEmailMatch.length > 0) {
                 const ownerEmail = ownerEmailMatch[0];
                 console.log(`✉️ Found Site Owner Email: ${ownerEmail} - Pitch ready to deploy.`);
-                // await Mailer.pitchSiteOwner(ownerEmail, target.url, result); 
             }
 
         } catch (error) {
@@ -237,5 +236,3 @@ class ConsensusEngine {
 }
 
 module.exports = new ConsensusEngine();
-
-
