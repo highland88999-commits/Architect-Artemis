@@ -18,22 +18,27 @@ class NativeNeuralMatrix {
         
         this.matrixPtr = artemis_brain_alloc();
         
-        console.log("🧠 Fetching Neural Weights (model.bin)...");
-        // Ensure you have downloaded a tiny open-source model (like stories15M.bin)
-        // and placed it in your frontend/public/ folder as 'model.bin'
+        console.log("🧠 Fetching Neural Weights from Cloud Matrix...");
+        
         try {
-            const res = await fetch('/model.bin'); 
+            // Direct fetch from Hugging Face bypasses GitHub and Vercel upload limits
+            const res = await fetch('https://huggingface.co/karpathy/tinyllamas/resolve/main/stories15M.bin'); 
+            
+            if (!res.ok) {
+                throw new Error(`HTTP fetch failed with status: ${res.status}`);
+            }
+
             const buffer = await res.arrayBuffer();
             const weights = new Uint8Array(buffer);
             
-            // Allocate WASM memory and copy the weights in
+            // Allocate WASM memory and transfer the neural weights
             const dataPtr = this.allocBuffer(weights);
             artemis_brain_load_weights(this.matrixPtr, dataPtr, weights.length);
             
             console.log("✅ Artemis Native Brain Online.");
             this.isInitialized = true;
         } catch (e) {
-            console.error("⚠️ Failed to load model.bin. Ensure it is in the public/ folder.", e);
+            console.error("⚠️ Failed to load neural weights from cloud.", e);
         }
     }
 
