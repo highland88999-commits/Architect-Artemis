@@ -10,6 +10,8 @@ export default async function handler(req, res) {
       
       const apiKey = rawKey.trim();
       const modelId = usePro ? 'gemini-3.7-flash' : 'gemini-3.8-flash';
+      
+      // Standard text generation remains on stable v1beta
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
       
       const payload = {
@@ -95,7 +97,8 @@ export default async function handler(req, res) {
           console.log(`[Forge] Routing video request to Veo 3.1...`);
           const veoModel = "veo-3.1-generate-preview";
           
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${veoModel}:predict?key=${rawKey.trim()}`;
+          // CRITICAL FIX: Preview media models are locked to the v1alpha gateway
+          const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${veoModel}:predict?key=${rawKey.trim()}`;
           
           const payload = {
               instances: [
@@ -138,7 +141,9 @@ export default async function handler(req, res) {
           
           try {
               const audioModel = "music-bison-preview";
-              const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:predict?key=${rawKey.trim()}`;
+              
+              // CRITICAL FIX: Audio preview model locked to the v1alpha gateway
+              const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${audioModel}:predict?key=${rawKey.trim()}`;
               
               const payload = {
                   instances: [{ prompt: `Generate high-fidelity ambient audio: ${prompt}` }],
@@ -151,7 +156,10 @@ export default async function handler(req, res) {
                   body: JSON.stringify(payload)
               });
 
-              if (!response.ok) throw new Error("Native Audio Bytes Unavailable.");
+              if (!response.ok) {
+                  const errText = await response.text();
+                  throw new Error(`Native Audio Error: ${errText}`);
+              }
 
               const data = await response.json();
               const audioData = data.predictions?.[0]?.audioUri || data.predictions?.[0]?.bytesBase64;
@@ -162,7 +170,7 @@ export default async function handler(req, res) {
               return res.status(200).json({ type: 'audio', url: finalUrl });
 
           } catch (audioError) {
-              console.warn(`[Forge] True Audio API bypassed. Synthesizing WebAudio Code via Gemini 3.7 Flash...`);
+              console.warn(`[Forge] True Audio API bypassed. Synthesizing WebAudio Code via Gemini 3.7 Flash... Reason: ${audioError.message}`);
               
               // Fallback to high-end code generation if native bytes are restricted
               const audioInstruction = `You are a Master Web Audio API Engineer. Create a single-file HTML document with a procedural synthesizer that plays generative audio matching: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and an analyzer node feeding a canvas oscilloscope. Return ONLY the raw HTML code.`;
