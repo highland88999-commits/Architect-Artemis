@@ -89,15 +89,17 @@ export default async function handler(req, res) {
           return res.status(200).json({ type: 'code', content });
       } 
       
-      // --- TRUE VIDEO GENERATION (Veo 3.1 Cinematic Engine with Lite Fallback) ---
+      // --- TRUE VIDEO GENERATION (Veo 3.1 Cinematic Engine / WebGL Fallback) ---
       if (type === 'video') {
           const rawKey = process.env.GEMINI_API_KEY;
           if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
-          const apiKey = rawKey.trim();
-
-          // Reusable function to fetch from specific Veo model
-          async function generateVeoVideo(modelName) {
-              const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${modelName}:predict?key=${apiKey}`;
+          
+          console.log(`[Forge] Routing video request to Veo 3.1...`);
+          
+          try {
+              const veoModel = "veo-3.1-generate-preview";
+              // CRITICAL FIX: The dedicated media method is :generateVideo, not :predict
+              const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${veoModel}:generateVideo?key=${rawKey.trim()}`;
               
               const payload = {
                   instances: [
@@ -117,32 +119,28 @@ export default async function handler(req, res) {
 
               if (!response.ok) {
                   const errText = await response.text();
-                  throw new Error(`Veo API [${modelName}] (Status ${response.status}): ${errText}`);
+                  throw new Error(`Veo API Error: ${errText}`);
               }
 
               const data = await response.json();
-              const videoData = data.predictions?.[0]?.videoUri || data.predictions?.[0]?.bytesBase64 || data.predictions?.[0]?.uri;
+              // Extract across possible Google media response schemas
+              const videoData = data.predictions?.[0]?.videoUri || data.predictions?.[0]?.bytesBase64 || data.videoUri || data.uri;
               
               if (!videoData) {
-                  throw new Error(`Veo API [${modelName}] failed to return a valid video. Safety filters may have triggered.`);
+                  throw new Error(`Veo API failed to return a valid video. Safety filters may have triggered.`);
               }
               
-              return videoData.startsWith('http') ? videoData : `data:video/mp4;base64,${videoData}`;
-          }
-
-          try {
-              console.log(`[Forge] Routing video request to primary Veo 3.1...`);
-              const finalUrl = await generateVeoVideo("veo-3.1-generate-preview");
+              const finalUrl = videoData.startsWith('http') ? videoData : `data:video/mp4;base64,${videoData}`;
               return res.status(200).json({ type: 'video', url: finalUrl });
-          } catch (primaryError) {
-              console.warn(`[Forge] Primary Veo failed (${primaryError.message}). Falling back to Veo 3.1 Lite...`);
+
+          } catch (videoError) {
+              console.warn(`[Forge] True Video API bypassed. Synthesizing WebGL Shader via Gemini 3.7 Flash... Reason: ${videoError.message}`);
               
-              try {
-                  const fallbackUrl = await generateVeoVideo("veo-3.1-lite-generate-preview");
-                  return res.status(200).json({ type: 'video', url: fallbackUrl });
-              } catch (fallbackError) {
-                  throw new Error(`Both primary and fallback Veo models failed. Last Error: ${fallbackError.message}`);
-              }
+              // FALLBACK: The brilliant WebGL Shader Generator
+              const videoInstruction = `You are a Master GLSL Shader Artist and WebGL Architect. Create a single-file HTML document with a looping, animated WebGL canvas that acts as a visualizer for: "${prompt}". Use either raw WebGL API or a full-screen Three.js ShaderMaterial. Implement a fragment shader utilizing time (u_time) and resolution (u_resolution) uniforms to create stunning, procedural math-based animations (raymarching, fractal noise, or SDFs). Ensure the render loop is synced with requestAnimationFrame. Return ONLY the raw HTML code.`;
+              
+              const content = await askGemini(videoInstruction, null, true); // usePro = true
+              return res.status(200).json({ type: 'code', content });
           }
       }
 
@@ -184,10 +182,9 @@ export default async function handler(req, res) {
           } catch (audioError) {
               console.warn(`[Forge] True Audio API bypassed. Synthesizing WebAudio Code via Gemini 3.7 Flash... Reason: ${audioError.message}`);
               
-              // Fallback to high-end code generation if native bytes are restricted
               const audioInstruction = `You are a Master Web Audio API Engineer. Create a single-file HTML document with a procedural synthesizer that plays generative audio matching: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and an analyzer node feeding a canvas oscilloscope. Return ONLY the raw HTML code.`;
               
-              const content = await askGemini(audioInstruction, null, true); // usePro = true
+              const content = await askGemini(audioInstruction, null, true); 
               return res.status(200).json({ type: 'code', content });
           }
       }
