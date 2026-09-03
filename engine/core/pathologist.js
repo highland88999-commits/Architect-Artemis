@@ -16,7 +16,7 @@ class Pathologist {
             }
 
             const model = genAI.getGenerativeModel({ 
-                model: "gemini-1.5-pro",
+                model: "gemini-3.7-flash",
                 // VERCEL UPGRADE: Force Gemini to output pure, unformatted JSON
                 generationConfig: { responseMimeType: "application/json" }
             });
@@ -59,5 +59,3 @@ class Pathologist {
 }
 
 module.exports = new Pathologist();
-
-
