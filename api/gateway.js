@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   // HELPER: Native fetch bypasses Google SDK bloat and catches empty/blocked responses
-  async function askGemini(prompt) {
+  async function askGemini(prompt, systemInstruction = null) {
       const rawKey = process.env.GEMINI_API_KEY;
       if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel.");
       
@@ -15,13 +15,19 @@ export default async function handler(req, res) {
       
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
       
+      const payload = {
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+      };
+
+      if (systemInstruction) {
+          payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
+      
       const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-              contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-          })
+          body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -61,9 +67,24 @@ export default async function handler(req, res) {
           return res.status(200).json({ type: 'image', url: imageUrl });
       }
 
-      // --- CODE GENERATION ---
+      // --- 3D MODEL (.GLB) GENERATION ---
+      if (type === '3d') {
+          const threeJsPrompt = `Create a single-file HTML document using Three.js that procedurally generates a 3D model of: "${prompt}". 
+          Requirements:
+          1. Use procedural geometries (boxes, spheres, cylinders, etc.) and materials to construct the object.
+          2. Include OrbitControls so the user can rotate it.
+          3. Include the THREE.GLTFExporter library from a CDN (https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js).
+          4. Add a highly visible, absolute positioned "DOWNLOAD .GLB" button overlaid on the UI. When clicked, it must instantiate GLTFExporter, parse the main 3D group, and trigger a download of a .glb file.
+          Return ONLY the raw HTML code, no markdown fences or intro text.`;
+          
+          const content = await askGemini(threeJsPrompt);
+          return res.status(200).json({ type: '3d', content });
+      }
+
+      // --- CODE GENERATION (With Polyglot Decision Engine) ---
       if (type === 'code') {
-          const content = await askGemini(`Write a clean, concise code snippet for: ${prompt}. Return ONLY the raw code. Do not use markdown fences or explanations.`);
+          const polyglotEngine = `You are Artemis, a Master Polyglot Developer fluent in ALL programming languages (Rust, Go, C++, Python, Assembly, WebGL, TS, etc.). First, autonomously analyze the prompt and decide which programming language provides the most optimal performance, safety, and scalability for the specific task. State your chosen language as a comment at the top, then output the pristine code. Return ONLY the raw code, no markdown fences.`;
+          const content = await askGemini(`Write optimal code for: ${prompt}`, polyglotEngine);
           return res.status(200).json({ type: 'code', content });
       } 
       
