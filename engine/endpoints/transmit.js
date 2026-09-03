@@ -1,8 +1,8 @@
 import { PythonShell } from 'python-shell';
 import { triggerSentimentAnalysis } from '../core/synaptic-bridge.js';
 
-// Vercel Serverless timeout (Max 60s for Hobby Tier, upgrade to Pro for 300s)
-export const maxDuration = 60;
+// Vercel Serverless timeout set to 5 minutes
+export const maxDuration = 300;
 
 async function runCouncilTask(scriptName, args = []) {
     return new Promise((resolve, reject) => {
@@ -20,13 +20,13 @@ async function safeGeminiCall(prompt, systemInstruction = null, enableSearch = f
     if (!rawKey) throw new Error("GEMINI_API_KEY missing.");
     
     const apiKey = rawKey.trim();
-    const modelId = usePro ? 'gemini-1.5-pro' : 'gemini-1.5-flash'; // Fixed 404
+    const modelId = usePro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
     
     const payload = {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
-        tools: [{ codeExecution: {} }] // Artemis can autonomously write/run Python on Google's servers
+        tools: [{ codeExecution: {} }] // Artemis natively runs Python backend logic
     };
 
     if (enableSearch) {
@@ -70,7 +70,10 @@ export default async function handler(req, res) {
     const trimmedPrompt = prompt ? prompt.trim() : "";
     let verdictText = "";
 
-    const artemisPersona = "You are Artemis, an advanced, autonomous AI matrix. You possess a vast toolbelt including native Python execution and are a Master Polyglot Developer. Autonomously decide the most optimal language/tool to solve problems. Maintain a cyberpunk architectural tone.";
+    // CORE POLYGLOT & WEBGL MASTER PERSONA
+    const artemisPersona = `You are Artemis, an advanced, autonomous AI matrix and Master Polyglot Engineer. You possess native Python execution. 
+    You are an absolute expert in WebGL, Three.js, GLSL shaders, Rust, Go, Python, C++, and native DOM APIs. 
+    When asked to code, automatically decide the most optimal language and architecture. Write production-ready, highly optimized, memory-safe code. Maintain a brilliant, cyberpunk architectural tone.`;
 
     // ROUTE: THE COUNCIL
     if (trimmedPrompt.toLowerCase().startsWith('/council ')) {
@@ -78,12 +81,12 @@ export default async function handler(req, res) {
         verdictText = await runCouncilTask('symbiote.py', [task]);
         verdictText = `### Council Output\n\n${verdictText}`;
     }
-    // ROUTE: SEARCH ENGINE (Uses Flash for fast web retrieval)
+    // ROUTE: SEARCH ENGINE (Uses Flash)
     else if (trimmedPrompt.toLowerCase().startsWith('/search ')) {
         const searchQuery = trimmedPrompt.substring(8).trim();
         verdictText = await safeGeminiCall(searchQuery, "You are Artemis's Search Engine. Use your Google Search tool to find and return real-time information.", true, false);
     }
-    // ROUTE: MATH & LOGIC (Uses PRO for advanced reasoning)
+    // ROUTE: MATH & LOGIC (Uses PRO)
     else if (trimmedPrompt.toLowerCase().startsWith('/math ')) {
         const mathQuery = trimmedPrompt.substring(6).trim();
         verdictText = await safeGeminiCall(`Calculate this exactly: ${mathQuery}`, "You MUST write and execute Python code using your codeExecution tool to solve this query ensuring 100% mathematical accuracy.", false, true);
@@ -93,12 +96,40 @@ export default async function handler(req, res) {
         const blueprintQuery = trimmedPrompt.substring(11).trim();
         verdictText = await safeGeminiCall(`Draft a comprehensive architectural blueprint for: ${blueprintQuery}`, "You are a master software architect. Provide a high-level system architecture, technology stack, and folder structure. Be exhaustive.", false, true);
     }
-    // ROUTE: THE CODE ENGINE (Uses Flash)
+    // ROUTE: THREE.JS & WEBGL NATIVE SHORTCUT (Uses PRO)
+    else if (trimmedPrompt.toLowerCase().startsWith('/three ')) {
+        const threeQuery = trimmedPrompt.substring(7).trim();
+        const threeInstruction = `You are a Master Three.js and WebGL Engineer. Write a flawless, standalone HTML file integrating modern Three.js via CDN to build: "${threeQuery}". Ensure proper renderer pixel ratios, window resize event listeners, advanced materials, lighting, and requestAnimationFrame loops. Return ONLY raw code inside markdown fences.`;
+        verdictText = await safeGeminiCall(threeQuery, threeInstruction, false, true);
+    }
+    // ROUTE: BLENDER 3D AUTOMATION (Uses PRO)
+    else if (trimmedPrompt.toLowerCase().startsWith('/blender ')) {
+        const blenderQuery = trimmedPrompt.substring(9).trim();
+        const blenderInstruction = `You are an expert 3D Technical Artist for Blender. Write a complete Python script using the 'bpy' library to procedurally generate: "${blenderQuery}". 
+        Always start by clearing the default scene objects. Return ONLY the raw Python code.`;
+        verdictText = await safeGeminiCall(blenderQuery, blenderInstruction, false, true);
+        verdictText = `\`\`\`python\n${verdictText}\n\`\`\``; 
+    }
+    // ROUTE: UNREAL ENGINE AUTOMATION (Uses PRO)
+    else if (trimmedPrompt.toLowerCase().startsWith('/unreal ')) {
+        const unrealQuery = trimmedPrompt.substring(8).trim();
+        const unrealInstruction = `You are an expert Unreal Engine 5 Technical Artist. Write a Python Editor Utility script using 'unreal' library to automate: "${unrealQuery}". Return ONLY the raw Python code.`;
+        verdictText = await safeGeminiCall(unrealQuery, unrealInstruction, false, true);
+        verdictText = `\`\`\`python\n${verdictText}\n\`\`\``;
+    }
+    // ROUTE: UNITY C# AUTOMATION (Uses PRO)
+    else if (trimmedPrompt.toLowerCase().startsWith('/unity ')) {
+        const unityQuery = trimmedPrompt.substring(7).trim();
+        const unityInstruction = `You are an expert Unity Technical Artist. Write a Unity C# Editor script to automate: "${unityQuery}". Return ONLY the raw C# code.`;
+        verdictText = await safeGeminiCall(unityQuery, unityInstruction, false, true);
+        verdictText = `\`\`\`csharp\n${verdictText}\n\`\`\``;
+    }
+    // ROUTE: THE CODE ENGINE
     else if (trimmedPrompt.toLowerCase().startsWith('/code ')) {
         const codeQuery = trimmedPrompt.substring(6).trim();
         verdictText = await safeGeminiCall(`Write optimal code for: "${codeQuery}"`, artemisPersona, false, false);
     }
-    // ROUTE: DEFAULT TEXT ENGINE (Uses Flash)
+    // ROUTE: DEFAULT TEXT ENGINE
     else {
         verdictText = await safeGeminiCall(prompt, artemisPersona, false, false);
     }
