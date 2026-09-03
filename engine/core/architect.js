@@ -12,7 +12,7 @@ const { pool } = require("./atlas-db"); // <-- ADDED SUPABASE CONNECTION
 class Architect {
   constructor() {
     this.bridge = geminiBridge;
-    this.model = "gemini-2.5-pro";
+    this.model = "gemini-3.7-flash";
     this.mode = "guest"; 
     this.directives = {
       nurture: "Prioritize good news, positive outcomes, constructive suggestions",
@@ -131,5 +131,3 @@ class Architect {
 }
 
 module.exports = new Architect();
-
-
