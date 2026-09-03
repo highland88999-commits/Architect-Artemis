@@ -1,5 +1,5 @@
-// Vercel Serverless timeout set to 1 minute for heavy 3D/Code generation
-export const maxDuration = 60;
+// Vercel Serverless timeout set to 5 minutes for heavy Video/3D/Code generation
+export const maxDuration = 300;
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -87,13 +87,48 @@ export default async function handler(req, res) {
           return res.status(200).json({ type: 'code', content });
       } 
       
-      // --- VIDEO GENERATION (GLSL Shader / WebGL Mastery) ---
+      // --- TRUE VIDEO GENERATION (Veo 3.1 Cinematic Engine) ---
       if (type === 'video') {
-          const videoInstruction = `You are a Master GLSL Shader Artist and WebGL Architect. Create a single-file HTML document with a looping, animated WebGL canvas that acts as a visualizer for: "${prompt}". 
-          Use either raw WebGL API or a full-screen Three.js ShaderMaterial. Implement a fragment shader utilizing time (u_time) and resolution (u_resolution) uniforms to create stunning, procedural math-based animations (raymarching, fractal noise, or SDFs). Ensure the render loop is synced with requestAnimationFrame. Return ONLY the raw HTML code.`;
+          const rawKey = process.env.GEMINI_API_KEY;
+          if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
           
-          const content = await askGemini(videoInstruction, null, true);
-          return res.status(200).json({ type: 'code', content });
+          console.log(`[Forge] Routing video request to Veo 3.1...`);
+          const veoModel = "veo-3.1-generate-preview";
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${veoModel}:generateContent?key=${rawKey.trim()}`;
+          
+          const payload = {
+              contents: [{ 
+                  role: "user", 
+                  parts: [{ text: `Generate a high-quality, highly detailed cinematic video: ${prompt}` }] 
+              }],
+              // Veo-specific generation config (aspect ratio, motion scale)
+              generationConfig: { 
+                  temperature: 0.7 
+              }
+          };
+
+          const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+              const errText = await response.text();
+              throw new Error(`Veo API [${veoModel}] (Status ${response.status}): ${errText}`);
+          }
+
+          const data = await response.json();
+          
+          // Veo returns a direct URI to the rendered .mp4 in the response parts
+          const videoUri = data.candidates?.[0]?.content?.parts?.[0]?.uri || data.candidates?.[0]?.content?.parts?.[0]?.text;
+          
+          if (!videoUri) {
+              throw new Error(`Veo API [${veoModel}] failed to return a valid video URI. Safety filters may have triggered.`);
+          }
+          
+          // Send back type 'video' and the URL so the frontend mounts the <video> player
+          return res.status(200).json({ type: 'video', url: videoUri });
       }
 
       // --- AUDIO GENERATION (Web Audio API Mastery) ---
