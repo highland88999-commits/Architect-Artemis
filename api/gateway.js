@@ -13,7 +13,6 @@ export default async function handler(req, res) {
       // Sanitize the key to prevent trailing newlines from causing 404 URL routing errors
       const apiKey = rawKey.trim();
       
-      // Upgraded to -latest to prevent 404 Model Not Found errors on restricted API tiers
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
       
       const response = await fetch(endpoint, {
@@ -89,6 +88,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Gateway Error:', error.message);
+    // Return 200 with an error string so the UI can handle it gracefully instead of crashing
     return res.status(200).json({ 
         type: 'code', 
         content: `// [SYSTEM ERROR] Forge Matrix Sync Failed.\n// Reason: ${error.message}` 
