@@ -419,8 +419,9 @@
             <div id="forge-type-selector">
                 <label class="forge-radio"><input type="radio" name="asset-type" value="image" checked><span>IMAGE</span></label>
                 <label class="forge-radio"><input type="radio" name="asset-type" value="video"><span>VIDEO</span></label>
-                <label class="forge-radio"><input type="radio" name="asset-type" value="code"><span>CODE</span></label>
                 <label class="forge-radio"><input type="radio" name="asset-type" value="audio"><span>AUDIO</span></label>
+                <label class="forge-radio"><input type="radio" name="asset-type" value="3d"><span>3D MODEL</span></label>
+                <label class="forge-radio"><input type="radio" name="asset-type" value="code"><span>CODE</span></label>
             </div>
 
             <div class="btn-group">
@@ -723,14 +724,21 @@
                         assetHtml = `<audio src="${data.url}" controls class="forge-audio"></audio>`;
                         actionButtons = `<button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="downloadForgeAsset('${data.url}', 'artemis-forge.mp3')">DOWNLOAD AUDIO</button>`;
                         break;
+                    case '3d':
                     case 'code':
                         const rawCode = data.content || data.code || '';
-                        window.lastForgedCode = rawCode; // Store globally for the copy function
+                        window.lastForgedCode = rawCode; 
+                        window.currentExtractedCode = rawCode; // Pass to Sandbox Holo
+                        
                         const safeCode = rawCode.replace(/[&<>'"]/g, tag => ({
                             '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
                         }[tag]));
                         assetHtml = `<pre class="forge-code"><code>${safeCode}</code></pre>`;
-                        actionButtons = `<button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="copyForgeCode()">COPY CODE</button>`;
+                        
+                        actionButtons = `
+                            <button id="forge-action-btn" class="holo-btn" style="margin-top: 15px; font-size: 0.8rem; padding: 10px 20px;" onclick="copyForgeCode()">COPY CODE</button>
+                            <button class="holo-btn" style="margin-top: 15px; margin-left: 10px; font-size: 0.8rem; padding: 10px 20px; border-color: #66ff66; color: #66ff66;" onclick="executeSandboxCode()">PREVIEW SANDBOX</button>
+                        `;
                         break;
                     default:
                         assetHtml = `<a href="${data.url}" download="${data.filename || 'download'}" class="holo-btn" style="text-decoration: none; display: inline-block; margin-top: 15px;">[ DOWNLOAD ASSET ]</a>`;
