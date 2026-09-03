@@ -94,16 +94,16 @@ export default async function handler(req, res) {
           
           console.log(`[Forge] Routing video request to Veo 3.1...`);
           const veoModel = "veo-3.1-generate-preview";
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${veoModel}:generateContent?key=${rawKey.trim()}`;
+          
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${veoModel}:predict?key=${rawKey.trim()}`;
           
           const payload = {
-              contents: [{ 
-                  role: "user", 
-                  parts: [{ text: `Generate a high-quality, highly detailed cinematic video: ${prompt}` }] 
-              }],
-              // Veo-specific generation config (aspect ratio, motion scale)
-              generationConfig: { 
-                  temperature: 0.7 
+              instances: [
+                  { prompt: `Generate a high-quality, highly detailed cinematic video: ${prompt}` }
+              ],
+              parameters: { 
+                  sampleCount: 1,
+                  aspectRatio: "16:9"
               }
           };
 
@@ -119,22 +119,57 @@ export default async function handler(req, res) {
           }
 
           const data = await response.json();
+          const videoData = data.predictions?.[0]?.videoUri || data.predictions?.[0]?.bytesBase64 || data.predictions?.[0]?.uri;
           
-          // Veo returns a direct URI to the rendered .mp4 in the response parts
-          const videoUri = data.candidates?.[0]?.content?.parts?.[0]?.uri || data.candidates?.[0]?.content?.parts?.[0]?.text;
-          
-          if (!videoUri) {
-              throw new Error(`Veo API [${veoModel}] failed to return a valid video URI. Safety filters may have triggered.`);
+          if (!videoData) {
+              throw new Error(`Veo API [${veoModel}] failed to return a valid video. Safety filters may have triggered.`);
           }
           
-          // Send back type 'video' and the URL so the frontend mounts the <video> player
-          return res.status(200).json({ type: 'video', url: videoUri });
+          const finalUrl = videoData.startsWith('http') ? videoData : `data:video/mp4;base64,${videoData}`;
+          return res.status(200).json({ type: 'video', url: finalUrl });
       }
 
-      // --- AUDIO GENERATION (Web Audio API Mastery) ---
+      // --- TRUE AUDIO GENERATION (Google Generative Audio / WebAudio Fallback) ---
       if (type === 'audio') {
-          const content = await askGemini(`Create a single-file HTML document with a procedural Web Audio API synthesizer that plays generative ambient frequencies matching this vibe: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and an analyzer node feeding a canvas oscilloscope. Return ONLY the raw HTML code.`, null, false);
-          return res.status(200).json({ type: 'code', content });
+          const rawKey = process.env.GEMINI_API_KEY;
+          if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
+          
+          console.log(`[Forge] Routing audio request to Audio Engine...`);
+          
+          try {
+              const audioModel = "music-bison-preview";
+              const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${audioModel}:predict?key=${rawKey.trim()}`;
+              
+              const payload = {
+                  instances: [{ prompt: `Generate high-fidelity ambient audio: ${prompt}` }],
+                  parameters: { durationSeconds: 15 }
+              };
+
+              const response = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+              });
+
+              if (!response.ok) throw new Error("Native Audio Bytes Unavailable.");
+
+              const data = await response.json();
+              const audioData = data.predictions?.[0]?.audioUri || data.predictions?.[0]?.bytesBase64;
+              
+              if (!audioData) throw new Error("Empty audio payload.");
+              
+              const finalUrl = audioData.startsWith('http') ? audioData : `data:audio/mp3;base64,${audioData}`;
+              return res.status(200).json({ type: 'audio', url: finalUrl });
+
+          } catch (audioError) {
+              console.warn(`[Forge] True Audio API bypassed. Synthesizing WebAudio Code via Gemini 3.7 Flash...`);
+              
+              // Fallback to high-end code generation if native bytes are restricted
+              const audioInstruction = `You are a Master Web Audio API Engineer. Create a single-file HTML document with a procedural synthesizer that plays generative audio matching: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and an analyzer node feeding a canvas oscilloscope. Return ONLY the raw HTML code.`;
+              
+              const content = await askGemini(audioInstruction, null, true); // usePro = true
+              return res.status(200).json({ type: 'code', content });
+          }
       }
     }
 
