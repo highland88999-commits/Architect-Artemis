@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PythonShell } from 'python-shell';
 import { triggerSentimentAnalysis } from '../core/synaptic-bridge.js';
 
@@ -15,19 +14,33 @@ async function runCouncilTask(scriptName, args = []) {
     });
 }
 
-// Helper to safely call Gemini directly without Emergent
+// Helper to safely call Gemini directly without the bulky SDK
 async function safeGeminiCall(prompt) {
     const rawKey = process.env.GEMINI_API_KEY;
     if (!rawKey) throw new Error("GEMINI_API_KEY missing.");
+    const apiKey = rawKey.trim();
     
-    const genAI = new GoogleGenerativeAI(rawKey.trim());
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+        })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Google API (Status ${response.status}): ${errText}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!text) {
-        throw new Error("The Council blocked this prompt or returned empty data (Likely a safety filter or binary file request).");
+        throw new Error("The Council blocked this prompt or returned empty data (Likely a safety filter or unsupported file request).");
     }
     return text;
 }
