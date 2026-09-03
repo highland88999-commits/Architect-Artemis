@@ -12,7 +12,7 @@ class GeminiClient {
       console.warn("⚠️ VERCEL WARNING: GEMINI_API_KEY is missing. Artemis's brain is offline.");
     }
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.defaultModel = 'gemini-1.5-pro'; // Or gemini-2.5-pro if you have early access
+    this.defaultModel = 'gemini-3.8-flash'; // Upgraded to latest architecture
   }
 
   /**
@@ -100,6 +100,3 @@ class GeminiClient {
 
 // We still export it as "geminiBridge" so we don't have to rewrite imports in architect.js
 module.exports = new GeminiClient();
-
-
-
