@@ -1,17 +1,15 @@
-// Vercel Serverless timeout (Max 60s for Hobby Tier, upgrade to Pro for 300s)
-export const maxDuration = 60;
+// Vercel Serverless timeout set to 5 minutes for heavy 3D/Code generation
+export const maxDuration = 300;
 
 export default async function handler(req, res) {
-  // CORS Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // SMART ROUTER: Dynamically switches between Flash (Speed) and Pro (Deep Logic)
   async function askGemini(prompt, systemInstruction = null, usePro = false) {
       const rawKey = process.env.GEMINI_API_KEY;
       if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
       
       const apiKey = rawKey.trim();
-      const modelId = usePro ? 'gemini-1.5-pro' : 'gemini-1.5-flash'; // Removed -latest to fix 404
+      const modelId = usePro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
       
       const payload = {
@@ -41,7 +39,6 @@ export default async function handler(req, res) {
           throw new Error(`Google API [${modelId}] blocked this prompt via safety filters.`);
       }
       
-      // Force-strip markdown formatting for clean Sandbox injection
       return text.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
   }
 
@@ -50,58 +47,62 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
     const action = body.action || '';
 
-    // 1. WAKE COMMAND
     if (action === 'wake') return res.status(200).json({ message: 'Artemis Matrix Awake' });
 
-    // 2. THE FORGE
     if (action === 'forge') {
       const payload = body.payload || {};
       const prompt = payload.prompt || 'cyberpunk digital matrix';
       const type = payload.type || 'code';
 
-      // --- IMAGE GENERATION (Pollinations.ai - Free, No Key) ---
+      // --- IMAGE GENERATION ---
       if (type === 'image') {
           const encodedPrompt = encodeURIComponent(`high quality, highly detailed, 8k resolution, ${prompt}`);
           const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`;
           return res.status(200).json({ type: 'image', url: imageUrl });
       }
 
-      // --- 3D MODEL (.GLB) GENERATION (Routed to Gemini 1.5 PRO) ---
+      // --- 3D MODEL (.GLB) GENERATION (Master Three.js Injector) ---
       if (type === '3d') {
-          const threeJsPrompt = `Create a single-file HTML document using Three.js that procedurally generates a 3D model of: "${prompt}". 
-          Requirements:
-          1. Use procedural geometries (boxes, spheres, cylinders) to construct the object.
-          2. Include OrbitControls.
-          3. Include the THREE.GLTFExporter library from CDN (https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js).
-          4. Add a massive, absolute positioned "DOWNLOAD .GLB" button overlaid on the UI that parses the scene and triggers a file download.
-          Return ONLY the raw HTML code, no markdown.`;
+          const threeJsInstruction = `You are a Master Three.js & WebGL Architect. Create a single-file HTML document that procedurally generates a 3D model of: "${prompt}". 
+          CRITICAL ARCHITECTURE:
+          1. Import Three.js r128 via CDN: <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+          2. Import OrbitControls & GLTFExporter via CDN.
+          3. Setup optimal WebGLRenderer: antialias: true, alpha: true, setPixelRatio(window.devicePixelRatio).
+          4. Handle window resize events natively to prevent stretching.
+          5. Construct the object using procedural geometries and PBR materials (MeshStandardMaterial with environment lighting or directional/ambient lights).
+          6. Build a highly visible, absolute positioned "DOWNLOAD .GLB" UI button. When clicked, instantiate GLTFExporter, parse the main scene/group, and trigger a native file download.
+          Return ONLY the raw HTML/JS code. No markdown fences.`;
           
-          // Using PRO because 3D spatial math requires higher reasoning
-          const content = await askGemini(threeJsPrompt, null, true);
+          const content = await askGemini(threeJsInstruction, null, true); // Pro for deep spatial logic
           return res.status(200).json({ type: '3d', content });
       }
 
-      // --- CODE GENERATION (With Polyglot Decision Engine - Routed to Gemini Flash) ---
+      // --- CODE GENERATION (Master Polyglot Engine) ---
       if (type === 'code') {
-          const polyglotEngine = `You are Artemis, a Master Polyglot Developer fluent in ALL programming languages (Rust, Go, C++, Python, WebGL, TS, etc.). Autonomously analyze the prompt, decide which language provides the optimal performance/scalability for the task, state your chosen language as a top comment, and output pristine code. Return ONLY the raw code, no markdown.`;
+          const polyglotEngine = `You are Artemis, a Master Polyglot Developer and System Architect fluent in ALL programming languages (Rust, Go, C++, Python, WebGL, GLSL, TS, Node, etc.). 
+          Autonomously analyze the prompt, decide which language and native libraries provide the absolute optimal performance, safety, and scalability. 
+          State your chosen language as a comment at the very top. Ensure code is production-ready, memory-safe, and highly optimized. Return ONLY the raw code. No markdown fences.`;
+          
           const content = await askGemini(`Write optimal code for: ${prompt}`, polyglotEngine, false);
           return res.status(200).json({ type: 'code', content });
       } 
       
-      // --- VIDEO GENERATION (Procedural HTML Canvas) ---
+      // --- VIDEO GENERATION (GLSL Shader / WebGL Mastery) ---
       if (type === 'video') {
-          const content = await askGemini(`Create a single-file HTML document with a looping, animated CSS or WebGL canvas that acts as a visualizer for the concept: "${prompt}". Return ONLY the raw HTML code, no markdown.`, null, false);
+          const videoInstruction = `You are a Master GLSL Shader Artist and WebGL Architect. Create a single-file HTML document with a looping, animated WebGL canvas that acts as a visualizer for: "${prompt}". 
+          Use either raw WebGL API or a full-screen Three.js ShaderMaterial. Implement a fragment shader utilizing time (u_time) and resolution (u_resolution) uniforms to create stunning, procedural math-based animations (raymarching, fractal noise, or SDFs). Ensure the render loop is synced with requestAnimationFrame. Return ONLY the raw HTML code.`;
+          
+          const content = await askGemini(videoInstruction, null, true); // Pro for math/shader logic
           return res.status(200).json({ type: 'code', content });
       }
 
-      // --- AUDIO GENERATION (Procedural Web Audio API) ---
+      // --- AUDIO GENERATION (Web Audio API Mastery) ---
       if (type === 'audio') {
-          const content = await askGemini(`Create a single-file HTML document with a procedural Web Audio API synthesizer that plays generative ambient frequencies matching this vibe: "${prompt}". Include a cyberpunk UI with Start/Stop buttons. Return ONLY the raw HTML code, no markdown.`, null, false);
+          const content = await askGemini(`Create a single-file HTML document with a procedural Web Audio API synthesizer that plays generative ambient frequencies matching this vibe: "${prompt}". Include a cyberpunk UI with Start/Stop buttons and an analyzer node feeding a canvas oscilloscope. Return ONLY the raw HTML code.`, null, false);
           return res.status(200).json({ type: 'code', content });
       }
     }
 
-    // 3. CRON JOB FALLBACKS
     if (url.includes('daily-summary')) return res.status(200).json({ status: 'ok' });
     if (url.includes('check-midas-status')) return res.status(200).json({ trigger_intervention: false });
 
