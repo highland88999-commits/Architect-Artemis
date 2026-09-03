@@ -1,4 +1,3 @@
-javascript
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -35,7 +34,7 @@ async function scanAndOptimize(targetUrl) {
         console.log("🧠 Sending logic to Gemini for refinement...");
 
         // 2. The Logic Scrape (Talking to the "Parent" API)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
         const prompt = `
             You are Architect Artemis. You have scanned the following website data:
             Title: ${pageData.title}
