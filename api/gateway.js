@@ -89,47 +89,61 @@ export default async function handler(req, res) {
           return res.status(200).json({ type: 'code', content });
       } 
       
-      // --- TRUE VIDEO GENERATION (Veo 3.1 Cinematic Engine) ---
+      // --- TRUE VIDEO GENERATION (Veo 3.1 Cinematic Engine with Lite Fallback) ---
       if (type === 'video') {
           const rawKey = process.env.GEMINI_API_KEY;
           if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
-          
-          console.log(`[Forge] Routing video request to Veo 3.1...`);
-          const veoModel = "veo-3.1-generate-preview";
-          
-          // CRITICAL FIX: Preview media models are locked to the v1alpha gateway
-          const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${veoModel}:predict?key=${rawKey.trim()}`;
-          
-          const payload = {
-              instances: [
-                  { prompt: `Generate a high-quality, highly detailed cinematic video: ${prompt}` }
-              ],
-              parameters: { 
-                  sampleCount: 1,
-                  aspectRatio: "16:9"
+          const apiKey = rawKey.trim();
+
+          // Reusable function to fetch from specific Veo model
+          async function generateVeoVideo(modelName) {
+              const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${modelName}:predict?key=${apiKey}`;
+              
+              const payload = {
+                  instances: [
+                      { prompt: `Generate a high-quality, highly detailed cinematic video: ${prompt}` }
+                  ],
+                  parameters: { 
+                      sampleCount: 1,
+                      aspectRatio: "16:9"
+                  }
+              };
+
+              const response = await fetch(endpoint, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+              });
+
+              if (!response.ok) {
+                  const errText = await response.text();
+                  throw new Error(`Veo API [${modelName}] (Status ${response.status}): ${errText}`);
               }
-          };
 
-          const response = await fetch(endpoint, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) {
-              const errText = await response.text();
-              throw new Error(`Veo API [${veoModel}] (Status ${response.status}): ${errText}`);
+              const data = await response.json();
+              const videoData = data.predictions?.[0]?.videoUri || data.predictions?.[0]?.bytesBase64 || data.predictions?.[0]?.uri;
+              
+              if (!videoData) {
+                  throw new Error(`Veo API [${modelName}] failed to return a valid video. Safety filters may have triggered.`);
+              }
+              
+              return videoData.startsWith('http') ? videoData : `data:video/mp4;base64,${videoData}`;
           }
 
-          const data = await response.json();
-          const videoData = data.predictions?.[0]?.videoUri || data.predictions?.[0]?.bytesBase64 || data.predictions?.[0]?.uri;
-          
-          if (!videoData) {
-              throw new Error(`Veo API [${veoModel}] failed to return a valid video. Safety filters may have triggered.`);
+          try {
+              console.log(`[Forge] Routing video request to primary Veo 3.1...`);
+              const finalUrl = await generateVeoVideo("veo-3.1-generate-preview");
+              return res.status(200).json({ type: 'video', url: finalUrl });
+          } catch (primaryError) {
+              console.warn(`[Forge] Primary Veo failed (${primaryError.message}). Falling back to Veo 3.1 Lite...`);
+              
+              try {
+                  const fallbackUrl = await generateVeoVideo("veo-3.1-lite-generate-preview");
+                  return res.status(200).json({ type: 'video', url: fallbackUrl });
+              } catch (fallbackError) {
+                  throw new Error(`Both primary and fallback Veo models failed. Last Error: ${fallbackError.message}`);
+              }
           }
-          
-          const finalUrl = videoData.startsWith('http') ? videoData : `data:video/mp4;base64,${videoData}`;
-          return res.status(200).json({ type: 'video', url: finalUrl });
       }
 
       // --- TRUE AUDIO GENERATION (Google Generative Audio / WebAudio Fallback) ---
@@ -141,8 +155,6 @@ export default async function handler(req, res) {
           
           try {
               const audioModel = "music-bison-preview";
-              
-              // CRITICAL FIX: Audio preview model locked to the v1alpha gateway
               const endpoint = `https://generativelanguage.googleapis.com/v1alpha/models/${audioModel}:predict?key=${rawKey.trim()}`;
               
               const payload = {
