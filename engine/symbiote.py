@@ -28,7 +28,7 @@ ARTEMIS_URL = "https://architect-artemis.vercel.app/api/transmit"  # Council end
 
 import google.generativeai as genai
 genai.configure(api_key=GEMINI_API_KEY)
-MODEL = "gemini-1.5-pro"  # or "gemini-1.5-flash" for speed
+MODEL = "gemini-3.7-flash"  # or "gemini-3.8-flash" for speed
 
 SUPPORTED_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx"}
 
