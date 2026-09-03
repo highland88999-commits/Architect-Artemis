@@ -1,5 +1,5 @@
-// Vercel Serverless timeout set to 5 minutes for heavy 3D/Code generation
-export const maxDuration = 300;
+// Vercel Serverless timeout set to 1 minute for heavy 3D/Code generation
+export const maxDuration = 60;
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -9,7 +9,7 @@ export default async function handler(req, res) {
       if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
       
       const apiKey = rawKey.trim();
-      const modelId = usePro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+      const modelId = usePro ? 'gemini-3.7-flash' : 'gemini-3.8-flash';
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
       
       const payload = {
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
           6. Build a highly visible, absolute positioned "DOWNLOAD .GLB" UI button. When clicked, instantiate GLTFExporter, parse the main scene/group, and trigger a native file download.
           Return ONLY the raw HTML/JS code. No markdown fences.`;
           
-          const content = await askGemini(threeJsInstruction, null, true); // Pro for deep spatial logic
+          const content = await askGemini(threeJsInstruction, null, true);
           return res.status(200).json({ type: '3d', content });
       }
 
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
           const videoInstruction = `You are a Master GLSL Shader Artist and WebGL Architect. Create a single-file HTML document with a looping, animated WebGL canvas that acts as a visualizer for: "${prompt}". 
           Use either raw WebGL API or a full-screen Three.js ShaderMaterial. Implement a fragment shader utilizing time (u_time) and resolution (u_resolution) uniforms to create stunning, procedural math-based animations (raymarching, fractal noise, or SDFs). Ensure the render loop is synced with requestAnimationFrame. Return ONLY the raw HTML code.`;
           
-          const content = await askGemini(videoInstruction, null, true); // Pro for math/shader logic
+          const content = await askGemini(videoInstruction, null, true);
           return res.status(200).json({ type: 'code', content });
       }
 
