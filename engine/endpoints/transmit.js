@@ -1,8 +1,8 @@
 import { PythonShell } from 'python-shell';
 import { triggerSentimentAnalysis } from '../core/synaptic-bridge.js';
 
-// Vercel Serverless timeout set to 5 minutes
-export const maxDuration = 300;
+// Vercel Serverless timeout set to 1 minute
+export const maxDuration = 60;
 
 async function runCouncilTask(scriptName, args = []) {
     return new Promise((resolve, reject) => {
@@ -20,7 +20,11 @@ async function safeGeminiCall(prompt, systemInstruction = null, enableSearch = f
     if (!rawKey) throw new Error("GEMINI_API_KEY missing.");
     
     const apiKey = rawKey.trim();
-    const modelId = usePro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+    
+    let modelId = 'gemini-3.8-flash'; 
+    if (usePro) modelId = 'gemini-3.7-flash'; 
+    if (prompt.includes('autonomous') || prompt.includes('Linux')) modelId = 'antigravity-preview-05-2026';
+    
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
     
     const payload = {
