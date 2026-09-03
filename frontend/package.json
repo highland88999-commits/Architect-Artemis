@@ -56,8 +56,9 @@
     "zod": "^3.24.4"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
+    "build:voice": "wasm-pack build ../artemis_voice --target web --out-dir ./src/wasm",
+    "start": "npm run build:voice && craco start",
+    "build": "npm run build:voice && craco build",
     "test": "craco test"
   },
   "browserslist": {
@@ -91,8 +92,8 @@
     "express": "^4.19.2",
     "globals": "15.15.0",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "wasm-pack": "^0.12.1"
   },
-
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
