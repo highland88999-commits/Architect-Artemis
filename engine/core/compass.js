@@ -9,7 +9,12 @@ const { pool } = require("./atlas-db"); // <-- ADDED SUPABASE CONNECTION
 
 class Compass {
   constructor() {
-    this.directivesPath = path.join(process.cwd(), 'engine', 'ethics-core', 'directives.json');
+    // RESOLVED PATH: Targets root ethics-core directory
+    const rootPath = path.resolve(__dirname, '../../');
+    this.directivesPath = fs.existsSync(path.join(rootPath, 'ethics-core', 'directives.json'))
+      ? path.join(rootPath, 'ethics-core', 'directives.json')
+      : path.join(process.cwd(), 'ethics-core', 'directives.json');
+
     this.directives = {
       nurture: { keywords: ["positive", "growth", "constructive", "good news", "uplift"], violation: ["harm", "dehumanize", "exploit", "negative bias", "spam"] },
       organize: { keywords: ["structure", "catalog", "clean", "rigid"], violation: ["chaos", "disorder", "duplicate", "unfiled"] },
@@ -97,5 +102,3 @@ class Compass {
 }
 
 module.exports = new Compass();
-
-
