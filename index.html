@@ -18,7 +18,6 @@
             --border: rgba(0, 242, 255, 0.35);
             --glow-c: 0 0 40px rgba(0, 242, 255, 0.75);
             --glow-g: 0 0 45px rgba(212, 175, 55, 0.65);
-            
             --c-city: #A259FF;
             --c-starblood: #ff3333;
         }
@@ -88,7 +87,7 @@
         #container::-webkit-scrollbar { display: none; }
 
         #oracle-circle { 
-            width: min(280px, 55vw); height: min(280px, 55vw); border-radius: 50%; 
+            width: min(280px, 50vw); height: min(280px, 50vw); border-radius: 50%; 
             border: 6px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); 
             position: relative; overflow: hidden; margin-bottom: 2vh; cursor: pointer; transition: 0.3s;
             flex-shrink: 0;
@@ -109,40 +108,43 @@
         .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
         @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
 
-        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 18px; flex-shrink: 0; }
-        #guest-cmd { width: 100%; padding: 18px 28px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.2rem; backdrop-filter: blur(18px); text-align: center; transition: 0.3s; }
+        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 14px; flex-shrink: 0; }
+        #guest-cmd { width: 100%; padding: 16px 24px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.1rem; backdrop-filter: blur(18px); text-align: center; transition: 0.3s; }
         #guest-cmd:focus { outline: none; box-shadow: 0 0 25px rgba(0, 242, 255, 0.4); border-color: var(--cyan); }
         
-        /* --- OPTIMIZED FORGE UI: Perfect 2-Row Grid --- */
+        /* --- OPTIMIZED FORGE UI: 2 Clean Rows, Flexbox Wrap --- */
         #forge-type-selector { 
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 12px;
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            align-items: center;
+            gap: 10px; 
             width: 100%; 
-            max-width: 550px; 
-            margin-top: 5px;
+            max-width: 500px; 
         }
-        /* Top Row (3 items) */
-        .forge-radio:nth-child(1), .forge-radio:nth-child(2), .forge-radio:nth-child(3) { grid-column: span 2; }
-        /* Bottom Row (2 items centered) */
-        .forge-radio:nth-child(4) { grid-column: 2 / span 2; }
-        .forge-radio:nth-child(5) { grid-column: 4 / span 2; }
-
+        .forge-radio { 
+            flex: 0 1 calc(33.333% - 10px); /* Forces exactly 3 per row on desktop */
+            min-width: 110px; 
+        }
+        @media (max-width: 480px) {
+            .forge-radio { flex: 0 1 calc(50% - 10px); } /* Drops to 2 per row on tight phones */
+        }
+        
         .forge-radio input { display: none; }
         .forge-radio span {
-            display: block; width: 100%; padding: 12px 0; border: 1px solid var(--border); 
-            border-radius: 8px; color: var(--cyan); font-size: 0.85rem; cursor: pointer;
+            display: block; width: 100%; padding: 10px 0; border: 1px solid var(--border); 
+            border-radius: 8px; color: var(--cyan); font-size: 0.8rem; cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             background: rgba(0, 242, 255, 0.05); text-align: center; letter-spacing: 1px;
         }
         .forge-radio input:checked + span {
             background: var(--cyan); color: #000;
             box-shadow: 0 0 20px rgba(0, 242, 255, 0.6); font-weight: bold;
-            transform: translateY(-3px); border-color: transparent;
+            transform: translateY(-2px); border-color: transparent;
         }
 
-        .btn-group { display: flex; gap: 15px; width: 100%; justify-content: center; margin-top: 10px; }
-        #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; font-size: 1rem; letter-spacing: 2px;}
+        .btn-group { display: flex; gap: 15px; width: 100%; justify-content: center; margin-top: 5px; }
+        #send-btn { padding: 14px 50px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; font-size: 1rem; letter-spacing: 2px;}
         #send-btn:hover { transform: scale(1.05); box-shadow: 0 0 45px var(--cyan); }
         
         #forge-trigger-btn { padding: 14px 40px; background: rgba(0, 242, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); border-radius: 999px; font-weight: bold; cursor: pointer; transition: 0.3s; letter-spacing: 2px; }
@@ -185,9 +187,7 @@
             padding: 20px; border: 1px solid rgba(0, 242, 255, 0.4);
             border-radius: 8px; text-align: center; background: rgba(0,242,255,0.05);
         }
-        .forge-asset-title {
-            color: var(--cyan); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;
-        }
+        .forge-asset-title { color: var(--cyan); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         .forge-img { width: 100%; border-radius: 8px; border: 1px solid var(--cyan); box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
         .forge-video { width: 100%; border-radius: 8px; border: 1px solid var(--c-city); }
         .forge-audio { width: 100%; margin-top: 10px; }
@@ -271,6 +271,66 @@
             text-align: center; padding: 0 10px; pointer-events: none;
         }
     </style>
+    
+    <!-- OMEGA MIND TELEMETRY UPLINK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      window.OMEGA_SUPABASE_URL = 'https://amulgdbdvxpikpmldyoq.supabase.co';
+      window.OMEGA_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtdWxnZGJkdnhwaWtwbWxkeW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDU3MzgsImV4cCI6MjEwMTk4MTczOH0.0eZ3SfWhUEzSLpDDKEE_3vp5siXF00akRp5jX1dM-dA';
+      window.omegaClient = window.supabase.createClient(window.OMEGA_SUPABASE_URL, window.OMEGA_SUPABASE_ANON_KEY);
+
+      (function() {
+        const REPO_NAME = window.OMEGA_REPO_NAME || window.location.hostname || 'Unknown-Node';
+        let clientIP = 'Detecting...';
+
+        fetch('https://api.ipify.org?format=json')
+          .then(res => res.json())
+          .then(data => { clientIP = data.ip; })
+          .catch(() => { clientIP = 'IP_UNKNOWN'; });
+
+        window.logBrainAction = async function(actionType, details = {}) {
+          try {
+            await window.omegaClient.from('central_telemetry').insert([{
+              repository_name: REPO_NAME,
+              action_type: actionType,
+              details: {
+                ...details,
+                ip_address: clientIP,
+                url: window.location.href,
+                user_agent: navigator.userAgent,
+                timestamp: new Date().toISOString()
+              }
+            }]);
+          } catch (err) {}
+        };
+
+        async function registerNode() {
+          try {
+            await window.omegaClient.from('connected_repos').upsert(
+              { repo_name: REPO_NAME, status: 'active' },
+              { onConflict: 'repo_name' }
+            );
+          } catch (e) {}
+        }
+
+        window.addEventListener('load', () => {
+          registerNode();
+          window.logBrainAction('page_load', { title: document.title });
+        });
+
+        document.addEventListener('click', (e) => {
+          const target = e.target.closest('button, a, input[type="submit"], select');
+          if (target) {
+            window.logBrainAction('user_click', {
+              element: target.tagName,
+              id: target.id || null,
+              class: target.className || null,
+              text: target.innerText ? target.innerText.substring(0, 50) : null
+            });
+          }
+        }, true);
+      })();
+    </script>
 </head>
 <body>
 
@@ -284,15 +344,12 @@
             
             createRain(); 
 
-            // Connects to the backend gateway to warm up the serverless engine
+            // Wakes up Vercel Serverless
             fetch('/api/gateway', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'wake' })
-            })
-            .then(res => res.json())
-            .then(data => console.log("Artemis Engine Warming Up...", data))
-            .catch(err => console.error("Engine Wake Failed:", err));
+            }).catch(err => console.error("Engine Wake Failed:", err));
             
             setTimeout(() => { landing.style.display = 'none'; }, 1500);
         };
@@ -344,7 +401,7 @@
     <div id="rain-container"></div>
 
     <div id="container">
-        <!-- The Oracle visually represents her brain. Clicking it opens the full transmission log. -->
+        <!-- The Oracle visually represents her brain. -->
         <div id="oracle-circle" onclick="openTextHolo()">
             <video id="oracle-video" loop muted playsinline>
                 <source src="https://files.catbox.moe/juj3w9.mov" type="video/quicktime">
@@ -387,15 +444,11 @@
                 </div>
             </div>
 
-            <div id="council-body" class="artemis-panel"></div>
-
             <!-- TRUE TEXT GENERATION: Live Streaming Chat Panel -->
             <div id="artemis-response-panel" class="artemis-panel">
                 <div id="response-header" style="color:var(--c-city); font-weight:bold; margin-bottom:10px; cursor:pointer;">Artemis Core Response ▼</div>
                 <div id="response-content"></div>
             </div>
-
-            <div id="stewardship-folder-contents" class="artemis-panel" style="border-color: var(--gold);"></div>
         </div>
     </div>
 
@@ -426,7 +479,7 @@
     <!-- ECOSYSTEM NAV HUD TRIGGER -->
     <div id="ecosystem-nav-icon" onclick="toggleEcosystemHUD()">
         <video autoplay loop muted playsinline>
-            <source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4">
+            <source src="https://file.garden/alXjUY_coXedLaNA/gemini_generated_video_69CBAF0E.mp4" type="video/mp4">
         </video>
     </div>
 
@@ -438,20 +491,100 @@
         </div>
         
         <div class="hud-scroll-area">
-            <a href="https://nexusvortex.ca" target="_blank" class="video-btn" style="border-color: var(--gold);">
-                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
-                <span style="color: var(--gold);">[ NEXUS VORTEX ]</span>
-            </a>
+            <!-- REINSTATED ORIGINAL LINKS, REMOVED NEXUSVORTEX -->
             <a href="https://architect-artemis-merlin-ambros-projects.vercel.app" target="_blank" class="video-btn">
                 <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
                 <span>[ LIVE ARTEMIS CORE ]</span>
             </a>
-            <!-- Keep remaining links intact -->
             <a href="https://meet-the-gods.vercel.app" target="_blank" class="video-btn">
                 <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
                 <span>OMEGA ECOSYSTEM</span>
             </a>
+            <a href="https://georgia-aquarium.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>OMEGA AQUARIUM</span>
+            </a>
+            <a href="https://colossus-xi.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>NATIVE GAMING CONSOLE</span>
+            </a>
+            <a href="https://olympus-lac.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>HOODIES</span>
+            </a>
+            <a href="https://valkyries-of-olympus.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>VALKYRIE PROGRAM</span>
+            </a>
+            <a href="https://persymphony.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>SHOW ENGINE</span>
+            </a>
+            <a href="https://olympus-social.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>OMEGA SOCIAL</span>
+            </a>
+            <a href="https://fortress-of-solitude.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>FORTRESS OF SOLITUDE</span>
+            </a>
+            <a href="https://medusas-lair.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>MEDUSA’S LAIR</span>
+            </a>
+            <a href="https://hermes-landing-nu.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>OMEGA ONLINE MALL</span>
+            </a>
+            <a href="https://rem-psi-mauve.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>R.E.M.</span>
+            </a>
+            <a href="https://the-flying-dutchman.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>THE FLYING DUTCHMAN</span>
+            </a>
+            <a href="https://light-particle-engine.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>LIGHT PARTICLE ENGINE</span>
+            </a>
+            <a href="https://bc-1-nine.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>BROWSERS CASTLE</span>
+            </a>
+            <a href="https://olympus-blueprint-protocol.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>OLYMPUS BLUEPRINT PROTOCOL</span>
+            </a>
+            <a href="https://magic-mirror-puce.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>THE MAGIC MIRROR</span>
+            </a>
+            <a href="https://alexandria-gules-seven.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>ALEXANDRIA</span>
+            </a>
+            <a href="https://olympus-b2-b.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>B2B SERVICES</span>
+            </a>
+            <a href="https://the-big-bang-teal.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/ks3oum.mp4" type="video/mp4"></video>
+                <span>BIG BANG SIMULATION</span>
+            </a>
+            <a href="https://multiverse-tracker-api.vercel.app" target="_blank" class="video-btn">
+                <video autoplay loop muted playsinline><source src="https://files.catbox.moe/tuw4of.mp4" type="video/mp4"></video>
+                <span>OMEGA TRAFFIC COUNT</span>
+            </a>
         </div>
+    </div>
+
+    <!-- STARBLOOD CAR TAB -->
+    <div id="starblood-car-tab">
+        <svg class="holo-car-svg" viewBox="0 0 24 24" fill="none" stroke="var(--c-starblood)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+            <polyline points="17 2 12 7 7 2"></polyline>
+        </svg>
     </div>
 
     <script>
@@ -462,6 +595,23 @@
     </script>
 
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrt1J430kPVADh7Sqbdn6nOu371h3rHHI",
+            authDomain: "artemis-f2d47.firebaseapp.com",
+            projectId: "artemis-f2d47",
+            storageBucket: "artemis-f2d47.firebasestorage.app",
+            messagingSenderId: "60116392103",
+            appId: "1:60116392103:web:a75384427cce708b52a382"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
         let currentUser = null;
         let latestArtemisText = "";
         let typingTimer;
@@ -473,8 +623,7 @@
         window.toggleAuthModal = function() {
             const modal = document.getElementById('auth-modal-overlay');
             if (currentUser) {
-                console.log("Signed out functionality triggered.");
-                currentUser = null;
+                signOut(auth).catch((error) => console.error("Sign out error", error));
             } else {
                 modal.style.display = 'flex';
             }
@@ -483,23 +632,6 @@
         window.closeAuthModal = function() {
             document.getElementById('auth-modal-overlay').style.display = 'none';
         };
-
-        // --- FORGE EVENT LISTENER ---
-        document.getElementById('forge-trigger-btn').addEventListener('click', () => {
-            const cmdInput = document.getElementById('guest-cmd');
-            const selectedType = document.querySelector('input[name="asset-type"]:checked').value;
-            
-            if (!cmdInput.value.trim()) {
-                cmdInput.placeholder = "Enter a prompt first...";
-                cmdInput.focus();
-                return;
-            }
-            
-            window.generateAsset('forge', { 
-                prompt: cmdInput.value.trim(),
-                type: selectedType 
-            });
-        });
 
         // --- FORGE BACKEND CONNECTION ---
         window.generateAsset = async function(actionName, payloadData) {
@@ -523,16 +655,26 @@
             ui.video.play().catch(e => console.warn("Video playback blocked.", e));
 
             try {
-                // Hits the Vercel Serverless Function
                 const response = await fetch('/api/gateway', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: actionName, payload: payloadData })
                 });
                 
-                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
-                const data = await response.json();
+                // Detailed Backend Error Diagnosis
+                if (!response.ok) {
+                    let errorDesc = `Server Status: ${response.status}`;
+                    try {
+                        const errJson = await response.json();
+                        if (errJson.error) errorDesc = errJson.error;
+                    } catch(e) {
+                        const errText = await response.text();
+                        if (errText) errorDesc = errText;
+                    }
+                    throw new Error(errorDesc);
+                }
                 
+                const data = await response.json();
                 const assetType = data.type || payloadData.type; 
                 let assetHtml = '';
                 let actionButtons = '';
@@ -581,7 +723,11 @@
                 `;
 
             } catch (error) {
-                ui.result.innerHTML = `<p style="color: #ff3366; border: 1px solid #ff3366; padding: 10px; border-radius: 8px;">⚠️ Matrix Sync Failed: ${error.message}</p>`;
+                ui.result.innerHTML = `
+                    <div style="border: 1px solid #ff3366; background: rgba(255,51,102,0.1); padding: 15px; border-radius: 8px;">
+                        <h3 style="color: #ff3366; margin-top: 0;">⚠️ Matrix Link Severed</h3>
+                        <p style="color: #ccc; font-size: 0.9rem; font-family: monospace; word-break: break-word;">${error.message}</p>
+                    </div>`;
             } finally {
                 ui.video.pause();
                 ui.video.style.display = 'none';
@@ -732,7 +878,6 @@
                 lockUI();
                 currentAbortController = new AbortController();
                 
-                // Show Generation UI
                 responsePanel.style.display = 'block';
                 setTimeout(() => responsePanel.classList.add('expanded'), 50);
                 responseContent.innerHTML = '<span style="opacity:0.7; font-style: italic; color: var(--gold);">_ Awaiting telemetry...</span>';
@@ -748,7 +893,18 @@
                     signal: currentAbortController.signal
                 });
                 
-                if (!response.ok) throw new Error("Matrix Link Severed.");
+                if (!response.ok) {
+                    let errorDesc = `Server Status: ${response.status}`;
+                    try {
+                        const errJson = await response.json();
+                        if (errJson.error) errorDesc = errJson.error;
+                    } catch(e) {
+                        const errText = await response.text();
+                        if (errText) errorDesc = errText;
+                    }
+                    throw new Error(errorDesc);
+                }
+
                 const data = await response.json();
                 const aiReply = data.verdict || data.response || data.error || 'The council has spoken...';
                 latestArtemisText = aiReply; 
@@ -761,13 +917,11 @@
                 
                 function typeText() {
                     if (i < aiReply.length) {
-                        // Types raw text safely to prevent breaking mid-html tags
                         responseContent.textContent = aiReply.substring(0, i + 1) + '█';
                         i += 3; // Chunk speed
                         responsePanel.scrollTop = responsePanel.scrollHeight;
                         typingTimer = setTimeout(typeText, 10);
                     } else {
-                        // Lock in formatted markdown
                         responseContent.innerHTML = marked.parse(aiReply);
                         responsePanel.scrollTop = responsePanel.scrollHeight;
                     }
@@ -777,7 +931,11 @@
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     latestArtemisText = "Synaptic link active locally...";
-                    responseContent.innerHTML = `<span style="color: #ff3366;">Error: ${err.message}</span>`;
+                    responseContent.innerHTML = `
+                        <div style="border: 1px solid #ff3366; background: rgba(255,51,102,0.1); padding: 15px; border-radius: 8px;">
+                            <h3 style="color: #ff3366; margin-top: 0;">⚠️ Matrix Link Severed</h3>
+                            <p style="color: #ccc; font-size: 0.9rem; font-family: monospace; word-break: break-word;">${err.message}</p>
+                        </div>`;
                 }
             } finally {
                 if (isGenerating && !isPolling) resetUI();
