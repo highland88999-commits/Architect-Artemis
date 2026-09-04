@@ -9,7 +9,7 @@ const { pool } = require("./atlas-db"); // <-- ADDED SUPABASE CONNECTION
 
 class Compass {
   constructor() {
-    // RESOLVED PATH: Targets root ethics-core directory
+    // RESOLVED PATH: Targets root ethics-core directory[span_3](start_span)[span_3](end_span)
     const rootPath = path.resolve(__dirname, '../../');
     this.directivesPath = fs.existsSync(path.join(rootPath, 'ethics-core', 'directives.json'))
       ? path.join(rootPath, 'ethics-core', 'directives.json')
