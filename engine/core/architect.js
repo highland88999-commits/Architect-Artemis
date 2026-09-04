@@ -48,7 +48,7 @@ class Architect {
 
     let directives;
     try {
-      // RESOLVED PATH: Targets root ethics-core directory
+      // RESOLVED PATH: Targets root ethics-core directory[span_4](start_span)[span_4](end_span)
       const rootPath = path.resolve(__dirname, '../../');
       const dirPath = fs.existsSync(path.join(rootPath, 'ethics-core', 'directives.json'))
         ? path.join(rootPath, 'ethics-core', 'directives.json')
