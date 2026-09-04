@@ -1,7 +1,19 @@
+import sys
+from pathlib import Path
+
+# Bootstrap local engine directory to system path
+CURRENT_DIR = Path(__file__).resolve().parent
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
+
+from quantumengine import QuantumEngine
+from physicsengine import PhysicsEngine
+from mathengine import MathEngine
 
 app = FastAPI(title="Artemis AI Matrix", version="1.0.0")
 
@@ -47,7 +59,6 @@ def analyze_sentiment(payload: TextPayload):
 @app.post("/quantum/simulate")
 def quantum_simulate(payload: QuantumPayload):
     try:
-        from .quantumengine import QuantumEngine
         artemis_q = QuantumEngine()
         if payload.operation == "superposition":
             return {"success": True, "operation": "superposition", "state_matrix": str(artemis_q.simulate_superposition())}
@@ -61,11 +72,7 @@ def quantum_simulate(payload: QuantumPayload):
 
 @app.post("/physics/calculate")
 def calculate_physics(payload: PhysicsPayload):
-    """
-    Provides Artemis with an understanding of physical laws.
-    """
     try:
-        from .physicsengine import PhysicsEngine
         engine = PhysicsEngine()
         
         if payload.law == "relativity":
@@ -89,17 +96,10 @@ def calculate_physics(payload: PhysicsPayload):
 
 @app.post("/math/calculate")
 def calculate_math(payload: MathPayload):
-    """
-    Provides Artemis with comprehensive mathematical capabilities.
-    """
     try:
-        from .mathengine import MathEngine
         engine = MathEngine()
         result = engine.execute(payload.category, payload.operation, payload.params)
         return {"success": True, "category": payload.category, "operation": payload.operation, "result": result}
     except Exception as e:
         logging.error(f"Math Calculation Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-
