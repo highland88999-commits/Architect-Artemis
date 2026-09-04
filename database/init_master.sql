@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS inspirations (
     captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ADDED: Midas Status Table for Watchdog & Pivot
+-- ADDED: Midas Status Table for Watchdog & Pivot[span_0](start_span)[span_0](end_span)
 CREATE TABLE IF NOT EXISTS midas_status (
     id INTEGER PRIMARY KEY DEFAULT 1,
     trigger_intervention BOOLEAN DEFAULT FALSE,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS midas_status (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed initial row required by check-midas-status and reset-midas-status
+-- Seed initial row required by check-midas-status and reset-midas-status[span_1](start_span)[span_1](end_span)
 INSERT INTO midas_status (id, trigger_intervention, lost_id, target_id, latest_guidance)
 VALUES (1, FALSE, NULL, NULL, 'System nominal. Awaiting telemetry.')
 ON CONFLICT (id) DO NOTHING;
