@@ -48,7 +48,11 @@ class Architect {
 
     let directives;
     try {
-      const dirPath = path.join(process.cwd(), 'engine', 'ethics-core', 'directives.json');
+      // RESOLVED PATH: Targets root ethics-core directory
+      const rootPath = path.resolve(__dirname, '../../');
+      const dirPath = fs.existsSync(path.join(rootPath, 'ethics-core', 'directives.json'))
+        ? path.join(rootPath, 'ethics-core', 'directives.json')
+        : path.join(process.cwd(), 'ethics-core', 'directives.json');
       directives = await fs.readJson(dirPath);
     } catch (err) {
       directives = { prime_directives: this.directives };
