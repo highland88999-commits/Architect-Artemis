@@ -1,38 +1,39 @@
-// app/api/gemini/route.ts
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { NextRequest, NextResponse } from 'next/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+export default async function handler(req, res) {
+  // --- CORS Preflight & Headers ---
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
 
-if (!GEMINI_API_KEY) {
-  console.error('[Gemini API Route] GEMINI_API_KEY is not set in environment variables');
-}
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
 
-export async function POST(req: NextRequest) {
-  // ─── Early exit if key missing ───
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
-    return NextResponse.json(
-      { error: 'Server configuration error: API key unavailable' },
-      { status: 503 }
-    );
+    console.error('[Gemini API] Missing GEMINI_API_KEY');
+    return res.status(503).json({ error: 'Server configuration error: API key unavailable' });
   }
 
   try {
-    const body = await req.json();
-    const { query, systemPrompt = '', stream = false } = body;
+    // Safely parse body for Vercel environments
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const { query, systemPrompt = '' } = body;
 
-    // ─── Input validation ───
+    // --- Input Validation ---
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Valid "query" string is required' },
-        { status: 400 }
-      );
+      return res.status(400).json({ error: 'Valid "query" string is required' });
     }
 
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
+    // --- Model Initialization & Configuration ---
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.trim());
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.8-flash', // or gemini-3.7-flash / gemini-2.0-flash etc.
+      model: 'gemini-3.8-flash',
       generationConfig: {
         temperature: 0.7,
         topP: 0.95,
@@ -40,86 +41,35 @@ export async function POST(req: NextRequest) {
         maxOutputTokens: 8192,
       },
       safetySettings: [
-        {
-          category: 'HARM_CATEGORY_HARASSMENT',
-          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-        },
-        {
-          category: 'HARM_CATEGORY_HATE_SPEECH',
-          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-        },
-        // Add more if desired
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
       ],
-      systemInstruction: systemPrompt.trim() || undefined,
+      systemInstruction: systemPrompt.trim() ? { parts: [{ text: systemPrompt.trim() }] } : undefined,
     });
 
-    if (stream) {
-      // ─── Streaming response (recommended for UX) ───
-      const streamResult = await model.generateContentStream(query);
-
-      const encoder = new TextEncoder();
-      const readable = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of streamResult.stream) {
-              const text = chunk.text();
-              if (text) {
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
-              }
-            }
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-          } catch (err) {
-            controller.error(err);
-          }
-        },
-      });
-
-      return new NextResponse(readable, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
-    }
-
-    // ─── Non-streaming (classic) ───
+    // --- Execution ---
     const result = await model.generateContent(query);
-
     const text = result.response.text();
 
-    return NextResponse.json({ response: text }, { status: 200 });
+    return res.status(200).json({ response: text });
 
-  } catch (err: any) {
-    console.error('[Gemini API Route] Error:', {
+  } catch (err) {
+    // --- Robust Error Handling ---
+    console.error('[Gemini API Route Error]:', {
       message: err.message,
-      stack: err.stack?.slice(0, 300),
-      code: err.code,
       status: err.status,
+      code: err.code
     });
 
     const status = err.status || 500;
     let message = 'Internal server error';
 
-    if (err.status === 429) {
+    if (status === 429) {
       message = 'Rate limit exceeded – please try again in a few moments';
-    } else if (err.status === 400 || err.status === 403) {
+    } else if (status === 400 || status === 403) {
       message = err.message || 'Invalid request to Gemini API';
     }
 
-    return NextResponse.json({ error: message }, { status });
+    return res.status(status).json({ error: message });
   }
-}
-
-// Optional: Add HEAD/OPTIONS for CORS preflight if needed
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
 }
