@@ -4,15 +4,17 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
-        <meta name="description" content="A product of emergent.sh" />
+        <meta name="description" content="Artemis • AI Matrix" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />
+        
         <title>Artemis • AI Matrix</title>
         
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
         
         <script>
+            // Only load visual edit scripts when inside an iframe
             if (window.self !== window.top) {
                 var debugMonitorScript = document.createElement('script');
                 debugMonitorScript.src = 'https://assets.emergent.sh/scripts/debug-monitor.js';
@@ -28,8 +30,8 @@
                 document.head.appendChild(tailwindScript);
             }
         </script>
-
-        <!-- Artemis Base Styling to Prevent FOUC (White Flash) -->
+        
+        <!-- Base Artemis Global Styles to prevent FOUC (Flash of unstyled content) -->
         <style>
             body, html { 
                 margin: 0; padding: 0; width: 100%; height: 100%; 
@@ -41,6 +43,7 @@
                 position: fixed; inset: 0; width: 100%; height: 100%;
                 object-fit: cover; z-index: -1; opacity: 0.35; pointer-events: none;
             }
+            /* React Root needs to sit above the video */
             #root { position: relative; z-index: 1; }
         </style>
     </head>
@@ -55,6 +58,7 @@
         <!-- React Mount Point -->
         <div id="root"></div>
 
+        <!-- Emergent Badge -->
         <a
             id="emergent-badge"
             target="_blank"
