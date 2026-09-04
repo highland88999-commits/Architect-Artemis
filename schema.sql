@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. Midas Status (Watchdog & Pivot Data)
+-- 6. Midas Status (Watchdog & Pivot Data)[span_2](start_span)[span_2](end_span)
 CREATE TABLE IF NOT EXISTS midas_status (
     id INTEGER PRIMARY KEY DEFAULT 1,
     trigger_intervention BOOLEAN DEFAULT FALSE,
