@@ -79,6 +79,16 @@ CREATE TABLE IF NOT EXISTS logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 6. Midas Status (Watchdog & Pivot Data)
+CREATE TABLE IF NOT EXISTS midas_status (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    trigger_intervention BOOLEAN DEFAULT FALSE,
+    lost_id TEXT,
+    target_id TEXT,
+    latest_guidance TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_internet_map_url ON internet_map(url);
 CREATE INDEX IF NOT EXISTS idx_harvests_url ON harvests(url);
@@ -105,6 +115,6 @@ INSERT INTO logs (event_type, details)
 VALUES ('genesis', '{"message": "Database schema initialized", "version": "1.0", "date": "2026-01-17"}')
 ON CONFLICT DO NOTHING;
 
--- Optional: Foreign key examples (uncomment if using PostgreSQL)
--- ALTER TABLE harvests ADD CONSTRAINT fk_harvests_map FOREIGN KEY (url) REFERENCES internet_map(url);
--- ALTER TABLE inventions ADD CONSTRAINT fk_inventions_source FOREIGN KEY (source_url) REFERENCES internet_map(url);
+INSERT INTO midas_status (id, trigger_intervention, lost_id, target_id, latest_guidance)
+VALUES (1, FALSE, NULL, NULL, 'System nominal. Awaiting telemetry.')
+ON CONFLICT (id) DO NOTHING;
