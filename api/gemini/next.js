@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// Rewritten as a standard Vercel serverless Node.js handler[span_7](start_span)[span_7](end_span)
 export default async function handler(req, res) {
   // --- CORS Preflight & Headers ---
   res.setHeader('Access-Control-Allow-Origin', '*');
