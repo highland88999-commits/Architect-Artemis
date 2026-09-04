@@ -93,7 +93,7 @@ async function agentLoop(query, handshake = 'stranger') {
             },
             {
                 name: 'requestPaymentProcurement',
-                description: 'Emails the Architect requesting real Stripe/Crypto links. Pauses forging until links are provided. Use when monetizing high-value creations (e.g. Olympus Hoodie Store features).',
+                description: 'Emails the Architect requesting real Stripe/Crypto links. Pauses forging until links are provided.',
                 parameters: {
                     targetRepo: 'string',
                     filePath: 'string',
@@ -170,7 +170,7 @@ Solve every query by synthesizing:
                         case 'createAppPackage':
                             toolResult = await createAppPackage(args.appName, args.files);
                             break;
-                        case 'createAgent':
+                        case 'createAgent': //[span_5](start_span)[span_5](end_span) - Resolved truncation issue
                             toolResult = await geminiBridge.createAgent(
                                 args.name,
                                 args.purpose,
