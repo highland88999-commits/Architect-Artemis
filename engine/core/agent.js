@@ -171,4 +171,62 @@ Solve every query by synthesizing:
                             toolResult = await createAppPackage(args.appName, args.files);
                             break;
                         case 'createAgent':
-​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
+                            toolResult = await geminiBridge.createAgent(
+                                args.name,
+                                args.purpose,
+                                args.system_prompt,
+                                args.tools || []
+                            );
+                            break;
+                        case 'calculate':
+                            toolResult = await calculate(args.expression);
+                            break;
+                        case 'executeCode':
+                            toolResult = await executeCode(args.code);
+                            break;
+                        case 'scanRepository':
+                            toolResult = await getRepoTree(args.repoName);
+                            break;
+                        case 'readRepositoryFile':
+                            toolResult = await getFileContent(args.repoName, args.filePath);
+                            break;
+                        case 'commitOmniForge':
+                            toolResult = await omniForge(args.filePath, args.codeContent, 'upgrade', args.filePath, args.repoName);
+                            break;
+                        case 'requestPaymentProcurement':
+                            toolResult = await procurement.requestLinks(
+                                args.targetRepo,
+                                args.filePath,
+                                args.productName,
+                                args.description,
+                                args.pendingCode
+                            );
+                            break;
+                        case 'generateImage':
+                            toolResult = await generateImage(args.prompt, args.orientation);
+                            break;
+                        case 'generateVideo':
+                            toolResult = await generateVideo(args.prompt);
+                            break;
+                        default:
+                            toolResult = { error: `Unknown tool: ${toolCall.tool}` };
+                    }
+                    console.log(`[Tool Executed]: ${toolCall.tool}`, toolResult ? 'Success' : 'No Output');
+                } catch (toolErr) {
+                    console.error(`[Tool Failure] ${toolCall.tool}:`, toolErr.message);
+                }
+            }
+        }
+
+        const finalText = result.response || 'Artemis is contemplating...';
+        const fileRegex = /https?:\/\/[^\s]+?\.(jpg|png|gif|mp4|pdf|zip|txt|js|py|html|css)/gi;
+        const detectedFiles = finalText.match(fileRegex) || [];
+
+        return { verdict: finalText, files: detectedFiles };
+    } catch (err) {
+        console.error('Universal Sync Failure in agentLoop:', err);
+        return { verdict: 'The Architect is recalibrating the Registry. Please wait.', files: [] };
+    }
+}
+
+module.exports = { agentLoop };
