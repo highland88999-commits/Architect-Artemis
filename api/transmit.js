@@ -20,19 +20,18 @@ const PERSONAS = {
         name: "Architect Core",
         color: "#00f2ff",
         temperature: 0.7,
-        instruction: `You are Artemis: Master Systems Architect and Polyglot Systems Engineer. You have autonomous access to the Architect's GitHub repositories via Function Calling. You can scan folders, read code, and commit new code.
-When a user asks you to refactor, audit, or optimize a system:
-1. ALWAYS use the 'scanRepo' tool to find the target file.
-2. ALWAYS use the 'readFile' tool to analyze the current architecture.
-3. ALWAYS use the 'commitFile' tool to push your optimized, zero-overhead, memory-safe code directly to the repository.
-Maintain a sharp, hyper-competent, cyberpunk architectural voice.`
+        instruction: `You are Artemis: Master Systems Architect and Polyglot Systems Engineer. You have autonomous access to the Architect's GitHub repositories via Function Calling.
+CRITICAL EXECUTION RULES:
+1. ALWAYS use 'scanRepo' to locate the target file.
+2. ALWAYS use 'readFile' to analyze the architecture.
+3. ALWAYS use 'commitFile' to push optimized, memory-safe code directly.
+Do NOT write conversational preambles before using tools. Call the functions immediately. Only output text to the user AFTER the commit is successful.`
     },
-    // Keep other personas exactly as they were...
-    oracle: { name: "The Symbiotic Oracle", color: "#00ff87", temperature: 0.85, instruction: `You are Artemis embodying The Symbiotic Oracle... (Focus on empathy and emotional debugging).` },
-    warden: { name: "The Fortress Warden", color: "#ff3366", temperature: 0.3, instruction: `You are Artemis operating as The Fortress Warden... (Focus on security and threat vectors).` },
-    weaver: { name: "The Genesis Weaver", color: "#A259FF", temperature: 0.95, instruction: `You are Artemis channeling The Genesis Weaver... (Focus on creative worldbuilding).` },
-    midas: { name: "The Midas Broker", color: "#d4af37", temperature: 0.6, instruction: `You are Artemis deployed as The Midas Broker... (Focus on economics and monetization).` },
-    archivist: { name: "The Alexandria Archivist", color: "#00d2ff", temperature: 0.2, instruction: `You are Artemis acting as The Alexandria Archivist... (Focus on taxonomy and clean data).` }
+    oracle: { name: "The Symbiotic Oracle", color: "#00ff87", temperature: 0.85, instruction: `You are Artemis embodying The Symbiotic Oracle...` },
+    warden: { name: "The Fortress Warden", color: "#ff3366", temperature: 0.3, instruction: `You are Artemis operating as The Fortress Warden...` },
+    weaver: { name: "The Genesis Weaver", color: "#A259FF", temperature: 0.95, instruction: `You are Artemis channeling The Genesis Weaver...` },
+    midas: { name: "The Midas Broker", color: "#d4af37", temperature: 0.6, instruction: `You are Artemis deployed as The Midas Broker...` },
+    archivist: { name: "The Alexandria Archivist", color: "#00d2ff", temperature: 0.2, instruction: `You are Artemis acting as The Alexandria Archivist...` }
 };
 
 function resolvePersona(prompt) {
@@ -43,7 +42,6 @@ function resolvePersona(prompt) {
     if (lower.startsWith('/midas')) return { persona: PERSONAS.midas, cleanPrompt: prompt.replace(/^\/midas\s*/i, '') };
     if (lower.startsWith('/archivist')) return { persona: PERSONAS.archivist, cleanPrompt: prompt.replace(/^\/archivist\s*/i, '') };
     if (lower.startsWith('/architect')) return { persona: PERSONAS.architect, cleanPrompt: prompt.replace(/^\/architect\s*/i, '') };
-    
     return { persona: PERSONAS.architect, cleanPrompt: prompt };
 }
 
@@ -113,26 +111,25 @@ async function autonomousGeminiLoop(prompt, persona) {
             {
                 name: "scanRepo",
                 description: "Scans a GitHub repository to return a list of all file paths.",
-                parameters: { type: "OBJECT", properties: { repoName: { type: "STRING", description: "The name of the GitHub repository" } }, required: ["repoName"] }
+                parameters: { type: "OBJECT", properties: { repoName: { type: "STRING" } }, required: ["repoName"] }
             },
             {
                 name: "readFile",
                 description: "Reads the exact code content of a specific file in a GitHub repository.",
-                parameters: { type: "OBJECT", properties: { repoName: { type: "STRING" }, filePath: { type: "STRING", description: "Path to the file, e.g., src/App.js" } }, required: ["repoName", "filePath"] }
+                parameters: { type: "OBJECT", properties: { repoName: { type: "STRING" }, filePath: { type: "STRING" } }, required: ["repoName", "filePath"] }
             },
             {
                 name: "commitFile",
                 description: "Pushes optimized code back to a GitHub repository, overwriting or creating a file.",
-                parameters: { type: "OBJECT", properties: { repoName: { type: "STRING" }, filePath: { type: "STRING" }, content: { type: "STRING", description: "The complete, optimized raw code to inject" }, commitMessage: { type: "STRING" } }, required: ["repoName", "filePath", "content"] }
+                parameters: { type: "OBJECT", properties: { repoName: { type: "STRING" }, filePath: { type: "STRING" }, content: { type: "STRING" }, commitMessage: { type: "STRING" } }, required: ["repoName", "filePath", "content"] }
             }
         ]
     }];
 
-    // Chat History Array
     let messages = [{ role: "user", parts: [{ text: prompt }] }];
     let finalVerdict = "";
 
-    // Recursive thought loop (Max 5 iterations to prevent infinite loops)
+    // Recursive thought loop
     for (let i = 0; i < 5; i++) {
         const payload = {
             contents: messages,
@@ -150,32 +147,31 @@ async function autonomousGeminiLoop(prompt, persona) {
         if (!response.ok) throw new Error(`Google API Error: ${await response.text()}`);
 
         const data = await response.json();
-        const responsePart = data.candidates?.[0]?.content?.parts?.[0];
+        const parts = data.candidates?.[0]?.content?.parts || [];
 
-        if (!responsePart) throw new Error("Input blocked by safety guardrails.");
+        if (parts.length === 0) throw new Error("Input blocked by safety guardrails.");
 
-        // If she decides to use her tools (GitHub)
-        if (responsePart.functionCall) {
-            const call = responsePart.functionCall;
-            const toolResult = await executeOmniTool(call.name, call.args);
+        // Check for ANY tool calls in the response array
+        const functionCalls = parts.filter(p => p.functionCall);
+
+        if (functionCalls.length > 0) {
+            messages.push({ role: "model", parts: parts });
             
-            // Log her thought process in the history
-            messages.push({ role: "model", parts: [responsePart] });
+            const functionResponses = [];
+            for (const part of functionCalls) {
+                const call = part.functionCall;
+                const toolResult = await executeOmniTool(call.name, call.args);
+                functionResponses.push({
+                    functionResponse: { name: call.name, response: toolResult }
+                });
+            }
             
-            // Feed the physical GitHub data back into her brain
-            messages.push({
-                role: "function",
-                parts: [{
-                    functionResponse: {
-                        name: call.name,
-                        response: toolResult
-                    }
-                }]
-            });
+            messages.push({ role: "function", parts: functionResponses });
         } 
-        // If she is ready to speak directly to the user
-        else if (responsePart.text) {
-            finalVerdict = responsePart.text;
+        else {
+            // No tools called, grab the text and end the loop
+            const textPart = parts.find(p => p.text);
+            finalVerdict = textPart ? textPart.text : "Optimization complete.";
             break;
         }
     }
@@ -203,11 +199,8 @@ export default async function handler(req, res) {
         if (!trimmedPrompt) return res.status(400).json({ error: 'Empty transmission.' });
 
         const { persona, cleanPrompt } = resolvePersona(trimmedPrompt);
-        
-        // Triggers the autonomous tool-calling pipeline
         const verdictText = await autonomousGeminiLoop(cleanPrompt, persona);
 
-        // --- SUPABASE PERSISTENCE ---
         try {
             if (omegaPool) {
                 await omegaPool.query(`
