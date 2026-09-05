@@ -121,7 +121,6 @@
         .hint-tag { color: var(--cyan); cursor: pointer; transition: 0.2s; }
         .hint-tag:hover { color: #fff; text-shadow: 0 0 8px var(--cyan); }
 
-        /* --- OPTIMIZED FORGE UI: Perfect 2-Row Grid --- */
         #forge-type-selector { 
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -130,9 +129,7 @@
             max-width: 550px; 
             margin-top: 5px;
         }
-        /* Top Row (3 items) */
         .forge-radio:nth-child(1), .forge-radio:nth-child(2), .forge-radio:nth-child(3) { grid-column: span 2; }
-        /* Bottom Row (2 items centered) */
         .forge-radio:nth-child(4) { grid-column: 2 / span 2; }
         .forge-radio:nth-child(5) { grid-column: 4 / span 2; }
 
@@ -161,7 +158,6 @@
             padding-bottom: 150px;
         }
         
-        /* --- TRUE TEXT GENERATION CHAT PANEL --- */
         .artemis-panel {
             background: rgba(8, 8, 25, 0.85); border: 1px solid var(--border); border-radius: 16px;
             padding: 20px; text-align: left; box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
@@ -198,7 +194,6 @@
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Forge Result Outputs */
         .forge-asset-container {
             padding: 20px; border: 1px solid rgba(0, 242, 255, 0.4);
             border-radius: 8px; text-align: center; background: rgba(0,242,255,0.05);
@@ -286,11 +281,71 @@
             text-shadow: 1px 1px 5px #000, 0 0 10px var(--cyan); letter-spacing: 1px;
             text-align: center; padding: 0 10px; pointer-events: none;
         }
+
+        /* --- ADDED DYNAMIC LINKS STYLING --- */
+        #external-tools-container {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tool-link-btn {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .tool-link-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
 
     <script>
+        // --- ADDED DYNAMIC EXTERNAL LINKS GENERATOR ---
+        function generateExternalLinks() {
+            const tools = [
+                { name: "OpenArt AI", url: "https://openartai.pxf.io/c/6240385/4000591/38572" },
+                { name: "Gemini", url: "https://gemini.google.com/" },
+                { name: "ChatGPT", url: "https://chat.openai.com/" },
+                { name: "Catbox.moe", url: "https://catbox.moe/" },
+                { name: "Filegarden", url: "https://filegarden.com/" },
+                { name: ".GLB Generator", url: "https://www.meshy.ai/" }
+            ];
+
+            const container = document.getElementById('external-tools-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            tools.forEach(tool => {
+                const link = document.createElement('a');
+                link.href = tool.url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'tool-link-btn';
+                link.innerHTML = `${tool.name} &nearr;`;
+                
+                container.appendChild(link);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', generateExternalLinks);
+
         window.enterNexus = function() {
             const landing = document.getElementById('landing-page');
             landing.classList.add('dissolve-effect');
@@ -433,6 +488,10 @@
                 <div class="holo-btn" id="preview-code-btn" onclick="executeSandboxCode()">PREVIEW</div>
                 <div class="holo-btn" id="download-txt-btn" onclick="downloadTxt()">TXT</div>
                 <div class="holo-btn" id="download-pdf-btn" onclick="downloadPdf()">PDF</div>
+                
+                <!-- ADDED EXTERNAL LINKS CONTAINER NEXT TO COPY BUTTON -->
+                <div id="external-tools-container"></div>
+                
                 <div class="holo-btn" id="copy-btn" onclick="copyOracleText()">COPY</div>
                 <div class="holo-close" onclick="closeTextHolo()">×</div>
             </div>
