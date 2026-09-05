@@ -1,6 +1,20 @@
 // api/transmit.js
+import pg from 'pg';
 
+const { Pool } = pg;
+
+// Vercel Serverless execution timeout set to 60 seconds
 export const maxDuration = 60;
+
+// --- SUPABASE TELEMETRY POOL ---
+// Instantiated directly here to bypass the .vercelignore engine/ exclusion
+let omegaPool = null;
+if (process.env.OMEGA_DATABASE_URL) {
+    omegaPool = new Pool({
+        connectionString: process.env.OMEGA_DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+    });
+}
 
 // --- PERSONA MATRIX ARCHITECTURE ---
 const PERSONAS = {
@@ -171,6 +185,27 @@ export default async function handler(req, res) {
             }
         } catch (_) {
             // Sentiment matrix offline fallback
+        }
+
+        // --- SUPABASE PERSISTENCE ---
+        try {
+            if (omegaPool) {
+                await omegaPool.query(`
+                    INSERT INTO central_telemetry (repository_name, action_type, details, created_at)
+                    VALUES ($1, $2, $3, NOW())
+                `, [
+                    process.env.VERCEL_PROJECT_NAME || 'Artemis-Core', 
+                    'chat_transmission', 
+                    JSON.stringify({ 
+                        prompt: cleanPrompt, 
+                        response: verdictText, 
+                        persona: persona.name,
+                        sentiment: sentiment 
+                    })
+                ]);
+            }
+        } catch (dbErr) {
+            console.warn("Supabase telemetry skipped:", dbErr.message);
         }
 
         return res.status(200).json({
