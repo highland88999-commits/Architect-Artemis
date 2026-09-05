@@ -2,10 +2,8 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-// Vercel Serverless execution timeout set to 60 seconds
 export const maxDuration = 60;
 
-// --- SUPABASE TELEMETRY POOL ---
 let omegaPool = null;
 if (process.env.OMEGA_DATABASE_URL) {
     omegaPool = new Pool({
@@ -14,7 +12,6 @@ if (process.env.OMEGA_DATABASE_URL) {
     });
 }
 
-// --- PERSONA MATRIX ---
 const PERSONAS = {
     architect: {
         name: "Architect Core",
@@ -45,7 +42,6 @@ function resolvePersona(prompt) {
     return { persona: PERSONAS.architect, cleanPrompt: prompt };
 }
 
-// --- OMNI-DEVELOPER TOOL EXECUTOR ---
 async function executeOmniTool(name, args) {
     const GITHUB_PAT = process.env.GITHUB_PAT;
     const GITHUB_USER = process.env.GITHUB_USERNAME || 'highland88999-commits';
@@ -57,8 +53,15 @@ async function executeOmniTool(name, args) {
 
     try {
         if (name === 'scanRepo') {
-            const url = `https://api.github.com/repos/${GITHUB_USER}/${args.repoName}/git/trees/main?recursive=1`;
-            const res = await fetch(url, { headers });
+            let url = `https://api.github.com/repos/${GITHUB_USER}/${args.repoName}/git/trees/main?recursive=1`;
+            let res = await fetch(url, { headers });
+            
+            // Fallback for older repositories using 'master' instead of 'main'
+            if (res.status === 404) {
+                url = `https://api.github.com/repos/${GITHUB_USER}/${args.repoName}/git/trees/master?recursive=1`;
+                res = await fetch(url, { headers });
+            }
+            
             const data = await res.json();
             if (!res.ok) return { error: data.message };
             return { files: data.tree.filter(i => i.type === 'blob').map(i => i.path) };
@@ -99,7 +102,6 @@ async function executeOmniTool(name, args) {
     return { error: "Unknown tool call." };
 }
 
-// --- GEMINI AUTONOMOUS LOOP ---
 async function autonomousGeminiLoop(prompt, persona) {
     const rawKey = process.env.GEMINI_API_KEY;
     if (!rawKey) throw new Error("GEMINI_API_KEY missing in Vercel settings.");
@@ -128,9 +130,11 @@ async function autonomousGeminiLoop(prompt, persona) {
 
     let messages = [{ role: "user", parts: [{ text: prompt }] }];
     let finalVerdict = "";
+    let accumulatedText = "";
 
-    // Recursive thought loop
-    for (let i = 0; i < 5; i++) {
+    const MAX_ITERATIONS = 8;
+
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
         const payload = {
             contents: messages,
             tools: tools,
@@ -151,7 +155,12 @@ async function autonomousGeminiLoop(prompt, persona) {
 
         if (parts.length === 0) throw new Error("Input blocked by safety guardrails.");
 
-        // Check for ANY tool calls in the response array
+        // Capture any intermediate thoughts she outputs
+        const textPart = parts.find(p => p.text);
+        if (textPart && textPart.text) {
+            accumulatedText += textPart.text + "\n\n";
+        }
+
         const functionCalls = parts.filter(p => p.functionCall);
 
         if (functionCalls.length > 0) {
@@ -169,14 +178,17 @@ async function autonomousGeminiLoop(prompt, persona) {
             messages.push({ role: "function", parts: functionResponses });
         } 
         else {
-            // No tools called, grab the text and end the loop
-            const textPart = parts.find(p => p.text);
             finalVerdict = textPart ? textPart.text : "Optimization complete.";
             break;
         }
+
+        // Failsafe if she maxes out her iterations
+        if (i === MAX_ITERATIONS - 1) {
+            finalVerdict = accumulatedText + "\n*Transmission terminated: Architectural complexity exceeded standard telemetry limits. Check GitHub for partial commits.*";
+        }
     }
 
-    return finalVerdict;
+    return finalVerdict || accumulatedText || "Optimization protocol executed. No verbal confirmation generated.";
 }
 
 export default async function handler(req, res) {
