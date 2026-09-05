@@ -89,7 +89,7 @@
         #container::-webkit-scrollbar { display: none; }
 
         #oracle-circle { 
-            width: min(260px, 48vw); height: min(260px, 48vw); border-radius: 50%; 
+            width: min(280px, 50vw); height: min(280px, 50vw); border-radius: 50%; 
             border: 6px solid var(--gold); box-shadow: var(--glow-c), inset 0 0 90px rgba(0,242,255,0.55); 
             position: relative; overflow: hidden; margin-bottom: 2vh; cursor: pointer; transition: 0.4s ease;
             flex-shrink: 0;
@@ -110,7 +110,7 @@
         .pip:nth-child(3) { --pip-color: #66ff66; animation-delay: 0.4s; }
         @keyframes pipPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); filter: blur(1px); } 50% { opacity: 1; transform: scale(1.2); filter: blur(0px); } }
 
-        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+        #prompt-area { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 14px; flex-shrink: 0; }
         #guest-cmd { width: 100%; padding: 16px 24px; background: var(--glass); border: 1px solid var(--border); border-radius: 26px; color: var(--cyan); font-size: 1.1rem; backdrop-filter: blur(18px); text-align: center; transition: 0.3s; }
         #guest-cmd:focus { outline: none; box-shadow: 0 0 25px rgba(0, 242, 255, 0.4); border-color: var(--cyan); }
         
@@ -121,36 +121,47 @@
         .hint-tag { color: var(--cyan); cursor: pointer; transition: 0.2s; }
         .hint-tag:hover { color: #fff; text-shadow: 0 0 8px var(--cyan); }
 
+        /* --- OPTIMIZED FORGE UI: Perfect 2-Row Grid --- */
         #forge-type-selector { 
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-            gap: 10px; width: 100%; max-width: 500px; 
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            width: 100%; 
+            max-width: 550px; 
+            margin-top: 5px;
         }
-        .forge-radio { flex: 1 1 calc(30% - 10px); min-width: 110px; }
+        /* Top Row (3 items) */
+        .forge-radio:nth-child(1), .forge-radio:nth-child(2), .forge-radio:nth-child(3) { grid-column: span 2; }
+        /* Bottom Row (2 items centered) */
+        .forge-radio:nth-child(4) { grid-column: 2 / span 2; }
+        .forge-radio:nth-child(5) { grid-column: 4 / span 2; }
+
         .forge-radio input { display: none; }
         .forge-radio span {
-            display: block; width: 100%; padding: 10px 0; border: 1px solid var(--border); 
-            border-radius: 8px; color: var(--cyan); font-size: 0.8rem; cursor: pointer;
+            display: block; width: 100%; padding: 12px 0; border: 1px solid var(--border); 
+            border-radius: 8px; color: var(--cyan); font-size: 0.85rem; cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             background: rgba(0, 242, 255, 0.05); text-align: center; letter-spacing: 1px;
         }
         .forge-radio input:checked + span {
             background: var(--cyan); color: #000;
             box-shadow: 0 0 20px rgba(0, 242, 255, 0.6); font-weight: bold;
-            transform: translateY(-2px); border-color: transparent;
+            transform: translateY(-3px); border-color: transparent;
         }
 
-        .btn-group { display: flex; gap: 15px; width: 100%; justify-content: center; margin-top: 5px; }
-        #send-btn { padding: 14px 50px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; font-size: 1rem; letter-spacing: 2px;}
+        .btn-group { display: flex; gap: 15px; width: 100%; justify-content: center; margin-top: 10px; }
+        #send-btn { padding: 14px 60px; background: linear-gradient(90deg, var(--cyan), #00aaff); color: #000; border: none; border-radius: 999px; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px var(--cyan); transition: 0.3s; font-size: 1rem; letter-spacing: 2px;}
         #send-btn:hover { transform: scale(1.05); box-shadow: 0 0 45px var(--cyan); }
         
         #forge-trigger-btn { padding: 14px 40px; background: rgba(0, 242, 255, 0.1); color: var(--cyan); border: 1px solid var(--cyan); border-radius: 999px; font-weight: bold; cursor: pointer; transition: 0.3s; letter-spacing: 2px; }
         #forge-trigger-btn:hover { background: rgba(0, 242, 255, 0.3); transform: scale(1.05); }
 
         #dynamic-modules {
-            width: 100%; max-width: 650px; display: flex; flex-direction: column; gap: 20px; margin-top: 20px; 
+            width: 100%; max-width: 650px; display: flex; flex-direction: column; gap: 20px; margin-top: 25px; 
             padding-bottom: 150px;
         }
         
+        /* --- TRUE TEXT GENERATION CHAT PANEL --- */
         .artemis-panel {
             background: rgba(8, 8, 25, 0.85); border: 1px solid var(--border); border-radius: 16px;
             padding: 20px; text-align: left; box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
@@ -161,7 +172,7 @@
         #artemis-response-panel {
             border-left: 4px solid var(--active-persona-color);
             border-right: none; border-top: none; border-bottom: none;
-            max-height: 52vh;
+            max-height: 50vh;
         }
         
         #response-meta-header {
@@ -187,6 +198,7 @@
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Forge Result Outputs */
         .forge-asset-container {
             padding: 20px; border: 1px solid rgba(0, 242, 255, 0.4);
             border-radius: 8px; text-align: center; background: rgba(0,242,255,0.05);
@@ -428,13 +440,14 @@
         <div id="text-holo-content"></div>
     </div>
 
-    <!-- Ecosystem HUD -->
+    <!-- ECOSYSTEM NAV HUD TRIGGER -->
     <div id="ecosystem-nav-icon" onclick="toggleEcosystemHUD()">
         <video autoplay loop muted playsinline>
             <source src="https://file.garden/alXjUY_coXedLaNA/gemini_generated_video_69CBAF0E.mp4" type="video/mp4">
         </video>
     </div>
 
+    <!-- ECOSYSTEM NAV HUD PANEL -->
     <div id="ecosystem-hud-panel">
         <div class="holo-header" style="padding: 12px; font-size: 0.9rem; background: rgba(0,242,255,0.1);">
             <span class="holo-title" style="color: var(--cyan); font-family: monospace;">ECOSYSTEM LINKS</span>
@@ -901,6 +914,7 @@
                     } else {
                         responseContent.innerHTML = marked.parse(aiReply);
                         responsePanel.scrollTop = responsePanel.scrollHeight;
+                        resetUI(); 
                     }
                 }
                 typeText();
@@ -922,8 +936,7 @@
                             <p style="color: #ccc; font-size: 0.95rem; font-family: monospace; word-break: break-word; margin: 0;">${err.message}</p>
                         </div>`;
                 }
-            } finally {
-                if (isGenerating && !isPolling) resetUI();
+                resetUI(); 
             }
         };
 
